@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "enviPath-python"
+version = "0.1.0"
+authors = [
+  { name="Tim Lorsbach", email="lorsbach@envipath.com" },
+  { name="Jasmin Hafner", email="jasmin.hafner@eawag.ch" },
+  { name="Albert Anguera Sempere", email="albert.anguerasempere@uzh.ch" },
+]
+description = "A python client to interact with enviPath"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "requests"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/enviPath/enviPath-python"
+"Bug Tracker" = "https://github.com/enviPath/enviPath-python/issues"
