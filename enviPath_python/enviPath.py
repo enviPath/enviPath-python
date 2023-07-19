@@ -303,7 +303,11 @@ class enviPathRequester(object):
             'loginusername': username,
             'loginpassword': password,
         }
-        self.post_request(url, payload=data)
+        res = self.post_request(url, payload=data)
+        try:
+            res.raise_for_status()
+        except HTTPError:
+            raise ValueError("Login Failed!")
 
     def logout(self, url):
         """

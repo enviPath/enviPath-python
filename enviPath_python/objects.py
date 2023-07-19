@@ -1510,10 +1510,16 @@ class Pathway(ReviewableEnviPathObject):
         return self._get('lastModified')
 
     def is_completed(self) -> bool:
-        return "true" == self._get('completed')
+        status = self.requester.get_request('{}?status'.format(self.id)).json()
+        return "true" == status['completed']
 
     def has_failed(self) -> bool:
-        return "error" == self._get('completed')
+        status = self.requester.get_request('{}?status'.format(self.id)).json()
+        return "error" == status['completed']
+
+    def is_running(self):
+        status = self.requester.get_request('{}?status'.format(self.id)).json()
+        return "false" == status['completed']
 
     def add_node(self, smiles, name: str = None, depth: int = None, description: str = None):
         """
