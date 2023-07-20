@@ -14,6 +14,7 @@
 # CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 import copy
+from collections.abc import Iterable
 
 from requests import Session
 from requests.adapters import HTTPAdapter
@@ -33,7 +34,7 @@ class enviPath(object):
         :param base_url: The url of the enviPath instance.
         """
         self.BASE_URL = base_url if base_url.endswith('/') else base_url + '/'
-        self.requester = enviPathRequester(proxies)
+        self.requester = enviPathRequester(self, proxies)
 
     def get_base_url(self):
         return self.BASE_URL
@@ -65,6 +66,28 @@ class enviPath(object):
         url = self.BASE_URL + Endpoint.USER.value
         user_data = self.requester.get_request(url, params=params).json()[Endpoint.USER.value][0]
         return User(self.requester, **user_data)
+
+    def search(self, term: str, packages: Union['Package', List['Package']]):
+        params = {
+            'packages[]': [p.get_id() for p in packages] if isinstance(packages, Iterable) else [packages.get_id()],
+            'search': term,
+        }
+
+        res = self.requester.get_request('{}search'.format(self.BASE_URL), params=params)
+        res.raise_for_status()
+
+        data = res.json()
+
+        result = {}
+        for k, vals in data.items():
+            objects = []
+            for v in vals:
+                # old search implementation returns object id in its plural form, remove trailing s
+                objects.append(self.requester.get_object(v['id'], Endpoint(k.rstrip('s'))))
+
+            result[k] = objects
+
+        return result
 
     def get_package(self, package_id: str):
         """
@@ -213,10 +236,11 @@ class enviPathRequester(object):
         Endpoint.RELATIVEREASONING: RelativeReasoning,
     }
 
-    def __init__(self, proxies=None):
+    def __init__(self, eP, proxies=None):
         """
         Setup session for cookies as well as avoiding unnecessary ssl-handshakes.
         """
+        self.eP = eP
         self.session = Session()
         self.session.mount('http://', HTTPAdapter())
         self.session.mount('https://', HTTPAdapter())
@@ -323,12 +347,14 @@ class enviPathRequester(object):
     def get_objects(self, base_url, endpoint):
         """
         Generic get method to retrieve objects.
+        :param base_url: The base URL
         :param endpoint: Enum of Endpoint.
         :return: List of objects denoted by endpoint.
         """
         url = base_url + endpoint.value
         objs = self.get_request(url).json()
 
+        # TODO delegate to get_object
         if endpoint == Endpoint.RULE:
             res = []
             for obj in objs[endpoint.value]:
@@ -339,14 +365,22 @@ class enviPathRequester(object):
                 elif obj['identifier'] == Endpoint.PARALLELCOMPOSITERULE.value:
                     res.append(ParallelCompositeRule(self, **obj))
                 else:
-                    # TODO replace with logger....
-                    print("Unknown Rule type...")
-                    print(obj)
+                    raise ValueError("Unknown Rule Type ({})".format(obj['identifier']))
             return res
         elif endpoint.value in objs:
             return [self.ENDPOINT_OBJECT_MAPPING[endpoint](self, **obj) for obj in objs[endpoint.value]]
         else:
-            # TODO replace with logger....
-            print('Endpoint value not present in result...')
-            print(objs)
-            return []
+            raise ValueError("Cant map ({}) to objects".format(objs.keys()))
+
+    def get_object(self, obj_id, endpoint):
+        if endpoint == Endpoint.RULE:
+            if Endpoint.SIMPLERULE.value in obj_id:
+                return SimpleRule(self, id=obj_id)
+            elif Endpoint.SEQUENTIALCOMPOSITERULE.value in obj_id:
+                return SequentialCompositeRule(self, id=obj_id)
+            elif Endpoint.PARALLELCOMPOSITERULE.value in obj_id:
+                return ParallelCompositeRule(self, id=obj_id)
+            else:
+                raise ValueError("Unable to determine rule type for {}".format(obj_id))
+        else:
+            return self.ENDPOINT_OBJECT_MAPPING[endpoint](self, id=obj_id)

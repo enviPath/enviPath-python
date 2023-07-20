@@ -30,6 +30,26 @@ information.
 
 ## Examples
 
+### Searching data
+
+```python
+from enviPath_python import enviPath
+
+eP = enviPath('https://envipath.org')
+
+# get package(s) that should be searched
+bbd = eP.get_package('https://envipath.org/package/32de3cf4-e3e6-4168-956e-32fa5ddb0ce1')
+soil = eP.get_package('https://envipath.org/package/5882df9c-dae1-4d80-a40e-db4724271456')
+
+# returns a dictionary with properly initialized objects
+res = eP.search('c1ccccc1', [bbd, soil])
+print(res)
+
+# or use a package to search it
+res = bbd.search('c1ccccc1')
+print(res)
+```
+
 ### Accessing Data
 
 ```python

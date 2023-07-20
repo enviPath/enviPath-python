@@ -477,6 +477,9 @@ class Package(enviPathObject):
         for source in sources:
             source.copy(target, debug=debug)
 
+    def search(self, term: str):
+        return self.requester.eP.search(term, self)
+
 
 class Scenario(enviPathObject):
 
