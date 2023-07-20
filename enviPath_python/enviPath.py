@@ -15,12 +15,15 @@
 # DEALINGS IN THE SOFTWARE.
 import copy
 from collections.abc import Iterable
+from typing import Union, List
 
 from requests import Session
 from requests.adapters import HTTPAdapter
 from requests.exceptions import *
 
 from enviPath_python.objects import *
+from enviPath_python.objects import SimpleRule, SequentialCompositeRule, ParallelCompositeRule, User, Package, Compound, \
+    Pathway, Reaction, Scenario, Setting, Rule
 
 
 class enviPath(object):
@@ -31,26 +34,39 @@ class enviPath(object):
     def __init__(self, base_url, proxies=None):
         """
         Constructor with instance specification.
+
         :param base_url: The url of the enviPath instance.
+        :type base_url: str
+        :param proxies: The proxy of the enviPath instance
+        :type proxies: str, optional
         """
         self.BASE_URL = base_url if base_url.endswith('/') else base_url + '/'
         self.requester = enviPathRequester(self, proxies)
 
-    def get_base_url(self):
+    def get_base_url(self) -> str:
+        """
+        Method to return the base url of the enviPath object
+
+        :return: The base URL
+        :rtype: str
+        """
         return self.BASE_URL
 
     def login(self, username, password) -> None:
         """
         Performs login.
+
         :param username: The username.
+        :type username: str
         :param password: The corresponding password.
-        :return: None
+        :type password: str
         """
         self.requester.login(self.BASE_URL, username, password)
 
     def logout(self) -> None:
         """
         Performs logout.
+
         :return: None
         """
         self.requester.logout(self.BASE_URL)
@@ -58,7 +74,9 @@ class enviPath(object):
     def who_am_i(self) -> User:
         """
         Method to get the currently logged in user.
+
         :return: User object.
+        :rtype: class:`enviPath_python.objects.User`
         """
         params = {
             'whoami': 'true',
@@ -68,6 +86,13 @@ class enviPath(object):
         return User(self.requester, **user_data)
 
     def search(self, term: str, packages: Union['Package', List['Package']]):
+        """
+        Function designed to perform a search on an enviPath session.
+
+        :param term: the term with which the search wants to be performed
+        :param packages: the packages where the search wants to be performed
+        :return: the matching objects ids
+        """
         params = {
             'packages[]': [p.get_id() for p in packages] if isinstance(packages, Iterable) else [packages.get_id()],
             'search': term,
@@ -89,125 +114,176 @@ class enviPath(object):
 
         return result
 
-    def get_package(self, package_id: str):
+    def get_package(self, package_id: str) -> Package:
         """
-        TODO
-        :param package_id:
-        :return:
+        Gets the specified package
+
+        :param package_id: The identifier of the package
+        :type package_id: str
+        :return: A package object
+        :rtype: class:`enviPath_python.objects.Package`
         """
         return Package(self.requester, **self.requester.get_json(package_id))
 
     def get_packages(self) -> List['Package']:
         """
         Gets all packages the logged in user has at least read permissions on.
+
         :return: List of Package objects.
+        :rtype: List
         """
         return self.requester.get_objects(self.BASE_URL, Endpoint.PACKAGE)
 
-    def get_compound(self, compound_id):
+    def get_compound(self, compound_id) -> Compound:
         """
-        TODO
-        :param compound_id:
-        :return:
+        Returns the compound matching with id `compound_id`
+
+        :param compound_id: The identifier of the compound
+        :type compound_id: str
+        :return: The retrieved compound with matching compound id
+        :rtype: class:`enviPath_python.objects.Compound`
         """
         return Compound(self.requester, **self.requester.get_json(compound_id))
 
     def get_compounds(self) -> List['Compound']:
         """
         Gets all compounds the logged in user has at least read permissions on.
+
         :return: List of Compound objects.
+        :rtype: List
         """
         return self.requester.get_objects(self.BASE_URL, Endpoint.COMPOUND)
 
-    def get_reaction(self, reaction_id):
+    def get_reaction(self, reaction_id) -> Reaction:
         """
+        Get the reaction with reaction identifier `reaction_id`
 
-        :param reaction_id:
-        :return:
+        :param reaction_id: The identifier for the reaction
+        :type reaction_id: str
+        :return: The reaction with matching id
+        :rtype: class:`enviPath_python.objects.Reaction`
         """
         return Reaction(self.requester, **self.requester.get_json(reaction_id))
 
-    def get_reactions(self):
+    def get_reactions(self) -> List['Reaction']:
         """
         Gets all reactions the logged in user has at least read permissions on.
+
         :return: List of Reaction objects.
+        :rtype: List
         """
         return self.requester.get_objects(self.BASE_URL, Endpoint.REACTION)
 
-    def get_rule(self, rule_id):
+    def get_rule(self, rule_id) -> Rule:
         """
+        Get the rule with identifier `rule_id`
 
-        :param rule_id:
-        :return:
+        :param rule_id: The identifier of the rule
+        :type rule_id: str
+        :return: The rule with the corresponding id equivalent to `rule_id`
+        :rtype: class:`enviPath_python.objects.Rule`
         """
         return Rule(self.requester, **self.requester.get_json(rule_id))
 
-    def get_rules(self):
+    def get_rules(self) -> List['Rule']:
         """
         Gets all rules the logged in user has at least read permissions on.
+
         :return: List of Reaction objects.
+        :rtype: List
         """
         return self.requester.get_objects(self.BASE_URL, Endpoint.RULE)
 
-    def get_pathway(self, pathway_id):
+    def get_pathway(self, pathway_id) -> Pathway:
         """
+        Get the pathway with identifier `pathway_id`
 
-        :param pathway_id:
-        :return:
+        :param pathway_id: The identifier of the pathway
+        :type pathway_id: str
+        :return: The pathway with matching id
+        :rtype: class:`enviPath_python.objects.Pathway`
         """
         return Pathway(self.requester, **self.requester.get_json(pathway_id))
 
-    def get_pathways(self):
+    def get_pathways(self) -> List['Pathway']:
         """
         Gets all pathways the logged in user has at least read permissions on.
+
         :return: List of Pathway objects.
+        :rtype: List
         """
         return self.requester.get_objects(self.BASE_URL, Endpoint.PATHWAY)
 
-    def get_scenario(self, scenario_id):
+    def get_scenario(self, scenario_id) -> Scenario:
         """
+        Get the pathway with identifier `scenario_id`
 
-        :param scenario_id:
-        :return:
+        :param scenario_id: The identifier of the scenario
+        :type scenario_id: str
+        :return: The scenario with matching id
+        :rtype: class:`enviPath_python.objects.Scenario`
         """
         return Scenario(self.requester, **self.requester.get_json(scenario_id))
 
-    def get_scenarios(self):
+    def get_scenarios(self) -> List['Scenario']:
         """
         Gets all scenarios the logged in user has at least read permissions on.
+
         :return: List of Scenario objects.
+        :rtype: List
         """
         return self.requester.get_objects(self.BASE_URL, Endpoint.SCENARIO)
 
-    def get_setting(self, setting_id):
+    def get_setting(self, setting_id) -> Setting:
         """
-        :param setting_id:
-        :return:
+        Get the setting with identifier `setting_id`
+
+        :param setting_id: The identifier of the setting
+        :type setting_id: str
+        :return: The setting with matching id
+        :rtype: class:`enviPath_python.objects.Setting`
         """
         return Setting(self.requester, **self.requester.get_json(setting_id))
 
-    def get_settings(self):
+    def get_settings(self) -> List['Setting']:
         """
         Gets all settings the logged in user has at least read permissions on.
+
         :return: List of Settings objects.
         """
         return self.requester.get_objects(self.BASE_URL, Endpoint.SETTING)
 
-    def get_users(self):
+    def get_users(self) -> List['User']:
         """
         Gets all users the logged in user has at least read permissions on.
-        :return: List of User objects.
+
+        :return: List of Settings objects.
+        :rtype: List
         """
         return self.requester.get_objects(self.BASE_URL, Endpoint.USER)
 
     def get_groups(self):
         """
         Gets all groups the logged in user has at least read permissions on.
+
         :return: List of Group objects.
+        :rtype: List
         """
         return self.requester.get_objects(self.BASE_URL, Endpoint.GROUP)
 
     def create_package(self, group: 'Group', name: str = None, description: str = None) -> Package:
+        """
+        Function that creates an enviPath package
+
+        :param group: The group that the package will belong to
+        :type group: enviPath_python.objects.Group
+        :param name: The name for the package
+        :type name: str
+        :param description: The description for the package
+        :type description: str
+        :return: The created package
+        :rtype: class:enviPath_python.objects.Package
+        """
         return Package.create(self, group, name=name, description=description)
 
 
