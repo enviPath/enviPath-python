@@ -797,8 +797,8 @@ class CompoundStructure(ReviewableEnviPathObject):
             if scenario_type.lower() == 'soil':
                 if hl['scenarioType'].lower() == 'soil':
                     res.append(HalfLife(scenarioId=hl['scenarioId'], scenarioName=hl['scenarioName'], hl=hl['hl'],
-                                hl_comment=hl['hlComment'], hl_fit=hl['hlFit'], hl_model=hl['hlModel'],
-                                source=hl['source']))
+                                        hl_comment=hl['hlComment'], hl_fit=hl['hlFit'], hl_model=hl['hlModel'],
+                                        source=hl['source']))
             elif scenario_type.lower() == 'sediment':
                 raise NotImplementedError
             elif scenario_type.lower() == 'sludge':
@@ -1209,10 +1209,15 @@ class RelativeReasoning(ReviewableEnviPathObject):
         }
         return self.requester.get_request(self.id, params=params).json()
 
+    def copy(self, package: 'Package', debug=False):
+        payload = {
+            'hiddenMethod': 'COPY',
+            'targetPackage': package.get_id(),
+        }
 
-    def copy(self, package: 'Package'):
-        # TODO
-        pass
+        res = self.requester.post_request(self.get_id(), payload=payload)
+        res.raise_for_status()
+        return RelativeReasoning(self.requester, id=res.url)
 
 
 class Node(ReviewableEnviPathObject):
