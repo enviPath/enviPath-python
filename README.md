@@ -1,4 +1,5 @@
 # enviPath Python
+[![Documentation Status](https://readthedocs.org/projects/envipath-python/badge/?version=feature-docs)](https://envipath-python.readthedocs.io/en/feature-docs/?badge=feature-docs)
 
 Python client for [enviPath](https://envipath.org) - the environmental contaminant biotransformation pathway resource.
 
