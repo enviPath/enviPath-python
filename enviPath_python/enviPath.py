@@ -89,7 +89,7 @@ class enviPath(object):
 
         :param term: the term with which the search wants to be performed
         :param packages: the packages where the search wants to be performed
-        :return: the matching objects ids
+        :return: a dictionary of object identifiers
         """
         params = {
             'packages[]': [p.get_id() for p in packages] if isinstance(packages, Iterable) else [packages.get_id()],
