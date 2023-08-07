@@ -7,7 +7,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'enviPath-python'
-copyright = '2023, Albert Anguera Sempere'
+copyright = '2023, enviPath UG & Co. KG'
 author = 'Albert Anguera Sempere'
 
 # -- General configuration ---------------------------------------------------
