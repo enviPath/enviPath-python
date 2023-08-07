@@ -22,8 +22,6 @@ from requests.adapters import HTTPAdapter
 from requests.exceptions import *
 
 from enviPath_python.objects import *
-from enviPath_python.objects import SimpleRule, SequentialCompositeRule, ParallelCompositeRule, User, Package, Compound, \
-    Pathway, Reaction, Scenario, Setting, Rule
 
 
 class enviPath(object):
