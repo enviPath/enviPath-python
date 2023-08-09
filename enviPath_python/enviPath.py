@@ -17,6 +17,7 @@ import copy
 from collections.abc import Iterable
 from typing import Union, List
 
+import requests
 from requests import Session
 from requests.adapters import HTTPAdapter
 from requests.exceptions import *
@@ -321,13 +322,17 @@ class enviPathRequester(object):
         if proxies:
             self.session.proxies = proxies
 
-    def get_request(self, url, params=None, payload=None, **kwargs):
+    def get_request(self, url, params=None, payload=None, **kwargs) -> requests.Response:
         """
         Convenient method to perform GET request to given url with optional query parameters and data.
+
         :param url: The url to retrieve data from.
+        :type url: str
         :param params: Dictionary containing query parameters as key, value.
+        :type params: dict or None
         :param payload: Data send within the body.
         :return: response object.
+        :rtype: requests.Response
         """
         try:
             request = self._request('GET', url, params, payload, **kwargs)
@@ -337,34 +342,47 @@ class enviPathRequester(object):
 
         return request
 
-    def post_request(self, url, params=None, payload=None, **kwargs):
+    def post_request(self, url, params=None, payload=None, **kwargs) -> requests.Response:
         """
         Convenient method to perform POST request to given url with optional query parameters and data.
+
         :param url: The url for object creation, object manipulation.
+        :type url: str
         :param params: Dictionary containing query parameters as key, value.
+        :type params: dict
         :param payload: Data send within the body.
         :return: response object.
+        :rtype: requests.Response
         """
         return self._request('POST', url, params, payload, **kwargs)
 
-    def delete_request(self, url, params=None, payload=None, **kwargs):
+    def delete_request(self, url, params=None, payload=None, **kwargs) -> requests.Response:
         """
         Convenient method to perform DELETE request to given url with optional query parameters and data.
-        :param url: The url for object creation, object manipulation.
+
+        :param url: The url for object deletion.
+        :type url: str
         :param params: Dictionary containing query parameters as key, value.
+        :type params: dict
         :param payload: Data send within the body.
         :return: response object.
+        :rtype: requests.Response
         """
         return self._request('DELETE', url, params, payload, **kwargs)
 
-    def _request(self, method, url, params=None, payload=None, **kwargs):
+    def _request(self, method, url, params=None, payload=None, **kwargs) -> requests.Response:
         """
         Method performing the actual request.
+
         :param method: HTTP method.
+        :type method: str
         :param url: url for request.
-        :param params: parameters to send.
+        :type url: str
+        :param params: Dictionary containing query parameters as key, value.
+        :type params: dict
         :param payload: data to send.
         :return: response object.
+        :rtype: requests.Response
         """
         default_headers = self.header
         if 'headers' in kwargs:
@@ -380,20 +398,26 @@ class enviPathRequester(object):
 
         return response
 
-    def get_json(self, envipath_id: str):
+    def get_json(self, envipath_id: str) -> dict:
         """
-        TODO
-        :param envipath_id:
-        :return:
+        Returns the response of the request in a json format
+
+        :param envipath_id: The url where the get request wants to be performed
+        :return: The json version of the response
+        :rtype: json
         """
         return self.get_request(envipath_id).json()
 
-    def login(self, url, username, password):
+    def login(self, url, username, password) -> None:
         """
-        Performs login,
+        Performs login.
+
         :param url: Can be any valid enviPath url.
+        :type url: str
         :param username: The username.
+        :type username: str
         :param password: The corresponding password.
+        :type password: str
         :return: None
         """
         data = {
@@ -407,10 +431,12 @@ class enviPathRequester(object):
         except HTTPError:
             raise ValueError("Login Failed!")
 
-    def logout(self, url):
+    def logout(self, url) -> None:
         """
         Performs logout.
+
         :param url: Can be any valid enviPath url.
+        :type url: str
         :return: None
         """
         data = {
@@ -421,7 +447,9 @@ class enviPathRequester(object):
     def get_objects(self, base_url, endpoint):
         """
         Generic get method to retrieve objects.
+
         :param base_url: The base URL
+        :type base_url: str
         :param endpoint: Enum of Endpoint.
         :return: List of objects denoted by endpoint.
         """
@@ -447,6 +475,14 @@ class enviPathRequester(object):
             raise ValueError("Cant map ({}) to objects".format(objs.keys()))
 
     def get_object(self, obj_id, endpoint):
+        """
+        Generic get method to retrieve objects.
+
+        :param obj_id: The identifier for the object
+        :type obj_id: str
+        :param endpoint: The endpoint where to get the object
+        :return: Object stored on the endpoint with id `obj_id` (if matched)
+        """
         if endpoint == Endpoint.RULE:
             if Endpoint.SIMPLERULE.value in obj_id:
                 return SimpleRule(self, id=obj_id)
