@@ -74,7 +74,7 @@ class enviPath(object):
         Method to get the currently logged in user.
 
         :return: User object.
-        :rtype: class:`enviPath_python.objects.User`
+        :rtype: enviPath_python.objects.User
         """
         params = {
             'whoami': 'true',
@@ -119,7 +119,7 @@ class enviPath(object):
         :param package_id: The identifier of the package
         :type package_id: str
         :return: A package object
-        :rtype: class:`enviPath_python.objects.Package`
+        :rtype: enviPath_python.objects.Package
         """
         return Package(self.requester, **self.requester.get_json(package_id))
 
@@ -139,7 +139,7 @@ class enviPath(object):
         :param compound_id: The identifier of the compound
         :type compound_id: str
         :return: The retrieved compound with matching compound id
-        :rtype: class:`enviPath_python.objects.Compound`
+        :rtype: enviPath_python.objects.Compound
         """
         return Compound(self.requester, **self.requester.get_json(compound_id))
 
@@ -159,7 +159,7 @@ class enviPath(object):
         :param reaction_id: The identifier for the reaction
         :type reaction_id: str
         :return: The reaction with matching id
-        :rtype: class:`enviPath_python.objects.Reaction`
+        :rtype: enviPath_python.objects.Reaction
         """
         return Reaction(self.requester, **self.requester.get_json(reaction_id))
 
@@ -179,7 +179,7 @@ class enviPath(object):
         :param rule_id: The identifier of the rule
         :type rule_id: str
         :return: The rule with the corresponding id equivalent to `rule_id`
-        :rtype: class:`enviPath_python.objects.Rule`
+        :rtype: enviPath_python.objects.Rule
         """
         return Rule(self.requester, **self.requester.get_json(rule_id))
 
@@ -199,7 +199,7 @@ class enviPath(object):
         :param pathway_id: The identifier of the pathway
         :type pathway_id: str
         :return: The pathway with matching id
-        :rtype: class:`enviPath_python.objects.Pathway`
+        :rtype: enviPath_python.objects.Pathway
         """
         return Pathway(self.requester, **self.requester.get_json(pathway_id))
 
@@ -219,7 +219,7 @@ class enviPath(object):
         :param scenario_id: The identifier of the scenario
         :type scenario_id: str
         :return: The scenario with matching id
-        :rtype: class:`enviPath_python.objects.Scenario`
+        :rtype: enviPath_python.objects.Scenario
         """
         return Scenario(self.requester, **self.requester.get_json(scenario_id))
 
@@ -239,7 +239,7 @@ class enviPath(object):
         :param setting_id: The identifier of the setting
         :type setting_id: str
         :return: The setting with matching id
-        :rtype: class:`enviPath_python.objects.Setting`
+        :rtype: enviPath_python.objects.Setting
         """
         return Setting(self.requester, **self.requester.get_json(setting_id))
 
@@ -280,7 +280,7 @@ class enviPath(object):
         :param description: The description for the package
         :type description: str
         :return: The created package
-        :rtype: class:enviPath_python.objects.Package
+        :rtype: enviPath_python.objects.Package
         """
         return Package.create(self, group, name=name, description=description)
 
