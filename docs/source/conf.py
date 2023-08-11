@@ -11,7 +11,8 @@ import sys
 autodoc_default_options = {
     'exclude-members': 'ENDPOINT_OBJECT_MAPPING, CALCULATED, DATABASED, ECC, MLCBMAD, RULEBASED, COMPOUND, COMPOUNDSTRUCTURE,'
                        'EDGE, GROUP, NODE, PACKAGE, PARALLELCOMPOSITERULE, PATHWAY, REACTION, RELATIVEREASONING, RULE, header,'
-                       'SCENARIO, SEQUENTIALCOMPOSITERULE, SETTING, SIMPLERULE, USER, MULTI_GEN, SINGLE_GEN, NONE, READ, WRITE'
+                       'SCENARIO, SEQUENTIALCOMPOSITERULE, SETTING, SIMPLERULE, USER, MULTI_GEN, SINGLE_GEN, NONE, READ, WRITE,'
+                       'ENVIPATH_FINGERPRINTER'
 }
 
 # -- Project information -----------------------------------------------------
