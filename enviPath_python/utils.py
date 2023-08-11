@@ -23,7 +23,16 @@ class NonPersistent(object):
     def __init__(self, eP: enviPath):
         self.eP = eP
 
-    def predict(self, setting: Setting, smiles: str):
+    def predict(self, setting: Setting, smiles: str) -> dict:
+        """
+        Performs a pathway prediction for a given smiles and settings
+
+        :param setting: a Setting object to be used for the pathway prediction
+        :type setting: enviPath_python.objects.Setting
+        :param smiles: the string of the molecule whose pathway wants to be predicted
+        :type smiles: str
+        :return:
+        """
         params = {
             'hiddenMethod': 'predict',
             'smiles': smiles,
