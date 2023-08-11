@@ -32,6 +32,7 @@ class enviPathObject(ABC):
     def __init__(self, requester, *args, **kwargs):
         """
         Constructor for any instance derived from enviPathObject.
+
         :param requester: The enviPathRequester used for getting this object.
         :param args: additional positional arguments.
         :param kwargs: additional named arguments. 'name' and 'id' are mandatory.
@@ -46,6 +47,7 @@ class enviPathObject(ABC):
     def get_type(self):
         """
         Gets the class name as string.
+
         :return: The class name as string. E.g. 'Package'
         """
         return type(self).__name__
@@ -53,6 +55,7 @@ class enviPathObject(ABC):
     def __str__(self):
         """
         Simple string representation including type, name and id.
+
         :return: The object as string.
         """
         return '{}: {} ({})'.format(self.get_type(), self.get_name(), self.id)
@@ -60,6 +63,7 @@ class enviPathObject(ABC):
     def __repr__(self):
         """
         Same as __str__.
+
         :return: same as __str__.
         """
         return str(self)
@@ -71,6 +75,7 @@ class enviPathObject(ABC):
         If the field is missing after getting the data from the enviPath instance an exception is risen.
         Should only be called by 'public' functions as they should implement appropriate object creation if value
         of requested field is an enviPathObject instance again.
+
         :param field: The field of interest.
         :return: The value of the field.
         """
@@ -86,6 +91,11 @@ class enviPathObject(ABC):
         return getattr(self, field)
 
     def get_id(self):
+        """
+        Get the id of the envipath object
+
+        :return: The id of the object
+        """
         return self.id
 
     def __eq__(self, other):
@@ -97,14 +107,25 @@ class enviPathObject(ABC):
         return hash(self.id)
 
     def get_name(self):
+        """
+        Get the name of the envipath object
+
+        :return: The name of the object
+        """
         return self._get('name')
 
     def get_description(self):
+        """
+        Get the description of the envipath object
+
+        :return: The description of the object
+        """
         return self._get('description')
 
     def _load(self):
         """
         Fetches data from the enviPath instance via the enviPathRequester provided at objects creation.
+
         :return: json containing the server response.
         """
         res = self.requester.get_request(self.id).json()
@@ -113,11 +134,19 @@ class enviPathObject(ABC):
     def get_json(self):
         """
         Returns the objects plain JSON fetched from the instance.
+
         :return: A JSON object returned by the API.
         """
         return self.requester.get_json(self.id)
 
     def _create_from_nested_json(self, member: Union[str, list], nested_object_type):
+        """
+
+
+        :param member: The member or list of members that wants to accessed
+        :param nested_object_type: the envipath object that wants to be created from the requested json data
+        :return:
+        """
         res = []
 
         if isinstance(member, str):
@@ -132,7 +161,8 @@ class enviPathObject(ABC):
     def delete(self):
         """
         Deletes the object denoted by the internally maintained field `id`.
-        :return:
+
+        :return: None
         """
         if not hasattr(self, 'id') or self.id is None:
             raise ValueError("Unable to delete object due to missing id!")
