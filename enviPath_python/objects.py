@@ -139,13 +139,16 @@ class enviPathObject(ABC):
         """
         return self.requester.get_json(self.id)
 
-    def _create_from_nested_json(self, member: Union[str, list], nested_object_type):
+    def _create_from_nested_json(self, member: Union[str, list], nested_object_type) -> List:
         """
-
+        Get a list of `nested_object_type` enviPath objects. Whenever member is a string, a get request
+        takes place and retrieves the data available on `self.id` as a json, however `member` can also be a list of
+        json whose information encodes the necessary properties to define a `nested_object_type`. In both cases, this
+        function return a List of `nested_object_type` enviPath objects.
 
         :param member: The member or list of members that wants to accessed
         :param nested_object_type: the envipath object that wants to be created from the requested json data
-        :return:
+        :return: list
         """
         res = []
 
@@ -180,15 +183,39 @@ class enviPathObject(ABC):
 class ReviewableEnviPathObject(enviPathObject, ABC):
 
     def get_aliases(self) -> List[str]:
+        """
+        Get the aliases of this object
+
+        :return: A list of the aliases
+        :rtype: list
+        """
         return self._get('aliases')
 
     def get_review_status(self) -> str:
+        """
+        Gets if the current object has been reviewed.
+
+        :return: A string where if the object is reviewed has value `'reviewed'`
+        :rtype: str
+        """
         return self._get('reviewStatus')
 
     def is_reviewed(self) -> bool:
+        """
+        Checks if the object has been review or not
+
+        :return: `True` if the object is reviewed, else `False`
+        :rtype: bool
+        """
         return 'reviewed' == self.get_review_status()
 
     def get_scenarios(self) -> List['Scenario']:
+        """
+        Gets the scenarios of this object
+
+        :return: A list of scenarios
+        :rtype: list
+        """
         res = []
         plain_scenarios = self._get('scenarios')
         for plain_scenario in plain_scenarios:
@@ -196,7 +223,14 @@ class ReviewableEnviPathObject(enviPathObject, ABC):
         return res
 
     # Attaches an already created Scenario to the object
-    def add_scenario(self, scenario: 'Scenario'):
+    def add_scenario(self, scenario: 'Scenario') -> None:
+        """
+        Adds the given scenario to the current object
+
+        :param scenario: the Scenario object to be added
+        :type scenario: Scenario
+        :return: None
+        """
         headers = {'referer': self.id}
         payload = {'scenario': scenario.get_id()}
         res = self.requester.post_request(self.id, headers=headers, payload=payload, allow_redirects=True)
@@ -206,14 +240,29 @@ class ReviewableEnviPathObject(enviPathObject, ABC):
     def copy(self, package: 'Package', debug=False):
         """
         Copies the object into the given package
+
+        :param package: the package to be copied to
+        :type package: Package
+        :param debug: whether to add more verbosity or not to the method
+        :type debug: bool
+        :return: None
         """
         pass
 
 
 # TODO change to reviewable
 class Package(enviPathObject):
-
+    """
+    Class that implements a package envipath object
+    """
     def set_description(self, desc: str) -> None:
+        """
+        Sets the description of the package
+
+        :param desc: the description of the package
+        :type desc: str
+        :return:
+        """
         payload = {
             'packageDescription': (None, desc),
         }
@@ -221,11 +270,22 @@ class Package(enviPathObject):
         setattr(self, "description", desc)
 
     def add_compound(self, smiles: str, name: str = None, description: str = None, inchi: str = None) -> 'Compound':
+        """
+        Adds the compound to the package
+
+        :param smiles: the SMILES of the compound
+        :param name: the name of the compound
+        :param description: the description of the compound
+        :param inchi: the InChI of the compound
+        :return: The enviPath Compound
+        :rtype: Compound
+        """
         return Compound.create(self, smiles, name=name, description=description, inchi=inchi)
 
     def get_compounds(self) -> List['Compound']:
         """
         Gets all compounds of the package.
+
         :return: List of Compound objects.
         """
         res = self.requester.get_objects(self.id + '/', Endpoint.COMPOUND)
@@ -234,6 +294,17 @@ class Package(enviPathObject):
     def add_simple_rule(self, smirks: str, name: str = None, description: str = None,
                         reactant_filter_smarts: str = None, product_filter_smarts: str = None,
                         immediate: str = None) -> 'SimpleRule':
+        """
+        Adds a SimpleRule to the package
+
+        :param smirks: The SMIRKS of the simple rule
+        :param name: The name of the rule
+        :param description: The description of the rule
+        :param reactant_filter_smarts: a filter for the reactant
+        :param product_filter_smarts: a filter for the product
+        :param immediate: the immediate of the SimpleRule
+        :return: The SimpleRule that has been defined
+        """
         return SimpleRule.create(self, smirks, name=name, description=description,
                                  reactant_filter_smarts=reactant_filter_smarts,
                                  product_filter_smarts=product_filter_smarts, immediate=immediate)
@@ -241,6 +312,17 @@ class Package(enviPathObject):
     def add_sequential_composite_rule(self, simple_rules: List['SimpleRule'], name: str = None, description: str = None,
                                       reactant_filter_smarts: str = None, product_filter_smarts: str = None,
                                       immediate: str = None) -> 'SequentialCompositeRule':
+        """
+        Adds a SequentialCompositeRule to the package
+
+        :param simple_rules: A list of SimpleRule that compose the SequentialCompositeRule
+        :param name: The name of the rule
+        :param description: The description of the rule
+        :param reactant_filter_smarts: a filter for the reactant
+        :param product_filter_smarts: a filter for the product
+        :param immediate: the immediate of the SequentialCompositeRule
+        :return: The SequentialCompositeRule that has been defined
+        """
         return SequentialCompositeRule.create(self, simple_rules, name=name, description=description,
                                               reactant_filter_smarts=reactant_filter_smarts,
                                               product_filter_smarts=product_filter_smarts, immediate=immediate)
@@ -248,6 +330,17 @@ class Package(enviPathObject):
     def add_parallel_composite_rule(self, simple_rules: List['SimpleRule'], name: str = None, description: str = None,
                                     reactant_filter_smarts: str = None, product_filter_smarts: str = None,
                                     immediate: str = None) -> 'ParallelCompositeRule':
+        """
+        Adds a ParallelCompositeRule to the package
+
+        :param simple_rules: A list of SimpleRule that compose the ParallelCompositeRule
+        :param name: The name of the rule
+        :param description: The description of the rule
+        :param reactant_filter_smarts: a filter for the reactant
+        :param product_filter_smarts: a filter for the product
+        :param immediate: the immediate of the ParallelCompositeRule
+        :return: The ParallelCompositeRule that has been defined
+        """
         return ParallelCompositeRule.create(self, simple_rules, name=name, description=description,
                                             reactant_filter_smarts=reactant_filter_smarts,
                                             product_filter_smarts=product_filter_smarts, immediate=immediate)
@@ -255,6 +348,7 @@ class Package(enviPathObject):
     def get_rules(self) -> List['Rule']:
         """
         Gets all rules of the package.
+
         :return: List of Rule objects.
         """
         res = self.requester.get_objects(self.id + '/', Endpoint.RULE)
@@ -262,11 +356,23 @@ class Package(enviPathObject):
 
     def add_reaction(self, smirks: str = None, educt: 'CompoundStructure' = None, product: 'CompoundStructure' = None,
                      name: str = None, description: str = None, rule: 'Rule' = None):
+        """
+        Adds a Reaction to the package
+
+        :param smirks: The SMIRKS of the simple rule
+        :param educt: The CompoundStructure of the reactants
+        :param product: The CompoundStructure of the products
+        :param name: The name of the rule
+        :param description: The description of the Reaction
+        :param rule: The rule with which the reaction is associated with
+        :return: The Reaction that has been defined
+        """
         return Reaction.create(self, smirks, educt, product, name, description, rule)
 
     def get_reactions(self) -> List['Reaction']:
         """
         Gets all reactions of the package.
+
         :return: List of Reaction objects.
         """
         res = self.requester.get_objects(self.id + '/', Endpoint.REACTION)
@@ -275,13 +381,14 @@ class Package(enviPathObject):
     def add_pathway(self, smiles: str, name: str = None, description: str = None,
                     root_node_only: bool = False, setting: 'Setting' = None) -> 'Pathway':
         """
+        Adds a Pathway to the package
 
-        :param smiles:
-        :param name:
-        :param description:
-        :param root_node_only:
-        :param setting:
-        :return:
+        :param smiles: Smiles of root node compound
+        :param name: the name for the pathway
+        :param description: the description of the pathway
+        :param root_node_only: If False, goes to pathway prediction mode
+        :param setting: Setting for pathway prediction
+        :return: The Pathway that has been defined
         """
         return Pathway.create(self, smiles, name, description, root_node_only, setting)
 
@@ -289,18 +396,20 @@ class Package(enviPathObject):
                 root_node_only: bool = False, setting: 'Setting' = None) -> 'Pathway':
         """
         Alias for add_pathway()
-        :param smiles:
-        :param name:
-        :param description:
-        :param root_node_only:
-        :param setting:
-        :return:
+
+        :param smiles: Smiles of root node compound
+        :param name: the name for the pathway
+        :param description: the description of the pathway
+        :param root_node_only: If False, goes to pathway prediction mode
+        :param setting: Setting for pathway prediction
+        :return: The Pathway that has been defined
         """
         return self.add_pathway(smiles, name, description, root_node_only, setting)
 
     def get_pathways(self) -> List['Pathway']:
         """
         Gets all pathways of the package.
+
         :return: List of Pathway objects.
         """
         res = self.requester.get_objects(self.id + '/', Endpoint.PATHWAY)
@@ -312,6 +421,31 @@ class Package(enviPathObject):
                                fingerprinter_type: FingerprinterType = FingerprinterType.ENVIPATH_FINGERPRINTER,
                                quickbuild: bool = True, use_p_cut: bool = False, cut_off: float = 0.5,
                                evaluate_later: bool = True, name: str = None) -> 'RelativeReasoning':
+        """
+        Create a relative reasoning object
+
+        :param package: The package object in which the model is created
+        :param packages: List of package objects on which the model is trained
+        :param classifier_type: Classifier options:
+                                Rule-Based : ClassifierType("RULEBASED")
+                                Machine Learning-Based (MLC-BMaD) :  ClassifierType("MLCBMAD")
+                                Machine Learning-Based (ECC) : ClassifierType("ECC")
+        :param eval_type: Evaluation type:
+            Single Generation : EvaluationType("single")
+            Single + Multiple Generation : EvaluationType("multigen")
+        :param association_type: Association type:
+            AssociationType("DATABASED")
+            AssociationType("CALCULATED"), default
+        :param evaluation_packages: List of package objects on which the model is evaluated. If none, the classifier
+            is evaluated in a 100-fold holdout model using a 90/10 split ratio.
+        :param fingerprinter_type: Default: MACS Fingerprinter ("ENVIPATH_FINGERPRINTER")
+        :param quickbuild: Faster evaluation, default: False
+        :param use_p_cut:  Default: False
+        :param cut_off: The cutoff threshold used in the evaluation. Default: 0.5
+        :param evaluate_later: Only build the model, and not proceed to evaluation. Default: False
+        :param name:  Name of the model
+        :return: RelativeReasoning object
+        """
         return RelativeReasoning.create(self, packages, classifier_type, eval_type, association_type,
                                         evaluation_packages=evaluation_packages, fingerprinter_type=fingerprinter_type,
                                         quickbuild=quickbuild, use_p_cut=use_p_cut, cut_off=cut_off,
@@ -320,6 +454,7 @@ class Package(enviPathObject):
     def get_relative_reasonings(self) -> List['RelativeReasoning']:
         """
         Gets all relative reasonings of the packages.
+
         :return: List of RelativeReasoning objects.
         """
         res = self.requester.get_objects(self.id + '/', Endpoint.RELATIVEREASONING)
@@ -328,6 +463,7 @@ class Package(enviPathObject):
     def get_scenarios(self) -> List['Scenario']:
         """
         Gets all scenarios of the package.
+
         :return: List of Scenario objects.
         """
         res = self.requester.get_objects(self.id + '/', Endpoint.SCENARIO)
@@ -336,6 +472,7 @@ class Package(enviPathObject):
     def export_as_json(self) -> dict:
         """
         Exports the entire package as json.
+
         :return: A dictionary containing all data stored in this package.
         """
         params = {
@@ -347,6 +484,13 @@ class Package(enviPathObject):
         return json.loads(buffer.read().decode())
 
     def set_access_for_user(self, obj: Union['Group', 'User'], perm: Permission) -> None:
+        """
+        Gives `perm` permission to the list of user or groups `obj`
+
+        :param obj: a list of user or groups to give access to
+        :param perm: the permission to be given
+        :return:
+        """
         # Due to multipart/form-data add tuples as payload
         payload = {
             'permissions': (None, 'change'),
@@ -364,6 +508,15 @@ class Package(enviPathObject):
     # TODO typing for ep or being consistent with eP.requester...
     @staticmethod
     def create(ep, group: 'Group', name: str = None, description: str = None) -> 'Package':
+        """
+        Creates the package
+
+        :param ep: an enviPath object
+        :param group: the group to which assign the package
+        :param name: the name of the package
+        :param description: the description of the package
+        :return: An enviPath_python Package with an allocated identifier on the enviPath server
+        """
         # TODO add type hint for ep and get rid of cyclic import
         package_payload = dict()
         package_payload['groupURI'] = group.get_id()
@@ -379,7 +532,13 @@ class Package(enviPathObject):
 
     def copy(self, target_package: 'Package', debug=False):
         """
-        Copies all contents of this package into "target_package".
+        Copies the object into the given package
+
+        :param package: the package to be copied to
+        :type package: Package
+        :param debug: whether to add more verbosity or not to the method
+        :type debug: bool
+        :return:
         """
         # source_id -> copy_id
         id_mapping = dict()
@@ -503,11 +662,25 @@ class Package(enviPathObject):
                         print(' done')
 
     @staticmethod
-    def merge_packages(target: 'Package', sources: List['Package'], debug=False):
+    def merge_packages(target: 'Package', sources: List['Package'], debug=False) -> None:
+        """
+        Merges a list of packages to the `target` Package
+
+        :param target: the Package where the merge wants to be performed
+        :param sources: a list of Package
+        :param debug: whether to add more verbosity or not to the method
+        :return:
+        """
         for source in sources:
             source.copy(target, debug=debug)
 
     def search(self, term: str):
+        """
+        Function designed to perform a search on an enviPath session on the given Package.
+
+        :param term: the term with which the search wants to be performed
+        :return: a dictionary of object identifiers
+        """
         return self.requester.eP.search(term, self)
 
 
