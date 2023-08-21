@@ -685,7 +685,9 @@ class Package(enviPathObject):
 
 
 class Scenario(enviPathObject):
-
+    """
+    Class for the Scenario enviPath object
+    """
     def get_type(self):
         pass
 
@@ -699,14 +701,15 @@ class Scenario(enviPathObject):
         """
         Creates a Scenario within the specified package. Scenario data can be added with class AdditionalInformation.
 
-        @param package: Package object in which the Scenario will be created
-        @param name: Name of Scenario
-        @param description: Description of Scenario
-        @param scenariotype: Use predefined scenario type (possible: Soil, Sludge, Sediment, ..)
-        @param additional_info: Scenario data content provided as a AdditionalInformation object
-        @param referring_scenario_id: Provide referring scenario ID, a related scenario will be created
-        @param collection_URI: attach an existing AdditionalInformation object to the scenario (by ID) - not working
-        @return: Scenario object
+        :param package: Package object in which the Scenario will be created
+        :param name: Name of Scenario
+        :param description: Description of Scenario
+        :param date: The date at which the scenario was created
+        :param scenariotype: Use predefined scenario type (possible: Soil, Sludge, Sediment, ..)
+        :param additional_information: Scenario data content provided as a AdditionalInformation object
+        :param referring_scenario_id: Provide referring scenario ID, a related scenario will be created
+        :param collection_URI: attach an existing AdditionalInformation object to the scenario (by ID) - not working
+        :return: Scenario object
         """
         scenario_payload = {}
         # Create payload container
@@ -765,6 +768,12 @@ class Scenario(enviPathObject):
             return Scenario(package.requester, id=res.json()['scenarioLocation'])
 
     def update_scenario(self, additional_information: List['AdditionalInformation']):
+        """
+        Updates an existing scenario
+
+        :param additional_information: Scenario data content provided as a AdditionalInformation object
+        :return:
+        """
         scenario_payload = {}
 
         if len(additional_information):
@@ -781,16 +790,31 @@ class Scenario(enviPathObject):
         res = self.requester.post_request(self.get_id(), payload=scenario_payload, allow_redirects=False)
         res.raise_for_status()
 
-    def has_referring_scenario(self):
+    def has_referring_scenario(self) -> bool:
+        """
+        Function to check whether referringScenario exists or not
+
+        :return: True if it exists else False
+        """
         try:
             return self._get('referringScenario') is not None
         except ValueError:
             return False
 
-    def get_referring_scenario(self):
+    def get_referring_scenario(self) -> 'Scenario':
+        """
+        Gets the referring scenario
+
+        :return: A Scenario object
+        """
         return Scenario(self.requester, id=self._get('referringScenario')['scenarioId'])
 
     def get_additional_information(self) -> List['AdditionalInformation']:
+        """
+        Gets the additional information from the existing Scenario
+
+        :return: A list containing the AdditionalInformation
+        """
         res = []
         if self._get('collection'):
             coll = self._get('collection')
@@ -812,7 +836,16 @@ class Scenario(enviPathObject):
 
         return res
 
-    def copy(self, package: 'Package', debug=False, id_lookup={}):
+    def copy(self, package: 'Package', debug=False, id_lookup={}) -> (dict, 'Scenario'):
+        """
+        Copy the Scenario object
+
+        :param package: the package where the Scenario wants to be added to
+        :param debug: whether to have more verbosity (True) or not (False)
+        :param id_lookup: in case the parent Scenario has a referring scenario, a dictionary that maps the id of the
+            parent scenario to the referred one
+        :return: a dictionary similar to `id_lookup` and the copied Scenario
+        """
         mapping = dict()
 
         ais = self.get_additional_information()
@@ -886,7 +919,9 @@ class Scenario(enviPathObject):
 
 
 class Compound(ReviewableEnviPathObject):
-
+    """
+    Class that implements the Compound enviPath object
+    """
     def add_structure(self, smiles, name=None, description=None, inchi=None, mol_file=None) -> 'CompoundStructure':
         return CompoundStructure.create(self, smiles, name=name, description=description, inchi=inchi,
                                         mol_file=mol_file)
@@ -894,6 +929,7 @@ class Compound(ReviewableEnviPathObject):
     def get_structures(self) -> List['CompoundStructure']:
         """
         Gets all structures of this compound.
+
         :return: List of Structure objects.
         """
         res = []
@@ -904,6 +940,16 @@ class Compound(ReviewableEnviPathObject):
 
     @staticmethod
     def create(parent: Package, smiles: str, name=None, description=None, inchi=None) -> 'Compound':
+        """
+        Creates a Compound enviPath object
+
+        :param parent: the Package to which the Compound will belong to
+        :param smiles: the SMILES of the Compound
+        :param name: the name of the Compound
+        :param description: the description of the Compound
+        :param inchi: the InChI of the Compound
+        :return: An enviPath Compound object
+        """
         if not isinstance(parent, Package):
             raise ValueError("The parent of a compound has to be a package!")
 
@@ -925,18 +971,41 @@ class Compound(ReviewableEnviPathObject):
         return Compound(parent.requester, id=res.headers['Location'])
 
     def get_default_structure(self) -> 'CompoundStructure':
+        """
+        Return its CompoundStructure if available
+
+        :return: A CompoundStructure enviPath object
+        """
         for structure in self.get_structures():
             if structure.is_default_structure():
                 return structure
         raise ValueError("The compound does not have a default structure!")
 
     def get_smiles(self) -> str:
+        """
+        Returns the SMILES of the Compound
+
+        :return: SMILES of the Compound
+        """
         return self.get_default_structure().get_smiles()
 
     def get_inchi(self) -> str:
+        """
+        Return the InChI of the Compound
+
+        :return: InChI of the Compound
+        """
         return self.get_default_structure().get_inchi()
 
-    def copy(self, package: 'Package', debug=False):
+    def copy(self, package: 'Package', debug=False) -> (dict, 'Compound', List['CompoundStructure']):
+        """
+        Copies the Compound object
+
+        :param package: package to which the new object will belong to
+        :param debug: whether to have more verbosity (True) or not (False)
+        :return: a dictionary mapping the ids of the parent and copied object, a Compound object that is a copy
+            of the parent one, and a List of all the CompoundStructure objects associated with the original Compound
+        """
         mapping = dict()
         copied_compound = Compound.create(package, self.get_smiles(), self.get_name(), self.get_description(),
                                           self.get_inchi())
@@ -954,8 +1023,16 @@ class Compound(ReviewableEnviPathObject):
 
 
 class CompoundStructure(ReviewableEnviPathObject):
-
+    """
+    Class that implements the CompoundStructure enviPath object
+    """
     def add_alias(self, alias):
+        """
+        Adds an alias to the CompoundStructure
+
+        :param alias: the alias to be added
+        :return:
+        """
         payload = {
             'name': alias,
         }
@@ -965,36 +1042,92 @@ class CompoundStructure(ReviewableEnviPathObject):
             delattr(self, 'alias')
 
     def get_charge(self) -> float:
+        """
+        Retrieves the charge of the CompoundStructure
+
+        :return: Charge of CompoundStructure
+        """
         return float(self._get('charge'))
 
     def get_formula(self) -> str:
+        """
+        Retrieves the formula of the CompoundStructure
+
+        :return: Formula of CompoundStructure
+        """
         return self._get('formula')
 
-    def get_mass(self):
+    def get_mass(self) -> float:
+        """
+        Retrieves the mass of the CompoundStructure
+
+        :return: Mass of CompoundStructure
+        """
         return self._get('mass')
 
     def get_svg(self) -> str:
+        """
+        Retrieves the image of the CompoundStructure
+
+        :return: Image of CompoundStructure as text
+        """
         return self.requester.get_request(self._get('image')).text
 
-    def is_default_structure(self):
+    def is_default_structure(self) -> bool:
+        """
+        Checks this structure is a default structure or not
+
+        :return: boolean to whether CompoundStructure is a default one or not
+        """
         return self._get('isDefaultStructure')
 
     def get_smiles(self) -> str:
+        """
+        Retrieves the SMILES of the CompoundStructure
+
+        :return: SMILES of CompoundStructure
+        """
         return self._get('smiles')
 
     def get_inchi(self) -> str:
+        """
+        Retrieves the InChI of the CompoundStructure
+
+        :return: InChI of CompoundStructure
+        """
         return self._get('InChI')
 
     def get_pathways(self) -> List['Pathway']:
+        """
+        Retrieves the pathways on which the CompoundStructure is involved
+
+        :return: List of Pathway objects
+        """
         return self._create_from_nested_json('pathways', Pathway)
 
     def get_scenarios(self) -> List['Scenario']:
+        """
+        Retrieves the scenarios on which the CompoundStructure is involved
+
+        :return: List of Scenario objects
+        """
         return self._create_from_nested_json('scenarios', Scenario)
 
     def get_reactions(self) -> List['Reaction']:
+        """
+        Retrieves the reactions on which the CompoundStructure is involved
+
+        :return: List of Reaction objects
+        """
         return self._create_from_nested_json('reactions', Reaction)
 
-    def get_halflifes(self, scenario_type=None) -> List['HalfLife']:
+    def get_halflifes(self, scenario_type: str = None) -> List['HalfLife']:
+        """
+        Retrieves the halflifes of the CompoundStructure
+
+        :param scenario_type: a strng indicating the type of scenario
+        :return: A list of HalfLife objects
+        """
         res = []
         for hl in self._get('halflifes'):
             if scenario_type.lower() == 'soil':
@@ -1013,6 +1146,17 @@ class CompoundStructure(ReviewableEnviPathObject):
 
     @staticmethod
     def create(parent: Compound, smiles, name=None, description=None, inchi=None, mol_file=None) -> 'CompoundStructure':
+        """
+        Creates a CompoundStructure enviPath object
+
+        :param parent: the Package to which the CompoundStructure will belong to
+        :param smiles: the SMILES of the CompoundStructure
+        :param name: the name of the CompoundStructure
+        :param description: the description of the CompoundStructure
+        :param inchi: the InChI of the CompoundStructure
+        :param mol_file: the molecule file of the CompoundStructure
+        :return: An enviPath CompoundStructure object
+        """
         if not isinstance(parent, Compound):
             raise ValueError("The parent of a structure has to be a compound!")
 
@@ -1041,11 +1185,23 @@ class CompoundStructure(ReviewableEnviPathObject):
 
 
 class Reaction(ReviewableEnviPathObject):
-
+    """
+    Class that implements an enviPath Reaction object
+    """
     def is_multistep(self) -> bool:
+        """
+        Check for multistep reaction
+
+        :return: True if multistep else False
+        """
         return "true" == self._get('multistep')
 
     def get_ec_numbers(self) -> List['ECNumber']:
+        """
+        Gets the EC numbers of the reaction
+
+        :return: List of ECNumber objects
+        """
         ec_numbers = self._get('ecNumbers')
         res = []
         for ec_number in ec_numbers:
@@ -1054,21 +1210,51 @@ class Reaction(ReviewableEnviPathObject):
         return res
 
     def get_smirks(self) -> str:
+        """
+        Gets the SMIRKS of the Reaction
+
+        :return: SMIRKS of the Reaction
+        """
         return self._get('smirks')
 
     def get_pathways(self) -> List['Pathway']:
+        """
+        Gets the pathways where this reaction is involved
+
+        :return: A List of Pathway enviPath objects
+        """
         return self._get('pathways')
 
     def get_medline_references(self) -> List[object]:
+        """
+        Gets medline references
+
+        :return: A list of objects
+        """
         return self._get('medlineRefs')
 
     def get_educts(self) -> List['CompoundStructure']:
+        """
+        Retrieves the educts of the reaction
+
+        :return: A List of CompoundStructure
+        """
         return self._create_from_nested_json('educts', CompoundStructure)
 
     def get_products(self):
+        """
+        Retrieves the products of the reaction
+
+        :return: A List of CompoundStructure
+        """
         return self._create_from_nested_json('products', CompoundStructure)
 
     def get_rule(self) -> Optional['Rule']:
+        """
+        Retrieves the rule of the reaction
+
+        :return: The Rule that describes the Reaction
+        """
         try:
             rules = self._get('rules')
             if len(rules) == 0:
@@ -1082,7 +1268,19 @@ class Reaction(ReviewableEnviPathObject):
 
     @staticmethod
     def create(package: Package, smirks: str = None, educt: CompoundStructure = None, product: CompoundStructure = None,
-               name: str = None, description: str = None, rule: 'Rule' = None):
+               name: str = None, description: str = None, rule: 'Rule' = None) -> 'Reaction':
+        """
+        Create a Reaction enviPath object
+
+        :param package: the Package to which the Reaction will belong to
+        :param smirks: the SMIRKS of the Reaction
+        :param educt: the educt of the Reaction
+        :param product: the product of the Reaction
+        :param name: the name of the Reaction
+        :param description: the description of the Reaction
+        :param rule: the rule that describes the Reaction (if any)
+        :return: A Reaction enviPath object
+        """
 
         if smirks is None and (educt is None or product is None):
             raise ValueError("Neither SMIRKS or educt/product must be provided")
@@ -1113,7 +1311,15 @@ class Reaction(ReviewableEnviPathObject):
         res.raise_for_status()
         return Reaction(package.requester, id=res.headers['Location'])
 
-    def copy(self, package: 'Package', debug=False):
+    def copy(self, package: 'Package', debug=False) -> (dict, 'Reaction'):
+        """
+        Copies the Reaction
+
+        :param package: the Package to which the copied Reaction will belong to
+        :param debug: whether to have more verbosity or not
+        :return: a dictionary mapping the ids of the parent and copied object, a Reaction object that is a copy
+            of the parent one
+        """
         mapping = dict()
 
         params = {
@@ -1341,29 +1547,28 @@ class RelativeReasoning(ReviewableEnviPathObject):
         """
         Create a relative reasoning object
 
-        Keyword arguments:
-            @param package: The package object in which the model is created
-            @param packages: List of package objects on which the model is trained
-            @param classifier_type: Classifier options:
-                                    Rule-Based : ClassifierType("RULEBASED")
-                                    Machine Learning-Based (MLC-BMaD) :  ClassifierType("MLCBMAD")
-                                    Machine Learning-Based (ECC) : ClassifierType("ECC")
-            @param eval_type: Evaluation type:
-                                Single Generation : EvaluationType("single")
-                                Single + Multiple Generation : EvaluationType("multigen")
-            @param association_type: Association type:
-                                        AssociationType("DATABASED")
-                                        AssociationType("CALCULATED"), default
-            @param evaluation_packages: List of package objects on which the model is evaluated. If none, the classifier
-                                        is evaluated in a 100-fold holdout model using a 90/10 split ratio.
-            @param fingerprinter_type: Default: MACS Fingerprinter ("ENVIPATH_FINGERPRINTER")
-            @param quickbuild: Faster evaluation, default: False
-            @param use_p_cut:  Default: False
-            @param cut_off: The cutoff threshold used in the evaluation. Default: 0.5
-            @param evaluate_later: Only build the model, and not proceed to evaluation. Default: False
-            @param name:  Name of the model
-            @return: RelativeReasoning object
-            """
+        :param package: The package object in which the model is created
+        :param packages: List of package objects on which the model is trained
+        :param classifier_type: Classifier options:
+                                Rule-Based : ClassifierType("RULEBASED")
+                                Machine Learning-Based (MLC-BMaD) :  ClassifierType("MLCBMAD")
+                                Machine Learning-Based (ECC) : ClassifierType("ECC")
+        :param eval_type: Evaluation type:
+                            Single Generation : EvaluationType("single")
+                            Single + Multiple Generation : EvaluationType("multigen")
+        :param association_type: Association type:
+                                    AssociationType("DATABASED")
+                                    AssociationType("CALCULATED"), default
+        :param evaluation_packages: List of package objects on which the model is evaluated. If none, the classifier
+                                    is evaluated in a 100-fold holdout model using a 90/10 split ratio.
+        :param fingerprinter_type: Default: MACS Fingerprinter ("ENVIPATH_FINGERPRINTER")
+        :param quickbuild: Faster evaluation, default: False
+        :param use_p_cut:  Default: False
+        :param cut_off: The cutoff threshold used in the evaluation. Default: 0.5
+        :param evaluate_later: Only build the model, and not proceed to evaluation. Default: False
+        :param name:  Name of the model
+        :return: RelativeReasoning object
+        """
 
         payload = {
             'fpType': fingerprinter_type.value,
@@ -1463,8 +1668,8 @@ class Node(ReviewableEnviPathObject):
         """
         Creates a Node object within a pathway, returns the Node object.
         Similar to the Pathway.add_node() function, which does not return a Node object.
-        @param pathway: parent pathway
-        @return: Node object
+        :param pathway: parent pathway
+        :return: Node object
         """
         headers = {
             'referer': ""
@@ -1766,11 +1971,11 @@ class Pathway(ReviewableEnviPathObject):
                  description: str = None):
         """
         Adding an edge to an existing pathway. Either provide smirks, or educts AND products.
-        @param smirks: SMIRKS format of the reaction
-        @param educts: compound URIs of educts, comma separated
-        @param products: compound URIs of products, comma separated
-        @param multistep: If needed, can be set to 'true'
-        @param reason:
+        :param smirks: SMIRKS format of the reaction
+        :param educts: compound URIs of educts, comma separated
+        :param products: compound URIs of products, comma separated
+        :param multistep: If needed, can be set to 'true'
+        :param reason:
         """
         headers = {'referer': self.id}
         assert smirks or (products and educts), 'ERROR: To add an edge to the pathway, provide either a smirks ' \
@@ -1794,13 +1999,13 @@ class Pathway(ReviewableEnviPathObject):
                root_node_only: bool = False, setting: Setting = None):
         """
 
-        @param package:
-        @param smiles: Smiles of root node compound
-        @param name:
-        @param description:
-        @param root_node_only: If False, goes to pathway prediction mode
-        @param setting: Setting for pathway prediction
-        @return: Pathway object
+        :param package:
+        :param smiles: Smiles of root node compound
+        :param name:
+        :param description:
+        :param root_node_only: If False, goes to pathway prediction mode
+        :param setting: Setting for pathway prediction
+        :return: Pathway object
         """
         payload = {'smilesinput': smiles}
 
