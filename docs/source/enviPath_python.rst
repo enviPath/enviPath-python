@@ -1,9 +1,6 @@
 enviPath\_python package
 ========================
 
-Submodules
-----------
-
 enviPath\_python.enums module
 -----------------------------
 
@@ -32,14 +29,6 @@ enviPath\_python.utils module
 -----------------------------
 
 .. automodule:: enviPath_python.utils
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: enviPath_python
    :members:
    :undoc-members:
    :show-inheritance:
