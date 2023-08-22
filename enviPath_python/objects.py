@@ -2541,8 +2541,6 @@ class ECNumber(object):
 ####################################
 # Generated Additional Information #
 ####################################
-from abc import ABC
-
 
 class AdditionalInformation(ABC):
     name = None
