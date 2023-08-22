@@ -1340,44 +1340,109 @@ class Reaction(ReviewableEnviPathObject):
 
 
 class Rule(ReviewableEnviPathObject, ABC):
-
+    """
+    Class that implements an enviPath Rule
+    """
     def get_ec_numbers(self) -> List[object]:
+        """
+        Gets the EC Numbers associated with the given rule
+
+        :return: A list of objects representing EC Numbers
+        """
+
         return self._get('ecNumbers')
 
     def included_in_composite_rule(self) -> List['Rule']:
+        """
+        Returns all the rules that are included on the current composite rule
+
+        :return: A List of Rules in the current composite rule
+        """
         res = []
         for rule in self._get('includedInCompositeRule'):
             res.append(Rule(self, requester=self.requester, id=rule['id']))
         return res
 
     def is_composite_rule(self) -> bool:
+        """
+        Check whether the rule is composite or not
+
+        :return: True if it is, else False
+        """
         return self._get('isCompositeRule')
 
     def get_transformations(self) -> str:
+        """
+        Retrieve a string defining the transformations where this rule is involved.
+
+        :return: The transformations involved in the rule
+        """
         return self._get('transformations')
 
     def get_reactions(self) -> List['Reaction']:
+        """
+        Retrieves the reactions associated with the given rule
+
+        :return: A List of Reaction objects associated with the given rule
+        """
         return self._create_from_nested_json('reactions', Reaction)
 
     def get_pathways(self) -> List['Pathway']:
+        """
+        Retrieves the pathways where this rule is used
+
+        :return: The List of Pathway objects that include that rule
+        """
         return self._create_from_nested_json('pathways', Pathway)
 
     def get_reactant_filter_smarts(self) -> str:
+        """
+        Retrieve the SMARTS filter used in reactants
+
+        :return: A string defining that filter
+        """
         return self._get('reactantFilterSmarts')
 
     def get_reactant_smarts(self) -> str:
+        """
+        Retrieves the SMARTS of the reactants
+
+        :return: A string describing the reactant's SMARTS
+        """
         return self._get('reactantsSmarts')
 
     def get_product_filter_smarts(self) -> str:
+        """
+        Retrieve the SMARTS filter used in products
+
+        :return: A string defining that filter
+        """
         return self._get('productFilterSmarts')
 
     def get_product_smarts(self) -> str:
+        """
+        Retrieves the SMARTS of the products
+
+        :return: A string describing the product's SMARTS
+        """
         return self._get('productsSmarts')
 
     def apply_to_compound(self, compound: Compound) -> List[str]:
+        """
+        Applies the given Rule to the specified Compound
+
+        :param compound: The Compound to which the Rule wants to be applied
+        :return: A List of strings defining all the possible transformations
+        """
         return self.apply_to_smiles(compound.get_default_structure().get_smiles())
 
     def apply_to_smiles(self, smiles) -> List[str]:
+        """
+        Applies the given Rule to the specified SMILES
+
+        :param smiles: The smiles to which the Rule wants to be applied
+        :return: A List of strings defining all the possible transformations
+        """
         payload = {
             'hiddenMethod': 'APPLYRULES',
             'compound': smiles
@@ -1393,6 +1458,12 @@ class Rule(ReviewableEnviPathObject, ABC):
 
     @staticmethod
     def get_rule_type(obj: dict):
+        """
+        Returns the type of rule
+
+        :param obj: a dictionary that contains the information of the type of rule
+        :return: The type of the Rule
+        """
         if obj['identifier'] == Endpoint.SIMPLERULE.value:
             return SimpleRule
         elif obj['identifier'] == Endpoint.SEQUENTIALCOMPOSITERULE.value:
@@ -1410,11 +1481,26 @@ class Rule(ReviewableEnviPathObject, ABC):
 
 
 class SimpleRule(Rule):
-
+    """
+    Class that implements an enviPath SimpleRule object
+    """
     @staticmethod
     def create(package: Package, smirks: str, name: str = None, description: str = None,
                reactant_filter_smarts: str = None, product_filter_smarts: str = None,
                immediate: str = None, rdkitrule: bool = None) -> 'SimpleRule':
+        """
+        Creates a SimpleRule object
+
+        :param package: the Package to which the SimpleRule will belong to
+        :param smirks: the SMIRKS of the SimpleRule
+        :param name: the name of the SimpleRule
+        :param description: the description of the SimpleRule
+        :param reactant_filter_smarts: the string that describes the SMARTS filter used for the reactants
+        :param product_filter_smarts: the string that describes the SMARTS filter used for the products
+        :param immediate: the string describing the immediate
+        :param rdkitrule: a boolean stating whether the rule is a rdkit rule or not
+        :return: A SimpleRule enviPath object
+        """
         rule_payload = {
             'smirks': smirks,
         }
@@ -1443,9 +1529,22 @@ class SimpleRule(Rule):
         return SimpleRule(package.requester, id=res.headers['Location'])
 
     def get_smirks(self) -> str:
+        """
+        Retrieves the SMIRKS of the SimpleRule
+
+        :return: The SMIRKS of the SimpleRule in string format
+        """
         return self._get('smirks')
 
     def copy(self, package: 'Package', debug=False):
+        """
+        Copies the SimpleRule
+
+        :param package: the Package to which the SimpleRule will belong to
+        :param debug: whether to have more verbosity or not
+        :return: a dictionary mapping the ids of the parent and copied object, a SimpleRule object that is a copy
+            of the parent one
+        """
         # TODO immediate missing
         mapping = dict()
 
@@ -1459,11 +1558,25 @@ class SimpleRule(Rule):
 
 
 class SequentialCompositeRule(Rule):
+    """
+    Class that implements a SequentialCompositeRule enviPath object
+    """
     @staticmethod
     def create(package: Package, simple_rules: List[SimpleRule], name: str = None, description: str = None,
                reactant_filter_smarts: str = None, product_filter_smarts: str = None,
                immediate: str = None) -> 'SequentialCompositeRule':
+        """
+        Creates a SequentialCompositeRule enviPath object
 
+        :param package: the Package to which the SequentialCompositeRule will belong to
+        :param simple_rules: a List of SimpleRule objects that are contained within the SequentialCompositeRule
+        :param name: the name of the SequentialCompositeRule
+        :param description: the description of the SequentialCompositeRule
+        :param reactant_filter_smarts: the string that describes the SMARTS filter used for the reactants
+        :param product_filter_smarts: the string that describes the SMARTS filter used for the products
+        :param immediate: the string describing the immediate
+        :return: A SequentialCompositeRule enviPath object
+        """
         rule_payload = {
             'simpleRules[]': [r.get_id() for r in simple_rules],
         }
@@ -1488,7 +1601,12 @@ class SequentialCompositeRule(Rule):
         res.raise_for_status()
         return SequentialCompositeRule(package.requester, id=res.headers['Location'])
 
-    def get_simple_rules(self):
+    def get_simple_rules(self) -> List['SimpleRule']:
+        """
+        Retrieves the SimpleRule objects contained within the SequentialCompositeRule
+
+        :return: A List of all the SimpleRule objects contained within the SequentialCompositeRule
+        """
         return self._create_from_nested_json('simpleRules', SimpleRule)
 
     def copy(self, package: 'Package', debug=False, id_lookup={}):
@@ -1497,11 +1615,25 @@ class SequentialCompositeRule(Rule):
 
 
 class ParallelCompositeRule(Rule):
+    """
+    Class that implements a ParallelCompositeRule enviPath object
+    """
     @staticmethod
     def create(package: Package, simple_rules: List[SimpleRule], name: str = None, description: str = None,
                reactant_filter_smarts: str = None, product_filter_smarts: str = None,
                immediate: str = None) -> 'ParallelCompositeRule':
+        """
+        Creates a ParallelCompositeRule enviPath object
 
+        :param package: the Package to which the ParallelCompositeRule will belong to
+        :param simple_rules: a List of SimpleRule objects that are contained within the ParallelCompositeRule
+        :param name: the name of the ParallelCompositeRule
+        :param description: the description of the ParallelCompositeRule
+        :param reactant_filter_smarts: the string that describes the SMARTS filter used for the reactants
+        :param product_filter_smarts: the string that describes the SMARTS filter used for the products
+        :param immediate: the string describing the immediate
+        :return: A ParallelCompositeRule enviPath object
+        """
         rule_payload = {
             'simpleRules[]': [r.get_id() for r in simple_rules],
         }
@@ -1526,7 +1658,12 @@ class ParallelCompositeRule(Rule):
         res.raise_for_status()
         return ParallelCompositeRule(package.requester, id=res.headers['Location'])
 
-    def get_simple_rules(self):
+    def get_simple_rules(self) -> List['SimpleRule']:
+        """
+        Retrieves the SimpleRule objects contained within the ParallelCompositeRule
+
+        :return: A List of all the SimpleRule objects contained within the ParallelCompositeRule
+        """
         return self._create_from_nested_json('simpleRules', SimpleRule)
 
     def copy(self, package: 'Package', debug=False, id_lookup={}):
@@ -1535,7 +1672,9 @@ class ParallelCompositeRule(Rule):
 
 
 class RelativeReasoning(ReviewableEnviPathObject):
-
+    """
+    Class that implements a RelativeReasoning enviPath object
+    """
     @staticmethod
     def create(package: Package, packages: List[Package], classifier_type: ClassifierType,
                eval_type: EvaluationType, association_type: AssociationType,
@@ -1550,17 +1689,20 @@ class RelativeReasoning(ReviewableEnviPathObject):
         :param package: The package object in which the model is created
         :param packages: List of package objects on which the model is trained
         :param classifier_type: Classifier options:
-                                Rule-Based : ClassifierType("RULEBASED")
-                                Machine Learning-Based (MLC-BMaD) :  ClassifierType("MLCBMAD")
-                                Machine Learning-Based (ECC) : ClassifierType("ECC")
+
+            - Rule-Based : ClassifierType("RULEBASED")
+            - Machine Learning-Based (MLC-BMaD) :  ClassifierType("MLCBMAD")
+            - Machine Learning-Based (ECC) : ClassifierType("ECC")
         :param eval_type: Evaluation type:
-                            Single Generation : EvaluationType("single")
-                            Single + Multiple Generation : EvaluationType("multigen")
+
+            - Single Generation : EvaluationType("single")
+            - Single + Multiple Generation : EvaluationType("multigen")
         :param association_type: Association type:
-                                    AssociationType("DATABASED")
-                                    AssociationType("CALCULATED"), default
+
+            - AssociationType("DATABASED")
+            - AssociationType("CALCULATED"), default
         :param evaluation_packages: List of package objects on which the model is evaluated. If none, the classifier
-                                    is evaluated in a 100-fold holdout model using a 90/10 split ratio.
+            is evaluated in a 100-fold holdout model using a 90/10 split ratio.
         :param fingerprinter_type: Default: MACS Fingerprinter ("ENVIPATH_FINGERPRINTER")
         :param quickbuild: Faster evaluation, default: False
         :param use_p_cut:  Default: False
@@ -1608,6 +1750,12 @@ class RelativeReasoning(ReviewableEnviPathObject):
         return ModelStatus(**self.requester.get_request(self.id, params=params).json())
 
     def classify_structure(self, structure: CompoundStructure):
+        """
+        Uses the RelativeReasoning model to classify a given CompoundStructure
+
+        :param structure: The CompoundStructure to classify
+        :return: A JSON object with the classification response of the model
+        """
         return self.classify_smiles(structure.get_smiles())
 
     def classify_smiles(self, smiles: str):
@@ -1618,6 +1766,13 @@ class RelativeReasoning(ReviewableEnviPathObject):
         return self.requester.get_request(self.id, params=params).json()
 
     def copy(self, package: 'Package', debug=False):
+        """
+        Copies the RelativeReasoning object
+
+        :param package: the package where the object wants to be copied to
+        :param debug: whether to have more verbosity or not
+        :return: a copy of the current RelativeReasoning object
+        """
         payload = {
             'hiddenMethod': 'COPY',
             'targetPackage': package.get_id(),
@@ -1629,11 +1784,23 @@ class RelativeReasoning(ReviewableEnviPathObject):
 
 
 class Node(ReviewableEnviPathObject):
+    """
+    Class that implements the Node enviPath object
+    """
+    def get_smiles(self) -> str:
+        """
+        Retrieves the SMILES of the Compound associated with the Node object
 
-    def get_smiles(self):
+        :return: A string representing the SMILES of the Node's Component object
+        """
         return self.get_default_structure().get_smiles()
 
     def get_halflifes(self) -> List['HalfLife']:
+        """
+        Retrieves the half-lifes of the Compound contained in Node object
+
+        :return: List of HalfLife objects
+        """
         #  TODO are they equal to HLs attached to CompoundStructure?
         res = []
         for hl in self._get('halflifes'):
@@ -1649,15 +1816,35 @@ class Node(ReviewableEnviPathObject):
         return self._create_from_nested_json('confidenceScenarios', Scenario)
 
     def get_structures(self) -> List['CompoundStructure']:
+        """
+        Gets the List of all CompoundStructure objects contained in the Node
+
+        :return: A List of CompoundStructure
+        """
         return self._create_from_nested_json('structures', CompoundStructure)
 
     def get_default_structure(self) -> CompoundStructure:
+        """
+        Retrieves the default structure of the Compound contained in the Node
+
+        :return: The default CompoundStructure of the Compound contained in the Node object
+        """
         return CompoundStructure(self.requester, id=self._get('defaultStructure')['id'])
 
     def get_svg(self) -> str:
+        """
+        Gets the image representation of the Compound in a string format
+
+        :return: A string that contains the image information of the Compound
+        """
         return self.get_default_structure().get_svg()
 
     def get_depth(self) -> int:
+        """
+        Gets the depth of the Node
+
+        :return: Integer representing the depth of the Node within the Pathway
+        """
         return self._get('depth')
 
     def get_ad_assessment(self) -> Optional['ADAssessment']:
@@ -1668,7 +1855,12 @@ class Node(ReviewableEnviPathObject):
         """
         Creates a Node object within a pathway, returns the Node object.
         Similar to the Pathway.add_node() function, which does not return a Node object.
+
         :param pathway: parent pathway
+        :param smiles: the SMILES associated with the corresponding Node
+        :param name: the name of the Node
+        :param description: the description of the Node
+        :param depth: the depth of the Node
         :return: Node object
         """
         headers = {
@@ -1696,33 +1888,76 @@ class Node(ReviewableEnviPathObject):
         res.raise_for_status()
         return Node(pathway.requester, id=res.headers['Location'])
 
-    def copy(self, package: 'Package'):
+    def copy(self, package: 'Package', debug=False):
         raise NotImplementedError("Copying of Nodes is implemented via Pathway.copy!")
 
 
 class Edge(ReviewableEnviPathObject):
-
+    """
+    Class the implements an Edge enviPath object
+    """
     def get_start_nodes(self) -> List['Node']:
+        """
+        Retrieves the starting Node object of the Edge
+
+        :return: A List of Node objects
+        """
         return self._create_from_nested_json('startNodes', Node)
 
     def get_end_nodes(self) -> List['Node']:
+        """
+        Retrieves the end Node object of the Edge
+
+        :return: A List of Node objects
+        """
         return self._create_from_nested_json('endNodes', Node)
 
     def get_reaction(self) -> Reaction:
+        """
+        Retrieves the Reaction object associated with this Edge
+
+        :return: A Reaction enviPath object
+        """
         return Reaction(self.requester, id=self._get('reactionURI'))
 
     def get_reaction_name(self) -> str:
+        """
+        Retrieves the name of the Reaction object associated with this Edge
+
+        :return: The name of the Reaction object
+        """
         return self._get('reactionName')
 
     def get_ec_numbers(self) -> List['ECNumber']:
+        """
+        Returns the EC Numbers associated with the given Edge object
+
+        :return: A List of ECNumber objects
+        """
         return self.get_reaction().get_ec_numbers()
 
     def get_rule(self) -> Optional['Rule']:
+        """
+        Retrieves the Rule associated with the Edge
+
+        :return: A Rule enviPath object
+        """
         return self.get_reaction().get_rule()
 
     @staticmethod
     def create(pathway: 'Pathway', smirks: str = None, educts: List['Node'] = None, products: List['Node'] = None,
                multistep: bool = False, description: str = None):
+        """
+        Create an Edge enviPath object
+
+        :param pathway: the Pathway object on which the Edge wants to be created
+        :param smirks: the SMIRKS of the Edge
+        :param educts: a list of Node objects where the Edge starts
+        :param products: a list of Node objects where the Edge ends
+        :param multistep: whether the Edge is a part of a multistep Reaction
+        :param description: the description of the Edge
+        :return: An Edge enviPath object
+        """
         assert smirks or (products and educts), 'ERROR: To add an edge to the pathway, provide either a smirks ' \
                                                 'or a pair of products and educts'
         payload = {}
@@ -1744,7 +1979,7 @@ class Edge(ReviewableEnviPathObject):
         res.raise_for_status()
         return Edge(pathway.requester, id=res.headers['Location'])
 
-    def copy(self, package: 'Package'):
+    def copy(self, package: 'Package', debug=False):
         raise NotImplementedError("Copying of Edges is implemented via Pathway.copy!")
 
 
@@ -1891,8 +2126,15 @@ class NormalizationRule(ReviewableEnviPathObject):
 
 
 class Pathway(ReviewableEnviPathObject):
-
+    """
+    Class that implements a Pathway enviPath object
+    """
     def get_nodes(self) -> List[Node]:
+        """
+        Retrieves the nodes of the Pathway
+
+        :return: a List of Node objects
+        """
         nodes = self._get('nodes')
 
         # Remove pseudo nodes
@@ -1905,6 +2147,11 @@ class Pathway(ReviewableEnviPathObject):
         return self._create_from_nested_json(non_pseudo_nodes, Node)
 
     def get_edges(self) -> List[Edge]:
+        """
+        Retrieves the edges of the Pathway
+
+        :return: a List of Edge objects
+        """
         edges = self._get('links')
 
         # Remove pseudo edges
@@ -1917,23 +2164,53 @@ class Pathway(ReviewableEnviPathObject):
         return self._create_from_nested_json(non_pseudo_edges, Edge)
 
     def get_name(self) -> str:
+        """
+        Retrieves the name of the Pathway
+
+        :return: a string of the Pathway name
+        """
         return self._get('pathwayName')
 
     def is_up_to_date(self) -> bool:
+        """
+        A boolean checking is the Pathway is up-to-date
+
+        :return: True if it is, else False
+        """
         return self._get('upToDate')
 
     def lastmodified(self) -> int:
+        """
+        An integer representing the time since last modification
+
+        :return: The last time where it was modified as an integer
+        """
         return self._get('lastModified')
 
     def is_completed(self) -> bool:
+        """
+        Checks if the Pathway prediction has been completed
+
+        :return: True if it did, else False
+        """
         status = self.requester.get_request('{}?status'.format(self.id)).json()
         return "true" == status['completed']
 
     def has_failed(self) -> bool:
+        """
+        Checks if the Pathway prediction has failed
+
+        :return: True if it did, else False
+        """
         status = self.requester.get_request('{}?status'.format(self.id)).json()
         return "error" == status['completed']
 
     def is_running(self):
+        """
+        Checks if the Pathway prediction is running
+
+        :return: True if it did, else False
+        """
         status = self.requester.get_request('{}?status'.format(self.id)).json()
         return "false" == status['completed']
 
@@ -1941,6 +2218,11 @@ class Pathway(ReviewableEnviPathObject):
         """
         Adds a node to the pathway object, does NOT return the node.
         Very similar to the node create function, which returns a Node object.
+
+        :param smiles: the SMILES of the Node that wants to be added
+        :param name: the name of the Node
+        :param depth: the depth of the Node
+        :param description: the description of the Node
         """
         headers = {
             'referer': self.id
@@ -1971,11 +2253,12 @@ class Pathway(ReviewableEnviPathObject):
                  description: str = None):
         """
         Adding an edge to an existing pathway. Either provide smirks, or educts AND products.
+
         :param smirks: SMIRKS format of the reaction
         :param educts: compound URIs of educts, comma separated
         :param products: compound URIs of products, comma separated
         :param multistep: If needed, can be set to 'true'
-        :param reason:
+        :param description: The description of the Edge
         """
         headers = {'referer': self.id}
         assert smirks or (products and educts), 'ERROR: To add an edge to the pathway, provide either a smirks ' \
@@ -1998,14 +2281,15 @@ class Pathway(ReviewableEnviPathObject):
     def create(package: Package, smiles: str, name: str = None, description: str = None,
                root_node_only: bool = False, setting: Setting = None):
         """
+        Creates a Pathway enviPath object
 
-        :param package:
+        :param package: the Package where the Pathway wants to be added
         :param smiles: Smiles of root node compound
-        :param name:
-        :param description:
+        :param name: the name of the Pathway
+        :param description: the description of the Pathway
         :param root_node_only: If False, goes to pathway prediction mode
         :param setting: Setting for pathway prediction
-        :return: Pathway object
+        :return: Pathway enviPath object
         """
         payload = {'smilesinput': smiles}
 
@@ -2028,7 +2312,15 @@ class Pathway(ReviewableEnviPathObject):
         res.raise_for_status()
         return Pathway(package.requester, id=res.headers['Location'])
 
-    def copy(self, target_package: 'Package', debug=False):
+    def copy(self, target_package: 'Package', debug=False) -> (dict, 'Pathway'):
+        """
+        Copies the Pathway to the target_package
+
+        :param target_package: Package where the Pathway wants to be copied to
+        :param debug: whether to add more verbosity or not to the method
+        :return: a dictionary mapping the ids of the parent and copied object, a Pathway object that is a copy
+            of the current one
+        """
         mapping = dict()
 
         # Obtain d3json as it contains the nodes depth
@@ -2094,38 +2386,92 @@ class Pathway(ReviewableEnviPathObject):
 
 
 class User(enviPathObject):
-
+    """
+    Class that implements a User enviPath object
+    """
     def get_email(self) -> str:
+        """
+        Gets the email of the User
+
+        :return: an email in string format
+        """
         return self._get('email')
 
     def get_forename(self) -> str:
+        """
+        Gets the forename of the User
+
+        :return: a forename in string format
+        """
         return self._get('forename')
 
     def get_surname(self) -> str:
+        """
+        Gets the surname of the User
+
+        :return: a surname in string format
+        """
         return self._get('surname')
 
     def get_default_group(self) -> 'Group':
+        """
+        Gets the default Group of the User
+
+        :return: A Group object to which the User belonged by default
+        """
         return Group(self.requester, id=self._get("defaultGroup")['id'])
 
-    def get_group(self, group_id):
+    def get_group(self, group_id) -> 'Group':
+        """
+        Gets the Group of the User
+
+        :param group_id: The identifier of a Group object
+        :return: The Group object to which the User belongs
+        """
         return Group(self.requester, id=group_id)
 
     def get_groups(self) -> List['Group']:
+        """
+        Gets all the groups the User belongs to
+
+        :return: a List of Group enviPath objects
+        """
         return self._create_from_nested_json('groups', Group)
 
     def get_default_package(self) -> 'Package':
+        """
+        Gets the Package the User belonged by default
+
+        :return: A Package enviPath object
+        """
         return Package(self.requester, id=self._get("defaultPackage")['id'])
 
     def get_default_setting(self) -> Optional['Setting']:
+        """
+        Gets the Setting the User had by default
+
+        :return: A Setting enviPath object
+        """
         try:
             return Setting(self.requester, id=self._get("defaultSetting")['id'])
         except ValueError:
             return None
 
     def get_setting(self, setting_id):
+        """
+        Gets a Setting of the User
+
+        :param setting_id: The identifier of a Setting object
+        :return: The Setting object to which the User belongs
+        """
         return Setting(self.requester, id=setting_id)
 
     def get_settings(self) -> List['Setting']:
+        """
+        Gets all the settings the User has
+
+        :return: a List of Setting enviPath objects
+        """
         return self._create_from_nested_json('settings', Setting)
 
     @staticmethod
@@ -2141,12 +2487,25 @@ class User(enviPathObject):
     def register(ep, email: str, username: str, password: str):
         """
         Alias for 'create()'.
-        :return:
+
+        :param ep: an enviPath object
+        :param email: the email of the User that wants to be registered
+        :param username: the username of the User
+        :param password: the password of the User
+        :return: A User enviPath object
         """
         return User.create(ep, email, username, password)
 
     @staticmethod
     def activate(ep, username, token) -> bool:
+        """
+        Activates the specified username
+
+        :param ep: an enviPath object
+        :param username: the username of the User that wants to be activated
+        :param token: the activation token
+        :return: True if the User was successfully activated, else False
+        """
         params = {
             'username': username,
             'token': token
