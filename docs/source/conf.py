@@ -6,13 +6,27 @@
 import os
 import sys
 
-# Removing the constant variables that are defined within classes, apparently autodocs recognizes upper cased variables
-# and documents them
+# Removing the classes that are not documented according to new standards
 autodoc_default_options = {
-    'exclude-members': 'ENDPOINT_OBJECT_MAPPING, CALCULATED, DATABASED, ECC, MLCBMAD, RULEBASED, COMPOUND, COMPOUNDSTRUCTURE,'
-                       'EDGE, GROUP, NODE, PACKAGE, PARALLELCOMPOSITERULE, PATHWAY, REACTION, RELATIVEREASONING, RULE, header,'
-                       'SCENARIO, SEQUENTIALCOMPOSITERULE, SETTING, SIMPLERULE, USER, MULTI_GEN, SINGLE_GEN, NONE, READ, WRITE,'
-                       'ENVIPATH_FINGERPRINTER'
+    'exclude-members': 'Endpoint, ClassifierType, FingerprinterType, AssociationType, EvaluationType, Permission,'
+                       ' OxygenDemandAdditionalInformation, DissolvedOxygenConcentrationAdditionalInformation,'
+                       'OxygenUptakeRateAdditionalInformation, AerationTypeAdditionalInformation, '
+                       'SourceOfLiquidMatrixAdditionalInformation, RateConstantAdditionalInformation, '
+                       'PhosphorusContentAdditionalInformation, MinorMajorAdditionalInformation,'
+                       'SludgeRetentionTimeAdditionalInformation, AmmoniaUptakeRateAdditionalInformation, '
+                       'TemperatureAdditionalInformation,NutrientsAdditionalInformation, '
+                       'InoculumSourceAdditionalInformation, DissolvedOrganicCarbonAdditionalInformation,'
+                       'NitrogenContentAdditionalInformation, ReferringScenarioAdditionalInformation, '
+                       'ModelPredictionProbabilityAdditionalInformation, '
+                       'ModelBayesPredictionProbabilityAdditionalInformation, '
+                       'HalfLifeAdditionalInformation, ProposedIntermediateAdditionalInformation,'
+                       'VolatileTSSAdditionalInformation, ConfidenceLevelAdditionalInformation, '
+                       'BiologicalTreatmentTechnologyAdditionalInformation, BioreactorAdditionalInformation, '
+                       'FinalCompoundConcentrationAdditionalInformation, TypeOfAdditionAdditionalInformation,'
+                       'TSSAdditionInformation, PurposeOfWWTPAdditionalInformation, '
+                       'SolventForCompoundSolutionAdditionalInformation, OriginalSludgeAmountAdditionalInformation, '
+                       'TypeOfAerationAdditionalInformation, AcidityAdditionalInformation,'
+                       'RedoxAdditionalInformation, LocationAdditionalInformation'
 }
 
 # -- Project information -----------------------------------------------------
