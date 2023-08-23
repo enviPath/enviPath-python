@@ -17,6 +17,7 @@ import copy
 from collections.abc import Iterable
 from typing import Union, List
 
+import requests
 from requests import Session
 from requests.adapters import HTTPAdapter
 from requests.exceptions import *
@@ -74,7 +75,7 @@ class enviPath(object):
         Method to get the currently logged in user.
 
         :return: User object.
-        :rtype: class:`enviPath_python.objects.User`
+        :rtype: enviPath_python.objects.User
         """
         params = {
             'whoami': 'true',
@@ -119,7 +120,7 @@ class enviPath(object):
         :param package_id: The identifier of the package
         :type package_id: str
         :return: A package object
-        :rtype: class:`enviPath_python.objects.Package`
+        :rtype: enviPath_python.objects.Package
         """
         return Package(self.requester, **self.requester.get_json(package_id))
 
@@ -139,7 +140,7 @@ class enviPath(object):
         :param compound_id: The identifier of the compound
         :type compound_id: str
         :return: The retrieved compound with matching compound id
-        :rtype: class:`enviPath_python.objects.Compound`
+        :rtype: enviPath_python.objects.Compound
         """
         return Compound(self.requester, **self.requester.get_json(compound_id))
 
@@ -159,7 +160,7 @@ class enviPath(object):
         :param reaction_id: The identifier for the reaction
         :type reaction_id: str
         :return: The reaction with matching id
-        :rtype: class:`enviPath_python.objects.Reaction`
+        :rtype: enviPath_python.objects.Reaction
         """
         return Reaction(self.requester, **self.requester.get_json(reaction_id))
 
@@ -179,7 +180,7 @@ class enviPath(object):
         :param rule_id: The identifier of the rule
         :type rule_id: str
         :return: The rule with the corresponding id equivalent to `rule_id`
-        :rtype: class:`enviPath_python.objects.Rule`
+        :rtype: enviPath_python.objects.Rule
         """
         return Rule(self.requester, **self.requester.get_json(rule_id))
 
@@ -199,7 +200,7 @@ class enviPath(object):
         :param pathway_id: The identifier of the pathway
         :type pathway_id: str
         :return: The pathway with matching id
-        :rtype: class:`enviPath_python.objects.Pathway`
+        :rtype: enviPath_python.objects.Pathway
         """
         return Pathway(self.requester, **self.requester.get_json(pathway_id))
 
@@ -219,7 +220,7 @@ class enviPath(object):
         :param scenario_id: The identifier of the scenario
         :type scenario_id: str
         :return: The scenario with matching id
-        :rtype: class:`enviPath_python.objects.Scenario`
+        :rtype: enviPath_python.objects.Scenario
         """
         return Scenario(self.requester, **self.requester.get_json(scenario_id))
 
@@ -239,7 +240,7 @@ class enviPath(object):
         :param setting_id: The identifier of the setting
         :type setting_id: str
         :return: The setting with matching id
-        :rtype: class:`enviPath_python.objects.Setting`
+        :rtype: enviPath_python.objects.Setting
         """
         return Setting(self.requester, **self.requester.get_json(setting_id))
 
@@ -280,7 +281,7 @@ class enviPath(object):
         :param description: The description for the package
         :type description: str
         :return: The created package
-        :rtype: class:enviPath_python.objects.Package
+        :rtype: enviPath_python.objects.Package
         """
         return Package.create(self, group, name=name, description=description)
 
@@ -321,13 +322,17 @@ class enviPathRequester(object):
         if proxies:
             self.session.proxies = proxies
 
-    def get_request(self, url, params=None, payload=None, **kwargs):
+    def get_request(self, url, params=None, payload=None, **kwargs) -> requests.Response:
         """
         Convenient method to perform GET request to given url with optional query parameters and data.
+
         :param url: The url to retrieve data from.
+        :type url: str
         :param params: Dictionary containing query parameters as key, value.
+        :type params: dict or None
         :param payload: Data send within the body.
         :return: response object.
+        :rtype: requests.Response
         """
         try:
             request = self._request('GET', url, params, payload, **kwargs)
@@ -337,34 +342,47 @@ class enviPathRequester(object):
 
         return request
 
-    def post_request(self, url, params=None, payload=None, **kwargs):
+    def post_request(self, url, params=None, payload=None, **kwargs) -> requests.Response:
         """
         Convenient method to perform POST request to given url with optional query parameters and data.
+
         :param url: The url for object creation, object manipulation.
+        :type url: str
         :param params: Dictionary containing query parameters as key, value.
+        :type params: dict
         :param payload: Data send within the body.
         :return: response object.
+        :rtype: requests.Response
         """
         return self._request('POST', url, params, payload, **kwargs)
 
-    def delete_request(self, url, params=None, payload=None, **kwargs):
+    def delete_request(self, url, params=None, payload=None, **kwargs) -> requests.Response:
         """
         Convenient method to perform DELETE request to given url with optional query parameters and data.
-        :param url: The url for object creation, object manipulation.
+
+        :param url: The url for object deletion.
+        :type url: str
         :param params: Dictionary containing query parameters as key, value.
+        :type params: dict
         :param payload: Data send within the body.
         :return: response object.
+        :rtype: requests.Response
         """
         return self._request('DELETE', url, params, payload, **kwargs)
 
-    def _request(self, method, url, params=None, payload=None, **kwargs):
+    def _request(self, method, url, params=None, payload=None, **kwargs) -> requests.Response:
         """
         Method performing the actual request.
+
         :param method: HTTP method.
+        :type method: str
         :param url: url for request.
-        :param params: parameters to send.
+        :type url: str
+        :param params: Dictionary containing query parameters as key, value.
+        :type params: dict
         :param payload: data to send.
         :return: response object.
+        :rtype: requests.Response
         """
         default_headers = self.header
         if 'headers' in kwargs:
@@ -380,20 +398,26 @@ class enviPathRequester(object):
 
         return response
 
-    def get_json(self, envipath_id: str):
+    def get_json(self, envipath_id: str) -> dict:
         """
-        TODO
-        :param envipath_id:
-        :return:
+        Returns the response of the request in a json format
+
+        :param envipath_id: The url where the get request wants to be performed
+        :return: The json version of the response
+        :rtype: json
         """
         return self.get_request(envipath_id).json()
 
-    def login(self, url, username, password):
+    def login(self, url, username, password) -> None:
         """
-        Performs login,
+        Performs login.
+
         :param url: Can be any valid enviPath url.
+        :type url: str
         :param username: The username.
+        :type username: str
         :param password: The corresponding password.
+        :type password: str
         :return: None
         """
         data = {
@@ -407,10 +431,12 @@ class enviPathRequester(object):
         except HTTPError:
             raise ValueError("Login Failed!")
 
-    def logout(self, url):
+    def logout(self, url) -> None:
         """
         Performs logout.
+
         :param url: Can be any valid enviPath url.
+        :type url: str
         :return: None
         """
         data = {
@@ -421,7 +447,9 @@ class enviPathRequester(object):
     def get_objects(self, base_url, endpoint):
         """
         Generic get method to retrieve objects.
+
         :param base_url: The base URL
+        :type base_url: str
         :param endpoint: Enum of Endpoint.
         :return: List of objects denoted by endpoint.
         """
@@ -447,6 +475,14 @@ class enviPathRequester(object):
             raise ValueError("Cant map ({}) to objects".format(objs.keys()))
 
     def get_object(self, obj_id, endpoint):
+        """
+        Generic get method to retrieve objects.
+
+        :param obj_id: The identifier for the object
+        :type obj_id: str
+        :param endpoint: The endpoint where to get the object
+        :return: Object stored on the endpoint with id `obj_id` (if matched)
+        """
         if endpoint == Endpoint.RULE:
             if Endpoint.SIMPLERULE.value in obj_id:
                 return SimpleRule(self, id=obj_id)

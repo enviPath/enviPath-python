@@ -18,6 +18,9 @@ from enum import Enum
 
 
 class Endpoint(Enum):
+    """
+    Base class that defines all the available endpoints
+    """
     USER = 'user'
     PACKAGE = 'package'
     COMPOUND = 'compound'
@@ -37,26 +40,41 @@ class Endpoint(Enum):
 
 
 class ClassifierType(Enum):
+    """
+    Base class that defines the types of available classifiers
+    """
     RULEBASED = 'RULEBASED'
     ECC = 'ECC'
     MLCBMAD = 'MLCBMAD'
 
 
 class FingerprinterType(Enum):
+    """
+    Class that stores the fingerprinter
+    """
     ENVIPATH_FINGERPRINTER = 'ENVIPATH_FINGERPRINTER'
 
 
 class AssociationType(Enum):
+    """
+    Class that stores the types of association
+    """
     DATABASED = 'DATABASED'
     CALCULATED = 'CALCULATED'
 
 
 class EvaluationType(Enum):
+    """
+    Class that stores the type of evaluation
+    """
     SINGLE_GEN = 'single'
     MULTI_GEN = 'multigen'
 
 
 class Permission(Enum):
+    """
+    Class that stores the permissions that can be granted
+    """
     READ = 'read'
     WRITE = 'write'
     NONE = 'none'
