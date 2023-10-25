@@ -182,7 +182,20 @@ class enviPath(object):
         :return: The rule with the corresponding id equivalent to `rule_id`
         :rtype: enviPath_python.objects.Rule
         """
-        return Rule(self.requester, **self.requester.get_json(rule_id))
+
+        obj = self.requester.get_json(rule_id)
+
+        clz = None
+        if obj['identifier'] == Endpoint.SIMPLERULE.value:
+            clz = SimpleRule
+        elif obj['identifier'] == Endpoint.SEQUENTIALCOMPOSITERULE.value:
+            clz = SequentialCompositeRule
+        elif obj['identifier'] == Endpoint.PARALLELCOMPOSITERULE.value:
+            clz = ParallelCompositeRule
+        else:
+            raise ValueError("Unknown Rule Type ({})".format(obj['identifier']))
+
+        return clz(self.requester, **obj)
 
     def get_rules(self) -> List['Rule']:
         """
@@ -455,6 +468,10 @@ class enviPathRequester(object):
         """
         url = base_url + endpoint.value
         objs = self.get_request(url).json()
+
+        # Handly malformed reponse in case there are not entries
+        if len(objs) == 0 or ('object' in objs and len(objs['object']) == 0):
+            return []
 
         # TODO delegate to get_object
         if endpoint == Endpoint.RULE:
