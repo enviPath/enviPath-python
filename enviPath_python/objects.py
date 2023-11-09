@@ -1233,9 +1233,9 @@ class Reaction(ReviewableEnviPathObject):
         """
         return self._get('medlineRefs')
 
-    def get_educts(self) -> List['CompoundStructure']:
+    def get_substrates(self) -> List['CompoundStructure']:
         """
-        Retrieves the educts of the reaction
+        Retrieves the substrates of the reaction
 
         :return: A List of CompoundStructure
         """
