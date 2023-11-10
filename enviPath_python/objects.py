@@ -1236,10 +1236,19 @@ class Reaction(ReviewableEnviPathObject):
         :return: A list of objects
         """
         return self._get('medlineRefs')
-
+        
     def get_substrates(self) -> List['CompoundStructure']:
         """
         Retrieves the substrates of the reaction
+
+        :return: A List of CompoundStructure
+        """
+        return self._create_from_nested_json('educts', CompoundStructure)
+        
+    def get_educts(self) -> List['CompoundStructure']:
+        """
+        DEPRECATED
+        Retrieves the educts of the reaction
 
         :return: A List of CompoundStructure
         """
