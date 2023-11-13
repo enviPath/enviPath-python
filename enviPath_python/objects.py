@@ -826,13 +826,17 @@ class Scenario(enviPathObject):
                             clz = AdditionalInformation.get_subclass_by_name(v['name'])
                         except ValueError:
                             clz = DummyAdditionalInformation
-                        res.append(clz().parse(v['value']))
+                        c = clz().parse(v['value'])
+                        c.params["unit"] = v["unit"]
+                        res.append(c)
                 else:
                     try:
                         clz = AdditionalInformation.get_subclass_by_name(val['name'])
                     except ValueError:
                         clz = DummyAdditionalInformation
-                    res.append(clz().parse(val['value']))
+                    c = clz().parse(val['value'])
+                    c.params["unit"] = val["unit"]
+                    res.append(c)
 
         return res
 
@@ -1232,9 +1236,18 @@ class Reaction(ReviewableEnviPathObject):
         :return: A list of objects
         """
         return self._get('medlineRefs')
+        
+    def get_substrates(self) -> List['CompoundStructure']:
+        """
+        Retrieves the substrates of the reaction
 
+        :return: A List of CompoundStructure
+        """
+        return self._create_from_nested_json('educts', CompoundStructure)
+        
     def get_educts(self) -> List['CompoundStructure']:
         """
+        DEPRECATED
         Retrieves the educts of the reaction
 
         :return: A List of CompoundStructure
