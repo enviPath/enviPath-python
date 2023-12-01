@@ -30,7 +30,7 @@ class enviPath(object):
     Object representing enviPath functionality.
     """
 
-    def __init__(self, base_url, proxies=None):
+    def __init__(self, base_url, proxies=None, adapter=None):
         """
         Constructor with instance specification.
 
@@ -40,7 +40,7 @@ class enviPath(object):
         :type proxies: str, optional
         """
         self.BASE_URL = base_url if base_url.endswith('/') else base_url + '/'
-        self.requester = enviPathRequester(self, proxies)
+        self.requester = enviPathRequester(self, proxies, adapter)
 
     def get_base_url(self) -> str:
         """
@@ -324,14 +324,19 @@ class enviPathRequester(object):
         Endpoint.RELATIVEREASONING: RelativeReasoning,
     }
 
-    def __init__(self, eP, proxies=None):
+    def __init__(self, eP, proxies=None, adapter=None):
         """
         Setup session for cookies as well as avoiding unnecessary ssl-handshakes.
         """
+
+        if adapter is None:
+            adapter = HTTPAdapter()
+
         self.eP = eP
         self.session = Session()
-        self.session.mount('http://', HTTPAdapter())
-        self.session.mount('https://', HTTPAdapter())
+        self.session.mount('http://', adapter)
+        self.session.mount('https://', adapter)
+
         if proxies:
             self.session.proxies = proxies
 
