@@ -24,7 +24,7 @@ pprint(bbd_pws[0].get_description())
 
 ## Documentation
 
-The enviPath-python documentation can be found [here](https://envipath-python.readthedocs.io/en/feature-docs/).
+The enviPath-python documentation can be found [here](https://envipath-python.readthedocs.io/en/develop).
 
 If you are new to enviPath [our wiki](https://wiki.envipath.org/index.php/Main_Page) might also contain some value
 information.
