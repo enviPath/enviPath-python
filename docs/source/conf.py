@@ -38,12 +38,17 @@ author = 'Albert Anguera Sempere'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
+source_suffix = ".rst"
+master_doc = "index"
 
 main_folder_path = os.path.abspath('../..')
 if main_folder_path not in sys.path:
     sys.path.insert(0, main_folder_path)
 
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.coverage', 'sphinx.ext.napoleon']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.coverage', 'sphinx.ext.napoleon',
+              'sphinx.ext.autosectionlabel', "myst_nb", "IPython.sphinxext.ipython_console_highlighting",
+              'sphinx_copybutton'
+              ]
 
 templates_path = ['_templates']
 exclude_patterns = []
@@ -53,4 +58,4 @@ exclude_patterns = []
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'alabaster'
+html_theme = 'sphinx_book_theme'
