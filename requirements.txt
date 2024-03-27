@@ -1,0 +1,4 @@
+myst-nb
+sphinx
+sphinx-book-theme
+sphinx-copybutton
