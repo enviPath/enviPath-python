@@ -36,7 +36,7 @@ If you make use of enviPath-python in your work, please cite our `paper <https:/
    :caption: User Guide
    :hidden:
 
-   tutorials/access_reviewed_packages_tutorial
+   tutorials/accessing_packages
 
 .. toctree::
    :caption: Developers Guide
