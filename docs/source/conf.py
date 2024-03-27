@@ -19,13 +19,13 @@ autodoc_default_options = {
                        'NitrogenContentAdditionalInformation, ReferringScenarioAdditionalInformation, '
                        'ModelPredictionProbabilityAdditionalInformation, '
                        'ModelBayesPredictionProbabilityAdditionalInformation, '
-                       'HalfLifeAdditionalInformation, ProposedIntermediateAdditionalInformation,'
+                       'ProposedIntermediateAdditionalInformation,'
                        'VolatileTSSAdditionalInformation, ConfidenceLevelAdditionalInformation, '
                        'BiologicalTreatmentTechnologyAdditionalInformation, BioreactorAdditionalInformation, '
                        'FinalCompoundConcentrationAdditionalInformation, TypeOfAdditionAdditionalInformation,'
                        'TSSAdditionInformation, PurposeOfWWTPAdditionalInformation, '
                        'SolventForCompoundSolutionAdditionalInformation, OriginalSludgeAmountAdditionalInformation, '
-                       'TypeOfAerationAdditionalInformation, AcidityAdditionalInformation,'
+                       'TypeOfAerationAdditionalInformation,'
                        'RedoxAdditionalInformation, LocationAdditionalInformation'
 }
 
