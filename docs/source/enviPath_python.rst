@@ -1,13 +1,5 @@
-enviPath\_python package
-========================
-
-enviPath\_python.enums module
------------------------------
-
-.. automodule:: enviPath_python.enums
-   :members:
-   :undoc-members:
-   :show-inheritance:
+enviPath\_python
+================
 
 enviPath\_python.enviPath module
 --------------------------------
