@@ -1,3 +1,4 @@
+enviPath-python
 myst-nb
 sphinx
 sphinx-book-theme
