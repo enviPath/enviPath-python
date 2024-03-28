@@ -43,8 +43,9 @@ Compound
 
 A Compound is an enviPath object that is stored in a :ref:`Package` and basically stores different
 :ref:`Compound Structure`. One of them is defined to be the default Compound Structure and that one is the one that
-will be more easily accessible (for example, when the ``get_smiles()`` is called). It can be created using a valid
-`SMILES <https://pubs.acs.org/doi/abs/10.1021/ci00057a005>`_ on the ``.create(smiles)`` method and whenever this happens,
+will be more easily accessible (for example, when the :meth:`enviPath_python.objects.Compound.get_smiles` is called). It can be
+created using a valid `SMILES <https://pubs.acs.org/doi/abs/10.1021/ci00057a005>`_ on the
+:meth:`enviPath_python.objects.Compound.create` method and whenever this happens,
 this `smiles` gets passed to a default Compound Structure and both the Compound and its corresponding Compound Structure
 are created. One way of thinking of an enviPath Compound is as a container of Compound Structures. A Compound is usually
 assigned to a :ref:`Pathway` via a :ref:`Node` and additionally, a connection to other external databases (PubChem,
@@ -69,8 +70,8 @@ A Reaction is an enviPath object that represents biotransformation reactions, it
 set of substrates with a set of products, each of them represented as a :ref:`Compound Structure`. Usually reactions are
 associated as well with a :ref:`Rule`. A Reaction can be created using
 `SMIRKS <https://www.daylight.com/dayhtml/doc/theory/theory.smirks.html>`_ and its stored on the package level. For this
-reason, a Reaction can either be created using ``.create(package, SMIRKS)`` or using
-``.create(package, list_of_substrates, list_of_products)``. Additionally, Reaction objects are created automatically with
+reason, a Reaction can either be created using either SMIRKS or by passing both a list of ``educt`` and ``preduct`` to
+the :meth:`enviPath_python.objects.Reaction.create` method. Additionally, Reaction objects are created automatically with
 pathway prediction and they get directly associated with a predicted :ref:`Edge`.
 
 Rule
@@ -79,10 +80,11 @@ Rule
 A biotransformation rule is a generalization of reactions and are used for the prediction of pathways. They do so by
 leveraging SMIRKS Reaction Patterns that identify functional groups and apply the rule whenever the reactant filter pattern
 condition is met. Because they are generalization of reactions, they can as well be associated with enzymes that
-catalyze the associated reaction and their EC numbers can be retrieved using ``.get_ec_numbers()`` method. On the
+catalyze the associated reaction and their EC numbers can be retrieved using
+:meth:`enviPath_python.objects.Rule.get_ec_numbers` method. On the
 enviPath-python implementation of the Rule object, it was decided to represent it as an abstract class, however 3
-distinct non-abstract classes inherit from it and can therefore be instantiated. Those are ``SimpleRule``,
-``SequentialCompositeRule`` and ``ParallelCompositeRule``.
+distinct non-abstract classes inherit from it and can therefore be instantiated. Those are :meth:`enviPath_python.objects.SimpleRule`,
+:meth:`enviPath_python.objects.SequentialCompositeRule` and :meth:`enviPath_python.objects.ParallelCompositeRule`.
 
 Pathway
 -------
