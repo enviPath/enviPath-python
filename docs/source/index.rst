@@ -1,7 +1,7 @@
 enviPath-python
 ===============
 
-**enviPath-python** is an open-source library that enables users to connect with the REST API endpoints of
+**enviPath-python** is an open-source package that enables users to connect with the REST API endpoints of
 `enviPath <https://envipath.org/>`_. This documentation is intended to help you learn how to use enviPath-python and
 encourage you to upload your data on the system. For the user desing to know how exactly enviPath works, we will refer
 to the `Wiki <https://wiki.envipath.com/>`_ and its paper: `enviPath - The environmental contaminant biotransformation

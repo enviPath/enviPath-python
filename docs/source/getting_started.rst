@@ -35,8 +35,8 @@ Package
 Package is one of the most fundamental objects in enviPath, it is the object were collections of other objects, such as
 Compounds, Reactions, Pathways, etc. are stored. A package can public or private, on the first case no login will be
 required to access the data, however on the second case it will be necessary to do so. There is a dedicated
-:ref:`accessing_packages` to show how to access both types of packages. Additionally, this tutorial#TODO will help you to see how
-to create a package and start to add data to it.
+:ref:`tutorial<accessing_packages>` to show how to access both types of packages. Additionally, this
+:ref:`tutorial<create_package>` will help you to see how to create a package and start to add data to it.
 
 Compound
 --------
