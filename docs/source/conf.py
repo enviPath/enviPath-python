@@ -53,6 +53,9 @@ extensions = ['sphinx.ext.autodoc', 'sphinx.ext.coverage', 'sphinx.ext.napoleon'
 templates_path = ['_templates']
 exclude_patterns = []
 
+suppress_warnings = ["mystnb.unknown_mime_type"]
+html_js_files = ["https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"]
+
 
 
 # -- Options for HTML output -------------------------------------------------
