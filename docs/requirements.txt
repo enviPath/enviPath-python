@@ -1,5 +1,7 @@
 enviPath-python
 myst-nb
+pandas
+plotly
 sphinx
 sphinx-book-theme
 sphinx-copybutton
