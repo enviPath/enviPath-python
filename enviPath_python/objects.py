@@ -609,19 +609,6 @@ class Package(enviPathObject):
             if debug:
                 print(' done -> {}'.format(sub_mapping[rule.get_id()]))
 
-        # Copy all reactions
-        for reaction in self.get_reactions():
-            if debug:
-                print('Copying {}...'.format(reaction.get_id()), end='')
-
-            sub_mapping, _ = reaction.copy(target_package, debug=debug)
-            for scen in reaction.get_scenarios():
-                scen_mapping[Reaction][reaction.get_id()].append(scen.get_id())
-            id_mapping.update(**sub_mapping)
-
-            if debug:
-                print(' done -> {}'.format(sub_mapping[reaction.get_id()]))
-
         # Copy all pathways
         for pathway in self.get_pathways():
             if debug:
@@ -646,6 +633,19 @@ class Package(enviPathObject):
 
             if debug:
                 print(' done -> {}'.format(sub_mapping[pathway.get_id()]))
+
+        # Copy all reactions
+        for reaction in self.get_reactions():
+            if debug:
+                print('Copying {}...'.format(reaction.get_id()), end='')
+
+            sub_mapping, _ = reaction.copy(target_package, debug=debug)
+            for scen in reaction.get_scenarios():
+                scen_mapping[Reaction][reaction.get_id()].append(scen.get_id())
+            id_mapping.update(**sub_mapping)
+
+            if debug:
+                print(' done -> {}'.format(sub_mapping[reaction.get_id()]))
 
         # Assign scenarios to objects
         for obj in scen_mapping.keys():
