@@ -3,6 +3,8 @@
 
 Python client for [enviPath](https://envipath.org) - the environmental contaminant biotransformation pathway resource.
 
+The client allows you to include enviPath directly into you Python code. This is done by using the REST API of enviPath, all calls to Python functions are translated to remote calls to our [enviPath](https://envipath.org). Please see below for documentation. 
+
 ## Quickstart
 
 ```bash
