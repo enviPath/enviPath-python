@@ -47,8 +47,10 @@ if main_folder_path not in sys.path:
 
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.coverage', 'sphinx.ext.napoleon',
               'sphinx.ext.autosectionlabel', "myst_nb", "IPython.sphinxext.ipython_console_highlighting",
-              'sphinx_copybutton'
+              'sphinx_copybutton', "sphinx.ext.mathjax",
               ]
+
+myst_enable_extensions = ["dollarmath", "colon_fence"]
 
 templates_path = ['_templates']
 exclude_patterns = []
@@ -56,6 +58,7 @@ exclude_patterns = []
 suppress_warnings = ["mystnb.unknown_mime_type"]
 html_js_files = ["https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"]
 
+nb_execution_timeout = -1
 
 
 # -- Options for HTML output -------------------------------------------------
