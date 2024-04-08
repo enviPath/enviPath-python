@@ -24,6 +24,8 @@ now the `(+)-Camphor` Compound from EAWAG-BBD, we can do so, as follows:
 
 .. code-block:: python
 
+    from enviPath_python.objects import Compound
+
     camphor_URL = "https://envipath.org/package/32de3cf4-e3e6-4168-956e-32fa5ddb0ce1/compound/e4fe0464-864c-4cb3-9587-5a82d6dc67fa"
     compound = Compound(eP.requester, id=camphor_URL)
 
