@@ -1,15 +1,15 @@
 Getting Started
 ===============
 
-In order to be able to use this package at its highest potential, the main enviPath objects must be known and for this
-reason, we will introduce them in this section.
+To use the enviPath-python package, it is helpful to know the main enviPath objects. We will introduce them in this
+section.
 
 enviPath
 --------
 
 The enviPath object requires the URL of the instance host in order to be initialized, this information will be then
-passed to the subsequently generated objects in order to allow them to retrieve information from there. This is the
-most essential object and it will be used on each of our tutorials. An example of how to initialize this object
+passed to the subsequently generated objects in order to allow them to retrieve information. This is the
+most essential object and it will be used in each of our tutorials. An example of how to initialize this object
 is given in the following block of code:
 
 .. code-block:: python
@@ -18,9 +18,9 @@ is given in the following block of code:
 
     eP = enviPath("https://envipath.org/")
 
-Then, once this is done you will be able to access any enviPath object by just initializing the dedicated class for that
+Once this is done you will be able to access any enviPath object by initializing the dedicated class for that
 object and passing the ``eP.requester`` and a valid ID (URL) for that specific object. For example, if we want to access
-now the `(+)-Camphor` Compound from EAWAG-BBD, we can do so, as follows:
+now the `(+)-Camphor` compound from EAWAG-BBD, we can do so as follows:
 
 .. code-block:: python
 
@@ -34,7 +34,7 @@ now the `(+)-Camphor` Compound from EAWAG-BBD, we can do so, as follows:
 Package
 -------
 
-Package is one of the most fundamental objects in enviPath, it is the object were collections of other objects, such as
+Package is one of the most fundamental objects in enviPath. It is the object where collections of other objects, such as
 Compounds, Reactions, Pathways, etc. are stored. A package can public or private, on the first case no login will be
 required to access the data, however on the second case it will be necessary to do so. There is a dedicated
 :ref:`tutorial<accessing_packages>` to show how to access both types of packages. Additionally, this

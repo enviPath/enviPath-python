@@ -9,7 +9,7 @@ enviPath-python is stored as a package on `PyPI <https://pypi.org/>`_ and theref
     pip install enviPath-python
 
 For developers, enviPath-python is available as an open repository on
-`GitHub <https://github.com/enviPath/enviPath-python>`_, one can therefore ``git clone`` the repository as follows:
+`GitHub <https://github.com/enviPath/enviPath-python>`_, users can ``git clone`` the repository as follows:
 
 .. code-block:: bash
 
