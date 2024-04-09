@@ -63,6 +63,6 @@ nb_execution_timeout = -1
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
-
+html_title = 'enviPath-python'
 html_theme = 'sphinx_book_theme'
 html_favicon = "assets/enviPath_LOGO.ico"
