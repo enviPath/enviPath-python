@@ -31,6 +31,7 @@ If you make use of enviPath-python in your work, please cite our `paper <https:/
 
    installation
    getting_started
+   objects
 
 .. toctree::
    :caption: User Guide
