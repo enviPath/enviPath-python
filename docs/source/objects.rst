@@ -84,10 +84,10 @@ Additionally, Reaction objects are created automatically with
 Rule
 ----
 
-A biotransformation rule is a generalization of reactions and are used for the prediction of pathways. They do so by
+A :class:`Rule` enviPath object represents a biotransformation rule and are used for the prediction of pathways. They do so by
 leveraging SMIRKS Reaction Patterns that identify functional groups and apply the rule whenever the reactant filter pattern
 condition is met. Because they are generalization of reactions, they can as well be associated with enzymes that
-catalyze the associated reaction and their EC numbers can be retrieved using
+catalyze the associated reaction and their EC numbers can be retrieved using the
 :meth:`Rule.get_ec_numbers` method. On the
 enviPath-python implementation of the Rule object, it was decided to represent it as an abstract class, however 3
 distinct non-abstract classes inherit from it and can therefore be instantiated. Those are :meth:`SimpleRule`,
@@ -96,26 +96,27 @@ distinct non-abstract classes inherit from it and can therefore be instantiated.
 Pathway
 -------
 
-A Pathway is an enviPath object that stores :ref:`Node` and :ref:`Edge` objects and represents a biodegradation
-pathway. Being enviPath a database for biodegradation data makes Pathway one of the most fundamental objects to know.
+A :class:`Pathway` is an enviPath object that represents a biodegradation pathway and stores the information of the compounds
+and reactions involved in :ref:`Node` and :ref:`Edge` objects, respectively.
+Being enviPath a database for biodegradation data makes Pathway one of the most fundamental objects to know.
 Pathways can be generated manually by calling :meth:`Pathway.create` method, from there on
-one can add to it nodes and edges using :meth:`Pathway.add_node` and
-:meth:`Pathway.add_edge` methods, respectively. Pathways can also be predicted by, for
-example, invoking the method :meth:`Package.predict`, which will use the provided
+one can add compounds (nodes) and reactions (edges) to it using :meth:`Pathway.add_node` and
+:meth:`Pathway.add_edge` methods, respectively. Pathways can also be predicted by invoking the method
+:meth:`Package.predict`, which will use the provided
 setting to extract the :ref:`Relative Reasoning` model and use it to predict new compounds based on the
 set rules that it has been trained on.
 
 Node
 ~~~~
 
-The Node enviPath object represents a :ref:`Compound` on a :ref:`Pathway`. For this reason it has an associated
+The :class:`Node` enviPath object represents a :ref:`Compound` on a :ref:`Pathway`. For this reason it has an associated
 :ref:`Compound Structure`, that can be accessed through the :meth:`Node.get_default_structure`
 method.
 
 Edge
 ~~~~
 
-The Edge enviPath object represents a :ref:`Reaction` on a :ref:`Pathway`, which can be accessed through the
+The :class:`Edge` enviPath object represents a :ref:`Reaction` on a :ref:`Pathway`, which can be accessed through the
 :meth:`Edge.get_reaction` method. Additionally, its corresponding subtrate and products can be
 obtained using :meth:`Edge.get_start_nodes` and :meth:`Edge.get_end_nodes`,
 respectively.
@@ -123,21 +124,21 @@ respectively.
 Relative Reasoning
 ------------------
 
-A Relative Reasoning enviPath object can be understood as the model that is used to generate pathway predictions. This
+A :class:`RelativeReasoning` enviPath object can be understood as the model that is used to generate pathway predictions. This
 is a powerful object since it allows the user to generate direct predictions without the need of generating pathways.
 This can be achieved for example with the method :meth:`RelativeReasoning.classify_smiles`
 
 Scenario
 --------
 
-A Scenario enviPath object represents the experimental conditions that were used for a given biodegradation pathway.
+A :class:`Scenario` enviPath object represents the experimental conditions that were used for a given biodegradation pathway.
 Ideally it links to a reference article where the given experiment is thoroughly described. A Scenario can be attached
 to **any** other enviPath object
 
 Additional Information
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Additional Information objects store each a experimental condition, there are numerous classes that inherit from
+:class:`AdditionalInformation` objects store each a experimental condition, there are numerous classes that inherit from
 :class:`AdditionalInformation`, to mention some
 :class:`AcidityAdditionalInformation` or :class:`HalfLifeAdditionalInformation`.
 This tutorial#TODO shows how one can access the information contained in a :ref:`Scenario` to retrieve their half lives.
