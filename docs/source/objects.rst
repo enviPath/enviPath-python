@@ -139,6 +139,6 @@ Additional Information
 ~~~~~~~~~~~~~~~~~~~~~~
 
 :class:`AdditionalInformation` objects store each a experimental condition, there are numerous classes that inherit from
-:class:`AdditionalInformation`, to mention some
+Additional Information, to mention some
 :class:`AcidityAdditionalInformation` or :class:`HalfLifeAdditionalInformation`.
 This tutorial#TODO shows how one can access the information contained in a :ref:`Scenario` to retrieve their half lives.
