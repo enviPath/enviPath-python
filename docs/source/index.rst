@@ -40,6 +40,7 @@ If you make use of enviPath-python in your work, please cite our `paper <https:/
    tutorials/accessing_packages
    tutorials/create_package
    tutorials/transformation_product_prediction
+   tutorials/download_additional_information_data
 
 .. toctree::
    :caption: Developers Guide

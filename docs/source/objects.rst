@@ -158,4 +158,5 @@ Additional Information
 :class:`AdditionalInformation` objects store a experimental condition, there are numerous classes that inherit from
 Additional Information, to mention some
 :class:`AcidityAdditionalInformation` or :class:`HalfLifeAdditionalInformation`.
-This tutorial#TODO shows how one can access the information contained in a :ref:`Scenario` to retrieve their half lives.
+This :ref:`tutorial<download_additional_information_data>` shows how one can access the information contained in
+:ref:`Scenario` to retrieve experimental data.
