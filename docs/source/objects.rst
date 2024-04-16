@@ -36,6 +36,8 @@ now the `(+)-Camphor` compound from EAWAG-BBD, we can do so as follows:
 
 Package
 -------
+.. seealso::
+    A more detailed explanation of Package can be found `here <https://wiki.envipath.com/doku.php?id=packages>`_
 
 .. currentmodule:: enviPath_python.objects
 
@@ -47,6 +49,8 @@ required to access the data, however on the second case it will be necessary to 
 
 Compound
 --------
+.. seealso::
+    A more detailed explanation of Compound can be found `here <https://wiki.envipath.com/doku.php?id=compounds>`_
 
 A :class:`Compound` is an enviPath object within a :ref:`Package` and essentially stores all the molecular information
 organized into :ref:`Compound Structure` objects. In other words, a Compound can be thought of as a container of Compound
@@ -72,6 +76,8 @@ i.e. the :ref:`Compound` which will be associated with.
 
 Reaction
 --------
+.. seealso::
+    A more detailed explanation of Reaction can be found `here <https://wiki.envipath.com/doku.php?id=reactions>`_
 
 A :class:`Reaction` is an enviPath object that represents a biotransformation reaction, it connects substrates with
 products, each of them represented as a :ref:`Compound Structure`. Usually reactions are
@@ -83,6 +89,8 @@ Additionally, Reaction objects are created automatically with
 
 Rule
 ----
+.. seealso::
+    A more detailed explanation of Rule can be found `here <https://wiki.envipath.com/doku.php?id=rules>`_
 
 A :class:`Rule` enviPath object represents a biotransformation rule and are used for the prediction of pathways. They do so by
 leveraging SMIRKS Reaction Patterns that identify functional groups and apply the rule whenever the reactant filter pattern
@@ -95,22 +103,27 @@ distinct non-abstract classes inherit from it and can therefore be instantiated.
 
 Pathway
 -------
+.. seealso::
+    A more detailed explanation of Pathway can be found `here <https://wiki.envipath.com/doku.php?id=pathways>`_
 
-A :class:`Pathway` is an enviPath object that represents a biodegradation pathway and stores the information of the compounds
-and reactions involved in :ref:`Node` and :ref:`Edge` objects, respectively. The names of the last two objects come from
-`Graph Theory <https://en.wikipedia.org/wiki/Graph_theory>`_ and one can realize that there is a direct connection between
-biodegradation pathways and `directed graphs <https://www.geeksforgeeks.org/what-is-directed-graph-directed-graph-meaning/>`_.
-Being enviPath a database for biodegradation data makes Pathway one of the most fundamental objects to know.
-Pathways can be generated manually by calling :meth:`Pathway.create` method, from there on
-one can add compounds (nodes) and reactions (edges) to it using :meth:`Pathway.add_node` and
+A :class:`Pathway` is an enviPath object that represents a biotransformation pathway and stores information of the compounds
+and reactions in :ref:`Node` and :ref:`Edge` objects, respectively. Nodes and Edges are concepts derived from
+`Graph Theory <https://en.wikipedia.org/wiki/Graph_theory>`_, where
+`directed graphs <https://www.geeksforgeeks.org/what-is-directed-graph-directed-graph-meaning/>`_ can be used
+to represent biotransformation pathways.
+Given that enviPath is a database for biotransformation data, Pathways are one of the most fundamental objects to understand.
+Pathways can be generated manually by calling the :meth:`Pathway.create` method, from there
+one can add compounds (nodes) and reactions (edges) using the :meth:`Pathway.add_node` and
 :meth:`Pathway.add_edge` methods, respectively. Below, we show how the
-`1,4-Dioxane Pathway <https://envipath.org/package/32de3cf4-e3e6-4168-956e-32fa5ddb0ce1/pathway/19a53ddd-7bbe-43b3-bd56-c1c35302d185>`_
-biodegradation pathway looks like in the website:
+`1,4-Dioxane <https://envipath.org/package/32de3cf4-e3e6-4168-956e-32fa5ddb0ce1/pathway/19a53ddd-7bbe-43b3-bd56-c1c35302d185>`_
+biotransformation pathway looks like in the website:
 
 .. image:: assets/eP_pathway_example.png
    :alt: Example of an enviPath pathway
 
-A Pathway encompasses everything within the box labelled as 1.
+The image above is a visualization of the information included in a Pathway object. One can have access
+to all the compounds (nodes) in the pathway by calling :meth:`Pathway.get_nodes`, analogously one can do the same
+for reactions (edges) with :meth:`Pathway.get_edges`.
 
 Pathways can also be predicted by invoking the method
 :meth:`Package.predict`, which will use the provided
@@ -121,36 +134,45 @@ Node
 ~~~~
 
 The :class:`Node` enviPath object represents a :ref:`Compound Structure` on a :ref:`Pathway`. In the previous image, both
-2 and 3 would be examples of nodes. The difference among them, is that 2 does not have any incoming edge, for this reason
-the node 2 can also be named as `root node`. Nodes also stored the property ``depth``, this is a feature that informs
-how deep down on the pathway the node is located. Hence, the root node have a defined ``depth=0`` and the node labelled
-as 3 on the image would have a ``depth=1``. This attribute is useful to navigate through the pathway and can be accessed
+compounds labelled 1 and 2 are examples of nodes. The difference between them is that 1 does not have an incoming edge and
+for this reason, node 1 is named the `root node`. Nodes also store the property ``depth``, this is a feature that informs
+the depth of the node on the pathway. Hence, the root node have a defined ``depth=0`` and the node labelled
+as 2 on the image would have a ``depth=1``. This attribute is useful to navigate through the pathway and can be accessed
 with the method :meth:`Node.get_depth`
 
 Edge
 ~~~~
 
-The :class:`Edge` enviPath object represents a :ref:`Reaction` on a :ref:`Pathway`, which can be accessed through the
-:meth:`Edge.get_reaction` method. In the previous image, edges lablled as 4 and 5 are examples of pathway edges. The
-difference between them is that edge 4 represents a `Simple Reaction` while 5 represents a `Multistep Reaction`.
+The :class:`Edge` enviPath object represents a :ref:`Reaction` on a :ref:`Pathway` and can be accessed through the
+:meth:`Edge.get_reaction` method. In the previous image, edges labelled as 3 and 4 are examples of pathway edges. The
+difference between them is that edge 3 represents a `Simple Reaction` while 4 represents a `Multistep Reaction`. On
+enviPath we visualize a reaction as Multistep Reaction when we want to indicate that a compound got mineralized or
+when the intermediates of a reaction are unknown.
 Additionally, its corresponding substrates and products can be accessed using :meth:`Edge.get_start_nodes` and
 :meth:`Edge.get_end_nodes` methods, respectively.
 
 Relative Reasoning
 ------------------
+.. seealso::
+    A more detailed explanation of Relative Reasoning can be found `here <https://wiki.envipath.com/doku.php?id=relative_reasoning>`_
 
 A :class:`RelativeReasoning` enviPath object can be understood as the model that is used to generate pathway predictions. This
 is a relevant object for users wanting to generate predictions using the models stored in our database.
-This can be achieved for example with the method :meth:`RelativeReasoning.classify_smiles`, providing a valid SMILES to it.
+This can be achieved with the method :meth:`RelativeReasoning.classify_smiles`, given that a valid SMILES is provided.
 This method will return a list with of expected products without storing them on the database, leading to reduced
 computation time.
 
 Scenario
 --------
+.. seealso::
+    A more detailed explanation of Scenario can be found `here <https://wiki.envipath.com/doku.php?id=scenarios>`_
 
-A :class:`Scenario` enviPath object represents the experimental conditions that were used for a given biodegradation pathway.
+A :class:`Scenario` enviPath object represents the experimental conditions that were used for a given biotransformation pathway.
 Ideally it links to a reference article where the given experiment is thoroughly described. A Scenario can be attached
-to **any** other enviPath object.
+to **any** other enviPath object. On many papers, different experimental conditions are tested but some parameters are
+shared across them. In order to ease inputting those types of scenarios, the concept of `Related Scenario` was developed.
+A Related Scenario is a Scenario that points to another Scenario from which data will be copied. This can be seen in
+more detail on the :ref:`Creating packages<create_package>` tutorial.
 
 Additional Information
 ~~~~~~~~~~~~~~~~~~~~~~
