@@ -36,20 +36,20 @@ now the `(+)-Camphor` compound from EAWAG-BBD, we can do so as follows:
 
 Package
 -------
-.. seealso::
+.. note::
     A more detailed explanation of Package can be found `here <https://wiki.envipath.com/doku.php?id=packages>`_
 
 .. currentmodule:: enviPath_python.objects
 
 :class:`Package` is one of the most fundamental objects in enviPath. It is the object where collections of other objects, such as
-Compounds, Reactions, Pathways, etc. are stored. A package can be public or private, on the first case no login will be
-required to access the data, however on the second case it will be necessary to do so. There is a dedicated
+Compounds, Reactions, Pathways, etc. are stored. A package can be public or private, in the first case no login will be
+required to access the data, however in the second case it will be necessary to do so. There is a dedicated
 :ref:`tutorial<accessing_packages>` to show how to access both types of packages and yet another
 :ref:`tutorial<create_package>` to help you see how to create a package and start to add data to it.
 
 Compound
 --------
-.. seealso::
+.. note::
     A more detailed explanation of Compound can be found `here <https://wiki.envipath.com/doku.php?id=compounds>`_
 
 A :class:`Compound` is an enviPath object within a :ref:`Package` and essentially stores all the molecular information
@@ -76,7 +76,7 @@ i.e. the :ref:`Compound` which will be associated with.
 
 Reaction
 --------
-.. seealso::
+.. note::
     A more detailed explanation of Reaction can be found `here <https://wiki.envipath.com/doku.php?id=reactions>`_
 
 A :class:`Reaction` is an enviPath object that represents a biotransformation reaction, it connects substrates with
@@ -89,7 +89,7 @@ Additionally, Reaction objects are created automatically with
 
 Rule
 ----
-.. seealso::
+.. note::
     A more detailed explanation of Rule can be found `here <https://wiki.envipath.com/doku.php?id=rules>`_
 
 A :class:`Rule` enviPath object represents a biotransformation rule and are used for the prediction of pathways. They do so by
@@ -103,7 +103,7 @@ distinct non-abstract classes inherit from it and can therefore be instantiated.
 
 Pathway
 -------
-.. seealso::
+.. note::
     A more detailed explanation of Pathway can be found `here <https://wiki.envipath.com/doku.php?id=pathways>`_
 
 A :class:`Pathway` is an enviPath object that represents a biotransformation pathway and stores information of the compounds
@@ -153,7 +153,7 @@ Additionally, its corresponding substrates and products can be accessed using :m
 
 Relative Reasoning
 ------------------
-.. seealso::
+.. note::
     A more detailed explanation of Relative Reasoning can be found `here <https://wiki.envipath.com/doku.php?id=relative_reasoning>`_
 
 A :class:`RelativeReasoning` enviPath object can be understood as the model that is used to generate pathway predictions. This
@@ -164,7 +164,7 @@ computation time.
 
 Scenario
 --------
-.. seealso::
+.. note::
     A more detailed explanation of Scenario can be found `here <https://wiki.envipath.com/doku.php?id=scenarios>`_
 
 A :class:`Scenario` enviPath object represents the experimental conditions that were used for a given biotransformation pathway.
