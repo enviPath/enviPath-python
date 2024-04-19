@@ -1,0 +1,9 @@
+enviPath-python
+myst-nb
+networkx
+pandas
+plotly
+rdkit
+sphinx
+sphinx-book-theme
+sphinx-copybutton
