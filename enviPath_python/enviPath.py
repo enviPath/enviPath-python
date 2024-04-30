@@ -306,19 +306,6 @@ class enviPathRequester(object):
     header = {'Accept': 'application/json'}
 
     ENDPOINT_OBJECT_MAPPING = {
-        "user": User,
-        "package": Package,
-        "compound": Compound,
-        "pathway": Pathway,
-        "reaction": Reaction,
-        "scenario": Scenario,
-        "rule": Rule,
-        "simple-rule": SimpleRule,
-        "sequentialcompositerule": SequentialCompositeRule,
-        "parallel-rule": ParallelCompositeRule,
-        "node": Node,
-        "edge": Edge,
-        "compound-structure": CompoundStructure,
         Endpoint.USER: User,
         Endpoint.PACKAGE: Package,
         Endpoint.COMPOUND: Compound,

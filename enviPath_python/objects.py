@@ -849,7 +849,7 @@ class Scenario(enviPathObject):
         """
         res = []
         for obj in self._get('LinkedTo'):
-            res.append(self.requester.get_object(obj["id"], obj["identifier"]))
+            res.append(self.requester.get_object(obj["id"], Endpoint(obj["identifier"])))
         return res
 
     def copy(self, package: 'Package', debug=False, id_lookup={}) -> (dict, 'Scenario'):
