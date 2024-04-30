@@ -842,7 +842,7 @@ class Scenario(enviPathObject):
 
     def get_linked_objects(self) -> List['ReviewableEnviPathObject']:
         """
-        Gets the objects that are linked to the current scenario
+        Gets the objects that are linked to the current scenario.
 
         :return: A list of objects that have this scenario attached
         :rtype: List
