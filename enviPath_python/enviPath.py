@@ -306,6 +306,19 @@ class enviPathRequester(object):
     header = {'Accept': 'application/json'}
 
     ENDPOINT_OBJECT_MAPPING = {
+        "user": User,
+        "package": Package,
+        "compound": Compound,
+        "pathway": Pathway,
+        "reaction": Reaction,
+        "scenario": Scenario,
+        "rule": Rule,
+        "simple-rule": SimpleRule,
+        "sequentialcompositerule": SequentialCompositeRule,
+        "parallel-rule": ParallelCompositeRule,
+        "node": Node,
+        "edge": Edge,
+        "compound-structure": CompoundStructure,
         Endpoint.USER: User,
         Endpoint.PACKAGE: Package,
         Endpoint.COMPOUND: Compound,
@@ -468,7 +481,7 @@ class enviPathRequester(object):
 
         :param base_url: The base URL
         :type base_url: str
-        :param endpoint: Enum of Endpoint.
+        :param endpoint: Enum of Endpoint or a string identifying the endpoint.
         :return: List of objects denoted by endpoint.
         """
         url = base_url + endpoint.value
@@ -478,23 +491,10 @@ class enviPathRequester(object):
         if len(objs) == 0 or ('object' in objs and len(objs['object']) == 0):
             return []
 
-        # TODO delegate to get_object
-        if endpoint == Endpoint.RULE:
-            res = []
-            for obj in objs[endpoint.value]:
-                if obj['identifier'] == Endpoint.SIMPLERULE.value:
-                    res.append(SimpleRule(self, **obj))
-                elif obj['identifier'] == Endpoint.SEQUENTIALCOMPOSITERULE.value:
-                    res.append(SequentialCompositeRule(self, **obj))
-                elif obj['identifier'] == Endpoint.PARALLELCOMPOSITERULE.value:
-                    res.append(ParallelCompositeRule(self, **obj))
-                else:
-                    raise ValueError("Unknown Rule Type ({})".format(obj['identifier']))
-            return res
-        elif endpoint.value in objs:
-            return [self.ENDPOINT_OBJECT_MAPPING[endpoint](self, **obj) for obj in objs[endpoint.value]]
-        else:
-            raise ValueError("Cant map ({}) to objects".format(objs.keys()))
+        res = []
+        for obj in objs[endpoint.value]:
+            res.append(self.get_object(obj["id"], endpoint))
+        return res
 
     def get_object(self, obj_id, endpoint):
         """
@@ -505,7 +505,7 @@ class enviPathRequester(object):
         :param endpoint: The endpoint where to get the object
         :return: Object stored on the endpoint with id `obj_id` (if matched)
         """
-        if endpoint == Endpoint.RULE:
+        if endpoint == Endpoint.RULE or endpoint == Endpoint.RULE.value:
             if Endpoint.SIMPLERULE.value in obj_id:
                 return SimpleRule(self, id=obj_id)
             elif Endpoint.SEQUENTIALCOMPOSITERULE.value in obj_id:
@@ -514,5 +514,7 @@ class enviPathRequester(object):
                 return ParallelCompositeRule(self, id=obj_id)
             else:
                 raise ValueError("Unable to determine rule type for {}".format(obj_id))
-        else:
+        elif endpoint in self.ENDPOINT_OBJECT_MAPPING:
             return self.ENDPOINT_OBJECT_MAPPING[endpoint](self, id=obj_id)
+        else:
+            raise ValueError("Cant map ({}) to objects".format(endpoint.value))
