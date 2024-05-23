@@ -848,7 +848,7 @@ class Scenario(enviPathObject):
         :rtype: List
         """
         res = []
-        for obj in self._get('LinkedTo'):
+        for obj in self._get('linkedTo'):
             res.append(self.requester.get_object(obj["id"], Endpoint(obj["identifier"])))
         return res
 
