@@ -2620,67 +2620,147 @@ class DummyAdditionalInformation(AdditionalInformation):
 
 
 class OxygenDemandAdditionalInformation(AdditionalInformation):
+    """
+    Creates an oxygen demand addinfo object 
+    """
     name = "oxygendemand"
     mandatories = ['oxygendemandType', 'oxygendemandInfluent', 'oxygendemandEffluent']
 
     # Setter
     def set_oxygendemandType(self, value):
-        self.params["oxygendemandType"] = value
+        """
+        Sets the type of oxygen demand.
+
+        :param value: The type of oxygen demand (e.g., Chemical Oxygen Demand (COD), Biological Oxygen Demand (BOD5)).
+        :type value: str
+        """
+        if isinstance(value, str):
+            self.params["oxygendemandType"] = value
+        else:
+            raise ValueError("oxygen demand type must be a string.")        
 
     def set_oxygendemandInfluent(self, value):
-        self.params["oxygendemandInfluent"] = value
+        """
+        Sets the influent's oxygen demand value. 
+
+        :param value: Oxygen demand value of the influent.
+        :type value: float
+        """
+        if isinstance(value, float):
+            self.params["oxygendemandInfluent"] = value
+        else:
+            raise ValueError("Influent oxygen demand must be a float.")
 
     def set_oxygendemandEffluent(self, value):
+        """
+        Sets the effluent's oxygen demand value.
+
+        :param value: Oxygen demand value of the effluent.
+        :type value: float
+        """
+
         self.params["oxygendemandEffluent"] = value
 
     # Getter
     def get_oxygendemandType(self):
+        """
+        Retrieves the type of oxygen demand.
+
+        :return: The type of oxygen demand if set; otherwise, None.
+        """
         return self.params.get("oxygendemandType", None)
 
     def get_oxygendemandInfluent(self):
+        """
+        Retrieves the influent's oxygen demand value.
+
+        :return: The oxygen demand value of the influent if set; otherwise, None
+        """
         return self.params.get("oxygendemandInfluent", None)
 
     def get_oxygendemandEffluent(self):
+        """
+        Retrieves the effluent's oxygen demand value.
+
+        :return: The oxygen demand value of the effluent if set; otherwise, None.
+        """
         return self.params.get("oxygendemandEffluent", None)
 
-    # Parser
+    # Parser 
     @classmethod
     def parse(cls, data_string):
+        """
+        Parses a string containing oxygen demand information to initialize an instance.
+
+        :param data_string: A semicolon-separated string containing the type, influent, and effluent oxygen demand.
+        :type data_string: str
+        :return: An instance of OxygenDemandAdditionalInformation populated with the parsed data.
+        """
         res = {
             'oxygendemandType': data_string.split(';')[0],
             'oxygendemandInfluent': data_string.split(';')[1],
             'oxygendemandEffluent': data_string.split(';')[2],
         }
+    
         return cls(**res)
 
 
+
 class DissolvedOxygenConcentrationAdditionalInformation(AdditionalInformation):
+    """
+    Creates a Dissolved Oxyfen Concentration addinfo Object
+    """
     name = "Dissolvedoxygenconcentration"
     mandatories = ['DissolvedoxygenconcentrationLow', 'DissolvedoxygenconcentrationHigh']
 
     # Setter
     def set_DissolvedoxygenconcentrationLow(self, value):
+        """
+        Sets the lower limit for dissolved oxygen concentration.
+
+        :param value: The lower limit of dissolved oxygen concentration, typically measured in mg/L.
+        """
         self.params["DissolvedoxygenconcentrationLow"] = value
 
     def set_DissolvedoxygenconcentrationHigh(self, value):
+        """
+        Sets the upper limit for dissolved oxygen concentration.
+
+        :param value: The upper limit of dissolved oxygen concentration, typically measured in mg/L.
+        """
         self.params["DissolvedoxygenconcentrationHigh"] = value
 
     # Getter
     def get_DissolvedoxygenconcentrationLow(self):
+        """
+        Retrieves the lower limit for dissolved oxygen concentration.
+
+        :return: The lower limit of dissolved oxygen concentration if set; otherwise, None.
+        """
         return self.params.get("DissolvedoxygenconcentrationLow", None)
 
     def get_DissolvedoxygenconcentrationHigh(self):
+        """
+        Retrieves the upper limit for dissolved oxygen concentration.
+
+        :return: The upper limit of dissolved oxygen concentration if set; otherwise, None.
+        """
         return self.params.get("DissolvedoxygenconcentrationHigh", None)
 
-    # Parser
     @classmethod
     def parse(cls, data_string):
+        """
+        Parses a string containing the low and high limits for dissolved oxygen concentration to initialize an instance.
+
+        :param data_string: A semicolon-separated string containing the low and high limits of dissolved oxygen concentration.
+        :type data_string: str
+        :return: An instance of DissolvedOxygenConcentrationAdditionalInformation populated with the parsed data.
+        """
         res = {
             'DissolvedoxygenconcentrationLow': data_string.split(';')[0],
             'DissolvedoxygenconcentrationHigh': data_string.split(';')[1],
         }
         return cls(**res)
-
 
 class OxygenUptakeRateAdditionalInformation(AdditionalInformation):
     name = "oxygenuptakerate"
@@ -3432,46 +3512,93 @@ class TypeOfAerationAdditionalInformation(AdditionalInformation):
 
 
 class AcidityAdditionalInformation(AdditionalInformation):
+    """
+    Creates an acidity addinfo object.
+    """
     name = "acidity"
     mandatories = ['lowPh', 'highPh']
 
     # Setter
     def set_lowPh(self, value):
-        self.params["lowPh"] = value
+        """
+        Sets the low pH value.
+
+        :param value: The low pH value.
+        """
+        if isinstance(value, float):
+            self.params["lowPh"] = value
+        else:
+            raise ValueError("Low pH value must be a float.")
 
     def set_highPh(self, value):
-        self.params["highPh"] = value
+        """
+        Sets the high pH value.
+
+        :param value: The high pH value.
+        """
+        if isinstance(value, float):
+            self.params["highPh"] = value
+        else:
+            raise ValueError("High pH value must be a float.")
 
     def set_acidityType(self, value):
-        if value.lower() not in [x.lower() for x in ['', 'WATER', 'KCL', 'CACL2']]:
+        """
+        Sets the type of acidity.
+
+        :param value: The type of acidity (e.g., WATER, KCL, CACL2).
+        """
+        if value.lower() not in ['', 'water', 'kcl', 'cacl2']:
             raise ValueError("{} is not allowed as acidityType".format(value))
         self.params["acidityType"] = value
 
     # Getter
     def get_lowPh(self):
+        """
+        Retrieves the low pH value.
+
+        :return: The low pH value if set; otherwise, None.
+        """
         return self.params.get("lowPh", None)
 
     def get_highPh(self):
+        """
+        Retrieves the high pH value.
+
+        :return: The high pH value if set; otherwise, None.
+        """
         return self.params.get("highPh", None)
 
     def get_acidityType(self):
+        """
+        Retrieves the type of acidity.
+
+        :return: The type of acidity if set; otherwise, None.
+        """
         return self.params.get("acidityType", None)
 
     # Parser
     @classmethod
     def parse(cls, data_string):
+        """
+        Parses a string containing acidity information to initialize an instance.
+
+        :param data_string: A semicolon-separated string containing the low pH, high pH, and optionally acidity type.
+        :type data_string: str
+        :return: An instance of AcidityAdditionalInformation populated with the parsed data.
+        """
         parts = data_string.split(';')
         vals = parts[0].split(' - ')
 
         res = {
-            'lowPh': vals[0],
-            'highPh': vals[1] if len(vals) > 1 else vals[0],
+            'lowPh': float(vals[0]),
+            'highPh': float(vals[1]) if len(vals) > 1 else float(vals[0]),
         }
 
         if len(parts) > 1:
             res['acidityType'] = parts[1]
 
         return cls(**res)
+
 
 
 class RedoxAdditionalInformation(AdditionalInformation):
