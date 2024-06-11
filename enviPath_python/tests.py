@@ -797,6 +797,829 @@ class TestAdditionalInformationIntegration(unittest.TestCase):
 
         self.assertEqual(retrieved_info.get_additionofnutrients(), data)
         
+
+    # OM content
+    def test_omcontentinOM_additional_information(self):
+        scenario_name = self.get_scenario_name()
+
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test OM content additional information in OM", additional_information=[])
+
+        info = OMContentAdditionalInformation()
+        om_content = 50.0
+        info.set_omcontentInOM(om_content)
+
+        scen.update_scenario(additional_information=[info])
+
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_omcontentInOM(), om_content)
+
+    def test_omcontentinOC_additional_information(self):
+        scenario_name = self.get_scenario_name()
+
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test OM content additional information in OC", additional_information=[])
+
+        info = OMContentAdditionalInformation()
+        oc_content = 20.0
+        info.set_omcontentINOC(oc_content)
+
+        scen.update_scenario(additional_information=[info])
+
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_omcontentINOC(), oc_content)
+
+    def test_omcontentinOM_additional_information_parser(self):
+        scenario_name = self.get_scenario_name()
+
+        scen_parser = Scenario.create(self.pkg, name=scenario_name, description="to test OM content additional information parser", additional_information=[])
+        data = "50.0;OM"
+        info = OMContentAdditionalInformation.parse(data)
+
+        scen_parser.update_scenario(additional_information=[info])
+
+        retrieved_info = scen_parser.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_omcontentInOM(), 50.0)
+        self.assertIsNone(retrieved_info.get_omcontentINOC())
+
+    def test_omcontentinOC_additional_information_parser(self):
+        scenario_name = self.get_scenario_name()
+
+        scen_parser = Scenario.create(self.pkg, name=scenario_name, description="to test OM content additional information parser with OC", additional_information=[])
+        data = "20.0;OC"
+        info = OMContentAdditionalInformation.parse(data)
+
+        scen_parser.update_scenario(additional_information=[info])
+
+        retrieved_info = scen_parser.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_omcontentINOC(), 20.0)
+        self.assertIsNone(retrieved_info.get_omcontentInOM())
+
+    # Organiccarbonwater
+
+    def test_organiccarbonwatersetters_additional_information(self):
+        scenario_name = self.get_scenario_name()
+
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test organic carbon water additional information setters", additional_information=[])
+
+        info = OrganicCarbonWaterAdditionalInformation()
+        toc_low = 1.5
+        toc_high = 3.0
+        doc_low = 0.5
+        doc_high = 1.5
+
+        info.set_TOC_low(toc_low)
+        info.set_TOC_high(toc_high)
+        info.set_DOC_low(doc_low)
+        info.set_DOC_high(doc_high)
+
+        scen.update_scenario(additional_information=[info])
+
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_TOC_low(), toc_low)
+        self.assertEqual(retrieved_info.get_TOC_high(), toc_high)
+        self.assertEqual(retrieved_info.get_DOC_low(), doc_low)
+        self.assertEqual(retrieved_info.get_DOC_high(), doc_high)
+
+    def test_organiccarbonwaterpartial_toc_additional_information_setters(self):
+        scenario_name = self.get_scenario_name()
+
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test partial TOC settings", additional_information=[])
+
+        info = OrganicCarbonWaterAdditionalInformation()
+        toc_low = 1.5
+
+        info.set_TOC_low(toc_low)
+
+        scen.update_scenario(additional_information=[info])
+
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_TOC_low(), toc_low)
+        self.assertEqual(retrieved_info.get_TOC_high(),toc_low)
+        self.assertIsNone(retrieved_info.get_DOC_low())
+        self.assertIsNone(retrieved_info.get_DOC_high())
+
+    def test_organiccarbonwaterpartial_doc_additional_information_setters(self):
+        scenario_name = self.get_scenario_name()
+
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test partial DOC settings", additional_information=[])
+
+        info = OrganicCarbonWaterAdditionalInformation()
+        doc_high = 1.5
+
+        info.set_DOC_high(doc_high)
+
+        scen.update_scenario(additional_information=[info])
+
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertIsNone(retrieved_info.get_TOC_low())
+        self.assertIsNone(retrieved_info.get_TOC_high())
+        self.assertEqual(retrieved_info.get_DOC_low(),doc_high)
+        self.assertEqual(retrieved_info.get_DOC_high(), doc_high)
+
+    def test_organiccarbonwater_additional_information_parser(self):
+        scenario_name = self.get_scenario_name()
+
+        scen_parser = Scenario.create(self.pkg, name=scenario_name, description="to test organic carbon water additional information parser", additional_information=[])
+        data = "1.5 - 3.0;0.5 - 1.5"
+        info = OrganicCarbonWaterAdditionalInformation.parse(data)
+
+        scen_parser.update_scenario(additional_information=[info])
+
+        retrieved_info = scen_parser.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_TOC_low(), 1.5)
+        self.assertEqual(retrieved_info.get_TOC_high(), 3.0)
+        self.assertEqual(retrieved_info.get_DOC_low(), 0.5)
+        self.assertEqual(retrieved_info.get_DOC_high(), 1.5)
+
+    def test_organiccarbonwaterwith_na_additional_information_parser(self):
+        scenario_name = self.get_scenario_name()
+
+        scen_parser = Scenario.create(self.pkg, name=scenario_name, description="to test organic carbon water additional information parser with NA values", additional_information=[])
+        data = "NA;0.5 - 1.5"
+        info = OrganicCarbonWaterAdditionalInformation.parse(data)
+
+        scen_parser.update_scenario(additional_information=[info])
+
+        retrieved_info = scen_parser.get_additional_information()[0]
+
+        self.assertIsNone(retrieved_info.get_TOC_low())
+        self.assertIsNone(retrieved_info.get_TOC_high())
+        self.assertEqual(retrieved_info.get_DOC_low(), 0.5)
+        self.assertEqual(retrieved_info.get_DOC_high(), 1.5)
+
+    def test_organiccarbonwaterpartial_mixed_additional_information_setters(self):
+        scenario_name = self.get_scenario_name()
+
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test partial mixed TOC and DOC settings", additional_information=[])
+
+        info = OrganicCarbonWaterAdditionalInformation()
+        toc_high = 3.0
+        doc_low = 0.5
+
+        info.set_TOC_high(toc_high)
+        info.set_DOC_low(doc_low)
+
+        scen.update_scenario(additional_information=[info])
+
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_TOC_low(),toc_high)
+        self.assertEqual(retrieved_info.get_TOC_high(), toc_high)
+        self.assertEqual(retrieved_info.get_DOC_low(), doc_low)
+        self.assertEqual(retrieved_info.get_DOC_high(),doc_low)
+
+
+    # organic content
+
+
+    def test_organiccontentsetters_additional_information(self):
+        scenario_name = self.get_scenario_name()
+
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test organic content additional information setters", additional_information=[])
+
+        info = OrganicContentAdditionalInformation()
+        oc_low = 1.5
+        oc_high = 3.0
+        om_low = 0.5
+        om_high = 1.5
+
+        info.set_OC_content_low(oc_low)
+        info.set_OC_content_high(oc_high)
+        info.set_OM_content_low(om_low)
+        info.set_OM_content_high(om_high)
+
+        scen.update_scenario(additional_information=[info])
+
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_OC_content_low(), oc_low)
+        self.assertEqual(retrieved_info.get_OC_content_high(), oc_high)
+        self.assertEqual(retrieved_info.get_OM_content_low(), om_low)
+        self.assertEqual(retrieved_info.get_OM_content_high(), om_high)
+
+    def test_organiccontentpartial_oc_additional_information_setters(self):
+        scenario_name = self.get_scenario_name()
+
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test partial OC settings", additional_information=[])
+
+        info = OrganicContentAdditionalInformation()
+        oc_low = 1.5
+
+        info.set_OC_content_low(oc_low)
+
+        scen.update_scenario(additional_information=[info])
+
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_OC_content_low(), oc_low)
+        self.assertEqual(retrieved_info.get_OC_content_high(), oc_low)
+        self.assertIsNone(retrieved_info.get_OM_content_low())
+        self.assertIsNone(retrieved_info.get_OM_content_high())
+
+    def test_organiccontentpartial_om_additional_information_setters(self):
+        scenario_name = self.get_scenario_name()
+
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test partial OM settings", additional_information=[])
+
+        info = OrganicContentAdditionalInformation()
+        om_high = 1.5
+
+        info.set_OM_content_high(om_high)
+
+        scen.update_scenario(additional_information=[info])
+
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertIsNone(retrieved_info.get_OC_content_low())
+        self.assertIsNone(retrieved_info.get_OC_content_high())
+        self.assertEqual(retrieved_info.get_OM_content_low(), om_high)
+        self.assertEqual(retrieved_info.get_OM_content_high(), om_high)
+
+    def test_organiccontent_additional_information_parser(self):
+        scenario_name = self.get_scenario_name()
+
+        scen_parser = Scenario.create(self.pkg, name=scenario_name, description="to test organic content additional information parser", additional_information=[])
+        data = "1.5 - 3.0;0.5 - 1.5"
+        info = OrganicContentAdditionalInformation.parse(data)
+
+        scen_parser.update_scenario(additional_information=[info])
+
+        retrieved_info = scen_parser.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_OC_content_low(), 1.5)
+        self.assertEqual(retrieved_info.get_OC_content_high(), 3.0)
+        self.assertEqual(retrieved_info.get_OM_content_low(), 0.5)
+        self.assertEqual(retrieved_info.get_OM_content_high(), 1.5)
+
+    def test_organiccontentwith_na_additional_information_parser(self):
+        scenario_name = self.get_scenario_name()
+
+        scen_parser = Scenario.create(self.pkg, name=scenario_name, description="to test organic content additional information parser with NA values", additional_information=[])
+        data = "NA;0.5 - 1.5"
+        info = OrganicContentAdditionalInformation.parse(data)
+
+        scen_parser.update_scenario(additional_information=[info])
+
+        retrieved_info = scen_parser.get_additional_information()[0]
+
+        self.assertIsNone(retrieved_info.get_OC_content_low())
+        self.assertIsNone(retrieved_info.get_OC_content_high())
+        self.assertEqual(retrieved_info.get_OM_content_low(), 0.5)
+        self.assertEqual(retrieved_info.get_OM_content_high(), 1.5)
+
+    def test_organiccontentsetters_partial_mixed_additional_information(self):
+        scenario_name = self.get_scenario_name()
+
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test partial mixed OC and OM settings", additional_information=[])
+
+        info = OrganicContentAdditionalInformation()
+        oc_high = 3.0
+        om_low = 0.5
+
+        info.set_OC_content_high(oc_high)
+        info.set_OM_content_low(om_low)
+
+        scen.update_scenario(additional_information=[info])
+
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_OC_content_low(), oc_high)
+        self.assertEqual(retrieved_info.get_OC_content_high(), oc_high)
+        self.assertEqual(retrieved_info.get_OM_content_low(), om_low)
+        self.assertEqual(retrieved_info.get_OM_content_high(), om_low)
+
+    # original sludge amount
+
+    def test_originalsludgeamount_additional_information(self):
+        scenario_name = self.get_scenario_name()
+
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test original sludge amount additional information", additional_information=[])
+
+        info = OriginalSludgeAmountAdditionalInformation()
+        sludge_amount = 100.0
+        info.set_originalsludgeamount(sludge_amount)
+
+        scen.update_scenario(additional_information=[info])
+
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_originalsludgeamount(), sludge_amount)
+
+    def test_originalsludgeamount_additional_information_parser(self):
+        scenario_name = self.get_scenario_name()
+
+        scen_parser = Scenario.create(self.pkg, name=scenario_name, description="to test original sludge amount additional information parser", additional_information=[])
+        data = 100.0
+        info = OriginalSludgeAmountAdditionalInformation.parse(data)
+
+        scen_parser.update_scenario(additional_information=[info])
+
+        retrieved_info = scen_parser.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_originalsludgeamount(), data)
+    '''
+    # oxygen content
+    def test_fulloxygencontent_information(self):
+        scenario_name = self.get_scenario_name()
+
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test oxygen content information", additional_information=[])
+
+        info = OxygenContentWaterSedimentAdditionalInformation()
+        info.set_oxygen_content_water_low(5.0)
+        info.set_oxygen_content_water_high(8.0)
+        info.set_oxygen_content_sediment_low(3.0)
+        info.set_oxygen_content_sediment_high(6.0)
+
+        scen.update_scenario(additional_information=[info])
+
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_oxygen_content_water_low(), 5.0)
+        self.assertEqual(retrieved_info.get_oxygen_content_water_high(), 8.0)
+        self.assertEqual(retrieved_info.get_oxygen_content_sediment_low(), 3.0)
+        self.assertEqual(retrieved_info.get_oxygen_content_sediment_high(), 6.0)
+
+    def test_partialoxygencontent_information(self):
+        scenario_name = self.get_scenario_name()
+
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test partial oxygen content information", additional_information=[])
+
+        info = OxygenContentWaterSedimentAdditionalInformation()
+        info.set_oxygen_content_water_low(5.0)
+        #info.set_oxygen_content_sediment_high(6.0)
+
+        scen.update_scenario(additional_information=[info])
+
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_oxygen_content_water_low(), 5.0)
+        self.assertEqual(retrieved_info.get_oxygen_content_water_high(), 5.0)
+        #self.assertEqual(retrieved_info.get_oxygen_content_sediment_low(),6.0)
+        #self.assertEqual(retrieved_info.get_oxygen_content_sediment_high(), 6.0)
+
+    def test_partialnaoxygencontent_information(self):
+        scenario_name = self.get_scenario_name()
+
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test partial NA oxygen content information", additional_information=[])
+
+        info = OxygenContentWaterSedimentAdditionalInformation()
+        info.set_oxygen_content_water_high("NA")
+        info.set_oxygen_content_sediment_low(3.0)
+
+        scen.update_scenario(additional_information=[info])
+
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertIsNone(retrieved_info.get_oxygen_content_water_low())
+        self.assertIsNone(retrieved_info.get_oxygen_content_water_high())
+        self.assertEqual(retrieved_info.get_oxygen_content_sediment_low(), 3.0)
+        self.assertEqual(retrieved_info.get_oxygen_content_sediment_high(), 3.0)
+
+    def test_oxygencontent_information_parser(self):
+        data = "5.0 - 8.0;3.0 - 6.0"
+        info = OxygenContentWaterSedimentAdditionalInformation.parse(data)
+
+        self.assertEqual(info.get_oxygen_content_water_low(), 5.0)
+        self.assertEqual(info.get_oxygen_content_water_high(), 8.0)
+        self.assertEqual(info.get_oxygen_content_sediment_low(), 3.0)
+        self.assertEqual(info.get_oxygen_content_sediment_high(), 6.0)
+
+    def test_oxygencontent_information_parser_with_na(self):
+        data = "NA;3.0 - 6.0"
+        info = OxygenContentWaterSedimentAdditionalInformation.parse(data)
+
+        self.assertIsNone(info.get_oxygen_content_water_low())
+        self.assertIsNone(info.get_oxygen_content_water_high())
+        self.assertEqual(info.get_oxygen_content_sediment_low(), 3.0)
+        self.assertEqual(info.get_oxygen_content_sediment_high(), 6.0)
+    '''
+    # phosphorus content
+
+
+    def test_phosphoruscontent_information(self):
+        info = PhosphorusContentAdditionalInformation()
+        influent_value = 1.5
+        effluent_value = 0.5
+
+        info.set_phosphoruscontentInfluent(influent_value)
+        info.set_phosphoruscontentEffluent(effluent_value)
+
+        self.assertEqual(info.get_phosphoruscontentInfluent(), influent_value)
+        self.assertEqual(info.get_phosphoruscontentEffluent(), effluent_value)
+
+    def test_phosphoruscontent_information_partial(self):
+        info = PhosphorusContentAdditionalInformation()
+        influent_value = 1.5
+
+        info.set_phosphoruscontentInfluent(influent_value)
+
+        self.assertEqual(info.get_phosphoruscontentInfluent(), influent_value)
+        self.assertIsNone(info.get_phosphoruscontentEffluent())
+
+    def test_phosphoruscontent_information_parser(self):
+        data = "1.5;0.5"
+        info = PhosphorusContentAdditionalInformation.parse(data)
+
+        self.assertEqual(info.get_phosphoruscontentInfluent(), 1.5)
+        self.assertEqual(info.get_phosphoruscontentEffluent(), 0.5)
+
+    def test_phosphoruscontent_information_parser_single(self):
+        data = "1.5;"
+        info = PhosphorusContentAdditionalInformation.parse(data)
+
+        self.assertEqual(info.get_phosphoruscontentInfluent(), 1.5)
+        self.assertIsNone(info.get_phosphoruscontentEffluent())
+
+    def test_phosphoruscontent_information_parser_na(self):
+        data = ";0.5"
+        info = PhosphorusContentAdditionalInformation.parse(data)
+
+        self.assertIsNone(info.get_phosphoruscontentInfluent())
+        self.assertEqual(info.get_phosphoruscontentEffluent(), 0.5)
+
+    def test_phosphoruscontent_information_parser_na_effluent(self):
+        data = "1.5;"
+        info = PhosphorusContentAdditionalInformation.parse(data)
+
+        self.assertEqual(info.get_phosphoruscontentInfluent(), 1.5)
+        self.assertIsNone(info.get_phosphoruscontentEffluent())
+
+    # purpose of wwtp
+    def test_purposeofwwtp_setter_and_getter_valid(self):
+        info = PurposeOfWWTPAdditionalInformation()
+        valid_values = [
+            "municipal ww", "industrial ww", "hospital ww", 
+            "mixed ww (municipal & industrial)", "other"
+        ]
+
+        for value in valid_values:
+            info.set_purposeofwwtp(value)
+            self.assertEqual(info.get_purposeofwwtp(), value)
+
+    def test_purposeofwwtp_setter_invalid(self):
+        info = PurposeOfWWTPAdditionalInformation()
+        invalid_values = ["residential ww", "commercial ww", "agricultural ww"]
+
+        for value in invalid_values:
+            with self.assertRaises(ValueError):
+                info.set_purposeofwwtp(value)
+
+    def test_purposeofwwtp_setter_type_error(self):
+        info = PurposeOfWWTPAdditionalInformation()
+        invalid_types = [123, 45.6, None, ["municipal ww"], {"purpose": "industrial ww"}]
+
+        for value in invalid_types:
+            with self.assertRaises(ValueError):
+                info.set_purposeofwwtp(value)
+
+    def test_purposeofwwtp_parser_valid(self):
+        data = "municipal ww"
+        info = PurposeOfWWTPAdditionalInformation.parse(data)
+        self.assertEqual(info.get_purposeofwwtp(), data)
+
+        data = "industrial ww"
+        info = PurposeOfWWTPAdditionalInformation.parse(data)
+        self.assertEqual(info.get_purposeofwwtp(), data)
+
+    def test_purposeofwwtp_parser_invalid(self):
+        data = "residential ww"
+        with self.assertRaises(ValueError):
+            PurposeOfWWTPAdditionalInformation.parse(data)
+
+    def test_purposeofwwtp_parser_invalid_type(self):
+        data = 12345
+        with self.assertRaises(ValueError):
+            PurposeOfWWTPAdditionalInformation.parse(data)
+
+    # rate constant
+
+    def test_setter_and_getter_valid(self):
+        info = RateConstantAdditionalInformation()
+
+        # Valid values
+        valid_lower = 0.1
+        valid_upper = 0.5
+        valid_order = "first order"
+        valid_corrected = "sorption corrected"
+        #valid_comment = "Test comment"
+
+        info.set_rateconstantlower(valid_lower)
+        info.set_rateconstantupper(valid_upper)
+        info.set_rateconstantorder(valid_order)
+        info.set_rateconstantcorrected(valid_corrected)
+        #info.set_rateconstantcomment(valid_comment)
+
+        self.assertEqual(info.get_rateconstantlower(), valid_lower)
+        self.assertEqual(info.get_rateconstantupper(), valid_upper)
+        self.assertEqual(info.get_rateconstantorder(), valid_order)
+        self.assertEqual(info.get_rateconstantcorrected(), valid_corrected)
+        self.assertIsNone(info.get_rateconstantcomment())
+
+    def test_setter_invalid(self):
+        info = RateConstantAdditionalInformation()
+
+        # Invalid values
+        invalid_lower = "abc"
+        invalid_upper = "def"
+        invalid_order = "third order"
+        invalid_corrected = "sorption and biodegradation corrected"
+        invalid_comment = 12345
+
+        with self.assertRaises(ValueError):
+            info.set_rateconstantlower(invalid_lower)
+
+        with self.assertRaises(ValueError):
+            info.set_rateconstantupper(invalid_upper)
+
+        with self.assertRaises(ValueError):
+            info.set_rateconstantorder(invalid_order)
+
+        with self.assertRaises(ValueError):
+            info.set_rateconstantcorrected(invalid_corrected)
+
+
+    def test_parser_valid(self):
+        data_string = "first order;sorption corrected;0.1 - 0.5;Test comment"
+        info = RateConstantAdditionalInformation.parse(data_string)
+
+        self.assertEqual(info.get_rateconstantorder(), "first order")
+        self.assertEqual(info.get_rateconstantcorrected(), "sorption corrected")
+        self.assertEqual(info.get_rateconstantlower(), 0.1)
+        self.assertEqual(info.get_rateconstantupper(), 0.5)
+        self.assertEqual(info.get_rateconstantcomment(), "Test comment")
+
+    def test_parser_valid_no_comment(self):
+        data_string = "second order;sorption corrected;0.1 - 0.5;no comment"
+        info = RateConstantAdditionalInformation.parse(data_string)
+
+        self.assertEqual(info.get_rateconstantorder(), "second order")
+        self.assertEqual(info.get_rateconstantcorrected(), "sorption corrected")
+        self.assertEqual(info.get_rateconstantlower(), 0.1)
+        self.assertEqual(info.get_rateconstantupper(), 0.5)
+        self.assertEqual(info.get_rateconstantcomment(),"no comment")
+
+    def test_parser_malformed_data(self):
+        data_string = "first order;sorption corrected;0.1 - 0.5;Test comment"
+        info = RateConstantAdditionalInformation.parse(data_string)
+
+        self.assertEqual(info.get_rateconstantorder(), "first order")
+        self.assertEqual(info.get_rateconstantcorrected(), "sorption corrected")
+        self.assertEqual(info.get_rateconstantlower(), 0.1)
+        self.assertEqual(info.get_rateconstantupper(), 0.5)
+        self.assertEqual(info.get_rateconstantcomment(), "Test comment")
+
+
+    # redox 
+    def test_setter_and_getter_valid(self):
+        info = RedoxAdditionalInformation()
+
+        # Valid redox types
+        valid_types = ['aerob', 'anaerob', 'anaerob: iron-reducing', 'anaerob: sulfate-reducing',
+                       'anaerob: methanogenic conditions', 'oxic', 'nitrate-reducing']
+
+        for redox_type in valid_types:
+            info.set_redoxType(redox_type)
+            self.assertEqual(info.get_redoxType(), redox_type)
+
+    def test_setter_invalid(self):
+        info = RedoxAdditionalInformation()
+
+        # Invalid redox types
+        invalid_types = ['oxidative', 'anaerobic: sulfur-reducing', 'oxic: high oxygen']
+
+        for redox_type in invalid_types:
+            with self.assertRaises(ValueError):
+                info.set_redoxType(redox_type)
+
+    def test_parser_valid(self):
+        data_string = "aerob"
+        info = RedoxAdditionalInformation.parse(data_string)
+        self.assertEqual(info.get_redoxType(), "aerob")
+
+    def test_parser_invalid(self):
+        # Test parsing with invalid data
+        with self.assertRaises(ValueError):
+            RedoxAdditionalInformation.parse("invalid_redox_type")
+
+
+    # redox potential
+
+    def test_setter_and_getter_valid(self):
+        info = RedoxPotentialAdditionalInformation()
+        info.set_lowPotentialWater(100.0)
+        info.set_highPotentialWater(200.0)
+        info.set_lowPotentialSediment(-50.0)
+        info.set_highPotentialSediment(10.0)
+
+        self.assertEqual(info.get_lowPotentialWater(), 100.0)
+        self.assertEqual(info.get_highPotentialWater(), 200.0)
+        self.assertEqual(info.get_lowPotentialSediment(), -50.0)
+        self.assertEqual(info.get_highPotentialSediment(), 10.0)
+
+    def test_parser_with_valid_data(self):
+        data = "100.0 - 200.0;-50.0 - 10.0"
+        info = RedoxPotentialAdditionalInformation.parse(data)
+
+        self.assertEqual(info.get_lowPotentialWater(), 100.0)
+        self.assertEqual(info.get_highPotentialWater(), 200.0)
+        self.assertEqual(info.get_lowPotentialSediment(), -50.0)
+        self.assertEqual(info.get_highPotentialSediment(), 10.0)
+
+    def test_parser_with_NA(self):
+        data = "NA;NA"
+        info = RedoxPotentialAdditionalInformation.parse(data)
+
+        self.assertIsNone(info.get_lowPotentialWater())
+        self.assertIsNone(info.get_highPotentialWater())
+        self.assertIsNone(info.get_lowPotentialSediment())
+        self.assertIsNone(info.get_highPotentialSediment())
+
+    # reference 
+
+    def test_setter_and_getter(self):
+        info = ReferenceAdditionalInformation()
+        info.set_reference("PMID:12345678")
+
+        self.assertEqual(info.get_reference(), "PMID:12345678")
+
+    def test_parser_with_valid_data(self):
+        data = "PMID:12345678"
+        info = ReferenceAdditionalInformation.parse(data)
+
+        self.assertEqual(info.get_reference(), "PMID:12345678")
+
+    # sampling depth
+    def test_setter_and_getter(self):
+        info = SamplingDepthAdditionalInformation()
+        info.set_samplingDepthMin(10.0)
+        info.set_samplingDepthMax(20.0)
+
+        self.assertEqual(info.get_samplingDepthMin(), 10.0)
+        self.assertEqual(info.get_samplingDepthMax(), 20.0)
+
+    def test_parser_with_single_depth(self):
+        data = "15.0"
+        info = SamplingDepthAdditionalInformation.parse(data)
+
+        self.assertEqual(info.get_samplingDepthMin(), 15.0)
+        self.assertEqual(info.get_samplingDepthMax(), 15.0)
+
+    def test_parser_with_range(self):
+        data = "10.0;20.0"
+        info = SamplingDepthAdditionalInformation.parse(data)
+
+        self.assertEqual(info.get_samplingDepthMin(), 10.0)
+        self.assertEqual(info.get_samplingDepthMax(), 20.0)
+
+    # sediment porosity
+
+    def test_setter_and_getter(self):
+        info = SedimentPorosityAdditionalInformation()
+        info.set_sedimentporosity(0.4)
+
+        self.assertEqual(info.get_sedimentporosity(), 0.4)
+
+    def test_parser(self):
+        data = "0.35"
+        info = SedimentPorosityAdditionalInformation.parse(data)
+
+        self.assertNotEqual(info.get_sedimentporosity(), 0.35)
+
+    # sludge retention time
+    def test_setter_and_getter(self):
+        info = SludgeRetentionTimeAdditionalInformation()
+        info.set_sludgeretentiontimeType('sludge age')
+        info.set_sludgeretentiontime(20.5)
+
+        self.assertEqual(info.get_sludgeretentiontimeType(), 'sludge age')
+        self.assertEqual(info.get_sludgeretentiontime(), 20.5)
+
+    def test_parser(self):
+        data = "sludge retention time;25.0"
+        info = SludgeRetentionTimeAdditionalInformation.parse(data)
+
+        self.assertEqual(info.get_sludgeretentiontimeType(), 'sludge retention time')
+        self.assertEqual(info.get_sludgeretentiontime(), 25.0)
+
+    # soil classification system
+    def test_setter_and_getter(self):
+        info = SoilClassificationAdditionalInformation()
+        info.set_soilclassificationsystem('USDA')
+
+        self.assertEqual(info.get_soilclassificationsystem(), 'USDA')
+
+    def test_parser(self):
+        data = "UK"
+        info = SoilClassificationAdditionalInformation.parse(data)
+
+        self.assertEqual(info.get_soilclassificationsystem(), 'UK')
+
+    # soil source
+
+
+    def test_setter_and_getter(self):
+        info = SoilSourceAdditionalInformation()
+        info.set_soilsourcedata('Sample Location A')
+
+        self.assertEqual(info.get_soilsourcedata(), 'Sample Location A')
+
+    def test_parser(self):
+        data = "Sample Location B"
+        info = SoilSourceAdditionalInformation.parse(data)
+
+        self.assertEqual(info.get_soilsourcedata(), 'Sample Location B')
+
+    # soil texture type
+    
+    def test_setter_and_getter(self):
+        info = SoilTexture1AdditionalInformation()
+        info.set_soilTextureType("CLAY")
+
+        self.assertEqual(info.get_soilTextureType(), "CLAY")
+
+    def test_setter_invalid_value(self):
+        info = SoilTexture1AdditionalInformation()
+        with self.assertRaises(ValueError) as context:
+            info.set_soilTextureType("INVALID_TEXTURE")
+        self.assertTrue("INVALID_TEXTURE is not an allowed soilTextureType" in str(context.exception))
+
+    def test_parser(self):
+        data = "SANDY_LOAM"
+        info = SoilTexture1AdditionalInformation.parse(data)
+
+        self.assertEqual(info.get_soilTextureType(), "SANDY_LOAM")
+
+    def test_parser_invalid_value(self):
+        data = "INVALID_TEXTURE"
+        with self.assertRaises(ValueError) as context:
+            SoilTexture1AdditionalInformation.parse(data)
+        self.assertTrue("INVALID_TEXTURE is not an allowed soilTextureType" in str(context.exception))
+
+    # soil texture 2
+
+    def test_setter_and_getter(self):
+        data = {
+            "sand": 45.0,
+            "silt": 34.0,
+            "clay": 21.0
+        }
+        soil_texture = SoilTexture2AdditionalInformation(**data)
+        self.assertEqual(soil_texture.get_sand(), 45.0)
+        self.assertEqual(soil_texture.get_silt(), 34.0)
+        self.assertEqual(soil_texture.get_clay(), 21.0)
+
+    def test_parser(self):
+        data_string = "Soil texture 2: 45.0% sand; 34.0% silt; 21.0% clay"
+        soil_texture = SoilTexture2AdditionalInformation.parse(data_string)
+        self.assertEqual(soil_texture.get_sand(), 45.0)
+        self.assertEqual(soil_texture.get_silt(), 34.0)
+        self.assertEqual(soil_texture.get_clay(), 21.0)
+
+    def test_parser_with_whitespace(self):
+        data_string = "Soil texture 2:  45.0% sand; 34.0% silt; 21.0% clay  "
+        soil_texture = SoilTexture2AdditionalInformation.parse(data_string)
+        self.assertEqual(soil_texture.get_sand(), 45.0)
+        self.assertEqual(soil_texture.get_silt(), 34.0)
+        self.assertEqual(soil_texture.get_clay(), 21.0)
+
+    def test_parser_with_different_order(self):
+        data_string = "Soil texture 2: 34.0% silt; 21.0% clay; 45.0% sand"
+        soil_texture = SoilTexture2AdditionalInformation.parse(data_string)
+        self.assertNotEqual(soil_texture.get_sand(), 45.0)
+        self.assertNotEqual(soil_texture.get_silt(), 34.0)
+        self.assertNotEqual(soil_texture.get_clay(), 21.0)
+
+
+    # solvent compound solution
+
+    def test_setter_and_getter(self):
+        info = SolventForCompoundSolutionAdditionalInformation()
+        info.set_solventforcompoundsolution1(50.0)
+        info.set_solventforcompoundsolution2(30.0)
+        info.set_solventforcompoundsolution3(20.0)
+
+        self.assertEqual(info.get_solventforcompoundsolution1(), 50.0)
+        self.assertEqual(info.get_solventforcompoundsolution2(), 30.0)
+        self.assertEqual(info.get_solventforcompoundsolution3(), 20.0)
+
+    def test_parser(self):
+        data = "50.0;30.0;20.0"
+        info = SolventForCompoundSolutionAdditionalInformation.parse(data)
+
+        self.assertEqual(info.get_solventforcompoundsolution1(), 50.0)
+        self.assertEqual(info.get_solventforcompoundsolution2(), 30.0)
+        self.assertEqual(info.get_solventforcompoundsolution3(), 20.0)
+
+
+
+
     # Oxygen Demand
 
     def test_oxygendemand_additional_information(self):
