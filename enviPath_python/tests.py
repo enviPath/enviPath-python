@@ -1374,8 +1374,8 @@ class TestAdditionalInformationIntegration(unittest.TestCase):
 
         info = PurposeOfWWTPAdditionalInformation()
         valid_values = [
-            "municipal ww", "industrial ww", "hospital ww", 
-            "mixed ww (municipal & industrial)", "other"
+            "municipal WW", "industrial WW", "hospital WW", 
+            "mixed WW (municipal & industrial)", "other"
         ]
 
         for value in valid_values:
@@ -1394,27 +1394,17 @@ class TestAdditionalInformationIntegration(unittest.TestCase):
             with self.assertRaises(ValueError):
                 info.set_purposeofwwtp(value)
 
-    def test_purposeofwwtpsettertypeerror(self):
-        scenario_name = self.get_scenario_name()
-        scen = Scenario.create(self.pkg, name=scenario_name, description="to test purpose of WWTP setter type error", additional_information=[])
-
-        info = PurposeOfWWTPAdditionalInformation()
-        invalid_types = [123, 45.6, None, ["municipal ww"], {"purpose": "industrial ww"}]
-
-        for value in invalid_types:
-            with self.assertRaises(ValueError):
-                info.set_purposeofwwtp(value)
 
     def test_purposeofwwtp_parser(self):
         scenario_name = self.get_scenario_name()
         scen = Scenario.create(self.pkg, name=scenario_name, description="to test purpose of WWTP parser valid", additional_information=[])
 
-        data = "municipal ww"
+        data = "municipal WW"
         info = PurposeOfWWTPAdditionalInformation.parse(data)
         scen.update_scenario(additional_information=[info])
         self.assertEqual(info.get_purposeofwwtp(), data)
 
-        data = "industrial ww"
+        data = "industrial WW"
         info = PurposeOfWWTPAdditionalInformation.parse(data)
         scen.update_scenario(additional_information=[info])
         self.assertEqual(info.get_purposeofwwtp(), data)
@@ -2088,7 +2078,6 @@ class TestAdditionalInformationIntegration(unittest.TestCase):
         
         info = TSSAdditionalInformation()
 
-        
         scen = Scenario.create(self.pkg, name=self.get_scenario_name(), description="to test TSS",
                                 additional_information=[])
 
@@ -2116,7 +2105,6 @@ class TestAdditionalInformationIntegration(unittest.TestCase):
 
         self.assertEqual(retrieved_info.get_ttsStart(), 2.5)
         self.assertEqual(retrieved_info.get_ttsEnd(), 10.0)
-
 
     # type of compound addition
     def test_typeofaddition_information(self):

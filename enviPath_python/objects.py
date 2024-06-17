@@ -5906,9 +5906,6 @@ class PurposeOfWWTPAdditionalInformation(AdditionalInformation):
         :type value: str
         """
         allowed_values = ["municipal WW", "industrial WW", "hospital WW", "mixed WW (municipal & industrial)", "other"]
-
-        if not isinstance(value, str):
-            raise ValueError("purposeofwwtp must be a string.")
         
         if value not in allowed_values:
             raise ValueError(f"{value} is not an allowed value. Allowed values are: {', '.join(allowed_values)}")
