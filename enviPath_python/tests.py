@@ -11,7 +11,7 @@ class TestAdditionalInformationIntegration(unittest.TestCase):
         self.eP.login('msalz', 'monacl55')
 
         # Get the package and scenario for setter test
-        self.package_id = "https://envipath.org/package/57c34a2f-6310-49b1-92df-a50b5f055d6e"
+        self.package_id = "https://envipath.org/package/ecf836f9-23de-4642-825c-9fec9e7bce6f"
         self.pkg = self.eP.get_package(self.package_id)
 
     def get_scenario_name(self):
@@ -136,7 +136,7 @@ class TestAdditionalInformationIntegration(unittest.TestCase):
         self.assertEqual(retrieved_info.get_ammoniauptakerateEnd(), 5.0)
 
     # biological treatment
-    def test_biological_treatment_technology_additional_information(self):
+    def test_biologicaltreatmenttechnology_additional_information(self):
         scenario_name = self.get_scenario_name()
         allowed_values = ['nitrification', 'nitrification & denitrification', 'nitrification & denitrification & biological phosphorus removal', 'nitrification & denitrification & chemical phosphorus removal', 'other']
         for value in allowed_values:
@@ -151,7 +151,7 @@ class TestAdditionalInformationIntegration(unittest.TestCase):
 
             self.assertEqual(retrieved_info.get_biologicaltreatmenttechnology(), value)
 
-    def test_biologicaltreatment_technology_additional_information_parser(self):
+    def test_biologicaltreatmenttechnology_additional_information_parser(self):
         scenario_name = self.get_scenario_name()
         
         allowed_values = ['nitrification', 'nitrification & denitrification', 'nitrification & denitrification & biological phosphorus removal', 'nitrification & denitrification & chemical phosphorus removal', 'other']
@@ -344,7 +344,47 @@ class TestAdditionalInformationIntegration(unittest.TestCase):
         retrieved_info = scen_parser.get_additional_information()[0]
 
         self.assertEqual(retrieved_info.get_cecdata(), 10.5)
+        
+    # confidence level
+    def test_confidencelevel_information(self):
+        test_data = [
+            "1",
+            "2",
+            "3"
+        ]
 
+        for level in test_data:
+            info = ConfidenceLevelAdditionalInformation()
+
+            
+            scen = Scenario.create(self.pkg, name=self.get_scenario_name(), description="to test Confidence Level",
+                                   additional_information=[])
+
+            info.set_radioconfidence(level)
+
+            
+            scen.update_scenario(additional_information=[info])
+            retrieved_info = scen.get_additional_information()[0]
+
+            self.assertEqual(retrieved_info.get_radioconfidence(), level)
+
+    def test_confidencelevel_parser(self):
+        data_string = "1"
+        info = ConfidenceLevelAdditionalInformation.parse(data_string)
+
+        
+        scen = Scenario.create(self.pkg, name=self.get_scenario_name(), description="to test Confidence Level parser",
+                               additional_information=[])
+
+        
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_radioconfidence(), "1")
+
+    def test_invalid_confidence_level(self):
+        with self.assertRaises(ValueError):
+            ConfidenceLevelAdditionalInformation().set_radioconfidence("Invalid")
     # columnheight
 
     def test_columnheight_additional_information(self):
@@ -410,7 +450,7 @@ class TestAdditionalInformationIntegration(unittest.TestCase):
         self.assertEqual(retrieved_info.get_dissolvedorganiccarbonEnd(), 10.5)
 
     # final compound concentration
-    def test_final_compound_concentration_additional_information(self):
+    def test_finalcompoundconcentration_additional_information(self):
         scenario_name = self.get_scenario_name()
         
         scen = Scenario.create(self.pkg, name=scenario_name, description="to test final compound concentration", additional_information=[])
@@ -424,7 +464,7 @@ class TestAdditionalInformationIntegration(unittest.TestCase):
 
         self.assertEqual(retrieved_info.get_finalcompoundconcentration(), 25.4)
 
-    def test_final_compound_concentration_additional_information_parser(self):
+    def test_finalcompoundconcentration_additional_information_parser(self):
         scenario_name = self.get_scenario_name()
 
         scen_parser = Scenario.create(self.pkg, name=scenario_name, description="to test final compound concentration parser", additional_information=[])
@@ -438,7 +478,7 @@ class TestAdditionalInformationIntegration(unittest.TestCase):
         self.assertEqual(retrieved_info.get_finalcompoundconcentration(), 25.4)
 
 # half-life ws
-    def test_half_life_ws_additional_information_parser(self):
+    def test_halflifews_additional_information_parser(self):
         scenario_name = self.get_scenario_name()
 
         scen_parser = Scenario.create(self.pkg, name=scenario_name, description="to test half-life water sediment parser", additional_information=[])
@@ -623,7 +663,7 @@ class TestAdditionalInformationIntegration(unittest.TestCase):
 
     # inoculum source
     
-    def test_inoculum_source_additional_information(self):
+    def test_inoculumsource_additional_information(self):
         scenario_name = self.get_scenario_name()
         
         scen = Scenario.create(self.pkg, name=scenario_name, description="to test inoculum source", additional_information=[])
@@ -637,7 +677,7 @@ class TestAdditionalInformationIntegration(unittest.TestCase):
 
         self.assertEqual(retrieved_info.get_inoculumsource(), "river sediment")
 
-    def test_inoculum_source_additional_information_parser(self):
+    def test_inoculumsource_additional_information_parser(self):
         scenario_name = self.get_scenario_name()
 
         scen_parser = Scenario.create(self.pkg, name=scenario_name, description="to test inoculum source parser", additional_information=[])
@@ -731,6 +771,53 @@ class TestAdditionalInformationIntegration(unittest.TestCase):
         retrieved_info = scen_parser.get_additional_information()[0]
 
         self.assertEqual(retrieved_info.get_samplelocation(), "Sample location for water-sediment study")
+
+
+    # solvent for compound solution
+
+    def test_solventforcompoundsolution_valid_solvents(self):
+        scenario_name = self.get_scenario_name()
+        valid_solvents = ["MeOH", "EtOH", "H2O", "DMSO", "acetone"]
+        
+        for solvent in valid_solvents:
+            with self.subTest(solvent=solvent):
+                scen = Scenario.create(self.pkg, name=scenario_name, description="to test", additional_information=[])
+                
+                solvent_info = SolventForCompoundSolutionAdditionalInformation()
+                solvent_info.set_solventforcompoundsolution1(solvent)
+                solvent_info.set_solventforcompoundsolution2("H2O")
+                solvent_info.set_solventforcompoundsolution3("acetone")
+                solvent_info.set_proportion("1:2:1")
+
+                scen.update_scenario(additional_information=[solvent_info])
+
+                retrieved_info = scen.get_additional_information()[0]
+
+                self.assertEqual(retrieved_info.get_solventforcompoundsolution1(), solvent)
+                self.assertEqual(retrieved_info.get_solventforcompoundsolution2(), "H2O")
+                self.assertEqual(retrieved_info.get_solventforcompoundsolution3(), "acetone")
+                self.assertEqual(retrieved_info.get_proportion(), "1:2:1")
+
+    def test_solventforcompoundsolution_parser_valid_solvents(self):
+        scenario_name = self.get_scenario_name()
+        valid_solvents = ["MeOH", "EtOH", "H2O", "DMSO", "acetone"]
+        
+        for solvent in valid_solvents:
+            with self.subTest(solvent=solvent):
+                scen_parser = Scenario.create(self.pkg, name=scenario_name, description="to test", additional_information=[])
+                data = f"{solvent};H2O;acetone;1:2:1"
+                info = SolventForCompoundSolutionAdditionalInformation.parse(data)
+
+                scen_parser.update_scenario(additional_information=[info])
+
+                retrieved_info = scen_parser.get_additional_information()[0]
+
+                self.assertEqual(retrieved_info.get_solventforcompoundsolution1(), solvent)
+                self.assertEqual(retrieved_info.get_solventforcompoundsolution2(), "H2O")
+                self.assertEqual(retrieved_info.get_solventforcompoundsolution3(), "acetone")
+                self.assertEqual(retrieved_info.get_proportion(), "1:2:1")
+
+
 
     # nitogen content
     def test_nitrogen_content_additional_information(self):
@@ -1124,8 +1211,8 @@ class TestAdditionalInformationIntegration(unittest.TestCase):
         retrieved_info = scen_parser.get_additional_information()[0]
 
         self.assertEqual(retrieved_info.get_originalsludgeamount(), data)
-    '''
-    # oxygen content
+    
+    # oxygen content water sediment
     def test_fulloxygencontent_information(self):
         scenario_name = self.get_scenario_name()
 
@@ -1146,23 +1233,7 @@ class TestAdditionalInformationIntegration(unittest.TestCase):
         self.assertEqual(retrieved_info.get_oxygen_content_sediment_low(), 3.0)
         self.assertEqual(retrieved_info.get_oxygen_content_sediment_high(), 6.0)
 
-    def test_partialoxygencontent_information(self):
-        scenario_name = self.get_scenario_name()
 
-        scen = Scenario.create(self.pkg, name=scenario_name, description="to test partial oxygen content information", additional_information=[])
-
-        info = OxygenContentWaterSedimentAdditionalInformation()
-        info.set_oxygen_content_water_low(5.0)
-        #info.set_oxygen_content_sediment_high(6.0)
-
-        scen.update_scenario(additional_information=[info])
-
-        retrieved_info = scen.get_additional_information()[0]
-
-        self.assertEqual(retrieved_info.get_oxygen_content_water_low(), 5.0)
-        self.assertEqual(retrieved_info.get_oxygen_content_water_high(), 5.0)
-        #self.assertEqual(retrieved_info.get_oxygen_content_sediment_low(),6.0)
-        #self.assertEqual(retrieved_info.get_oxygen_content_sediment_high(), 6.0)
 
     def test_partialnaoxygencontent_information(self):
         scenario_name = self.get_scenario_name()
@@ -1183,27 +1254,48 @@ class TestAdditionalInformationIntegration(unittest.TestCase):
         self.assertEqual(retrieved_info.get_oxygen_content_sediment_high(), 3.0)
 
     def test_oxygencontent_information_parser(self):
+        scenario_name = self.get_scenario_name()
+
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test the parser oxygen content information", additional_information=[])
+
         data = "5.0 - 8.0;3.0 - 6.0"
         info = OxygenContentWaterSedimentAdditionalInformation.parse(data)
+        scen.update_scenario(additional_information=[info])
 
-        self.assertEqual(info.get_oxygen_content_water_low(), 5.0)
-        self.assertEqual(info.get_oxygen_content_water_high(), 8.0)
-        self.assertEqual(info.get_oxygen_content_sediment_low(), 3.0)
-        self.assertEqual(info.get_oxygen_content_sediment_high(), 6.0)
+        retrieved_info = scen.get_additional_information()[0]
+
+
+        self.assertEqual(retrieved_info.get_oxygen_content_water_low(), 5.0)
+        self.assertEqual(retrieved_info.get_oxygen_content_water_high(), 8.0)
+        self.assertEqual(retrieved_info.get_oxygen_content_sediment_low(), 3.0)
+        self.assertEqual(retrieved_info.get_oxygen_content_sediment_high(), 6.0)
 
     def test_oxygencontent_information_parser_with_na(self):
+        scenario_name = self.get_scenario_name()
+
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test the parser oxygen content information", additional_information=[])
+
         data = "NA;3.0 - 6.0"
         info = OxygenContentWaterSedimentAdditionalInformation.parse(data)
+        scen.update_scenario(additional_information=[info])
 
-        self.assertIsNone(info.get_oxygen_content_water_low())
-        self.assertIsNone(info.get_oxygen_content_water_high())
-        self.assertEqual(info.get_oxygen_content_sediment_low(), 3.0)
-        self.assertEqual(info.get_oxygen_content_sediment_high(), 6.0)
-    '''
+        retrieved_info = scen.get_additional_information()[0]
+
+
+
+        self.assertIsNone(retrieved_info.get_oxygen_content_water_low())
+        self.assertIsNone(retrieved_info.get_oxygen_content_water_high())
+        self.assertEqual(retrieved_info.get_oxygen_content_sediment_low(), 3.0)
+        self.assertEqual(retrieved_info.get_oxygen_content_sediment_high(), 6.0)
+    
     # phosphorus content
 
 
-    def test_phosphoruscontent_information(self):
+
+    def test_phosphoruscontentinformation(self):
+        scenario_name = self.get_scenario_name()
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test phosphorus content information", additional_information=[])
+
         info = PhosphorusContentAdditionalInformation()
         influent_value = 1.5
         effluent_value = 0.5
@@ -1211,48 +1303,75 @@ class TestAdditionalInformationIntegration(unittest.TestCase):
         info.set_phosphoruscontentInfluent(influent_value)
         info.set_phosphoruscontentEffluent(effluent_value)
 
-        self.assertEqual(info.get_phosphoruscontentInfluent(), influent_value)
-        self.assertEqual(info.get_phosphoruscontentEffluent(), effluent_value)
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
 
-    def test_phosphoruscontent_information_partial(self):
+        self.assertEqual(retrieved_info.get_phosphoruscontentInfluent(), influent_value)
+        self.assertEqual(retrieved_info.get_phosphoruscontentEffluent(), effluent_value)
+
+    def test_phosphoruscontentinformationpartial(self):
+        scenario_name = self.get_scenario_name()
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test partial phosphorus content information", additional_information=[])
+
         info = PhosphorusContentAdditionalInformation()
         influent_value = 1.5
 
         info.set_phosphoruscontentInfluent(influent_value)
 
-        self.assertEqual(info.get_phosphoruscontentInfluent(), influent_value)
-        self.assertIsNone(info.get_phosphoruscontentEffluent())
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
 
-    def test_phosphoruscontent_information_parser(self):
+        self.assertEqual(retrieved_info.get_phosphoruscontentInfluent(), influent_value)
+        self.assertIsNone(retrieved_info.get_phosphoruscontentEffluent())
+
+    def test_phosphoruscontentinformation_parser(self):
+        scenario_name = self.get_scenario_name()
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test phosphorus content information parser", additional_information=[])
+
         data = "1.5;0.5"
         info = PhosphorusContentAdditionalInformation.parse(data)
 
-        self.assertEqual(info.get_phosphoruscontentInfluent(), 1.5)
-        self.assertEqual(info.get_phosphoruscontentEffluent(), 0.5)
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
 
-    def test_phosphoruscontent_information_parser_single(self):
+        self.assertEqual(retrieved_info.get_phosphoruscontentInfluent(), 1.5)
+        self.assertEqual(retrieved_info.get_phosphoruscontentEffluent(), 0.5)
+
+    def test_phosphoruscontentinformationsingle_parser(self):
+        scenario_name = self.get_scenario_name()
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test single phosphorus content information parser", additional_information=[])
+
         data = "1.5;"
         info = PhosphorusContentAdditionalInformation.parse(data)
 
-        self.assertEqual(info.get_phosphoruscontentInfluent(), 1.5)
-        self.assertIsNone(info.get_phosphoruscontentEffluent())
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
 
-    def test_phosphoruscontent_information_parser_na(self):
+
+        self.assertEqual(retrieved_info.get_phosphoruscontentInfluent(), 1.5)
+        self.assertIsNone(retrieved_info.get_phosphoruscontentEffluent())
+
+    def test_phosphoruscontentinformationna_parser(self):
+        scenario_name = self.get_scenario_name()
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test NA phosphorus content information parser", additional_information=[])
+
         data = ";0.5"
         info = PhosphorusContentAdditionalInformation.parse(data)
 
-        self.assertIsNone(info.get_phosphoruscontentInfluent())
-        self.assertEqual(info.get_phosphoruscontentEffluent(), 0.5)
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
 
-    def test_phosphoruscontent_information_parser_na_effluent(self):
-        data = "1.5;"
-        info = PhosphorusContentAdditionalInformation.parse(data)
+        self.assertIsNone(retrieved_info.get_phosphoruscontentInfluent())
+        self.assertEqual(retrieved_info.get_phosphoruscontentEffluent(), 0.5)
 
-        self.assertEqual(info.get_phosphoruscontentInfluent(), 1.5)
-        self.assertIsNone(info.get_phosphoruscontentEffluent())
+
 
     # purpose of wwtp
-    def test_purposeofwwtp_setter_and_getter_valid(self):
+
+    def test_purposeofwwtsetterandgettervalid(self):
+        scenario_name = self.get_scenario_name()
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test purpose of WWTP setter and getter valid", additional_information=[])
+
         info = PurposeOfWWTPAdditionalInformation()
         valid_values = [
             "municipal ww", "industrial ww", "hospital ww", 
@@ -1261,9 +1380,13 @@ class TestAdditionalInformationIntegration(unittest.TestCase):
 
         for value in valid_values:
             info.set_purposeofwwtp(value)
+            scen.update_scenario(additional_information=[info])
             self.assertEqual(info.get_purposeofwwtp(), value)
 
-    def test_purposeofwwtp_setter_invalid(self):
+    def test_purposeofwwtpsetterinvalid(self):
+        scenario_name = self.get_scenario_name()
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test purpose of WWTP setter invalid", additional_information=[])
+
         info = PurposeOfWWTPAdditionalInformation()
         invalid_values = ["residential ww", "commercial ww", "agricultural ww"]
 
@@ -1271,7 +1394,10 @@ class TestAdditionalInformationIntegration(unittest.TestCase):
             with self.assertRaises(ValueError):
                 info.set_purposeofwwtp(value)
 
-    def test_purposeofwwtp_setter_type_error(self):
+    def test_purposeofwwtpsettertypeerror(self):
+        scenario_name = self.get_scenario_name()
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test purpose of WWTP setter type error", additional_information=[])
+
         info = PurposeOfWWTPAdditionalInformation()
         invalid_types = [123, 45.6, None, ["municipal ww"], {"purpose": "industrial ww"}]
 
@@ -1279,129 +1405,122 @@ class TestAdditionalInformationIntegration(unittest.TestCase):
             with self.assertRaises(ValueError):
                 info.set_purposeofwwtp(value)
 
-    def test_purposeofwwtp_parser_valid(self):
+    def test_purposeofwwtp_parser(self):
+        scenario_name = self.get_scenario_name()
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test purpose of WWTP parser valid", additional_information=[])
+
         data = "municipal ww"
         info = PurposeOfWWTPAdditionalInformation.parse(data)
+        scen.update_scenario(additional_information=[info])
         self.assertEqual(info.get_purposeofwwtp(), data)
 
         data = "industrial ww"
         info = PurposeOfWWTPAdditionalInformation.parse(data)
+        scen.update_scenario(additional_information=[info])
         self.assertEqual(info.get_purposeofwwtp(), data)
 
-    def test_purposeofwwtp_parser_invalid(self):
-        data = "residential ww"
-        with self.assertRaises(ValueError):
-            PurposeOfWWTPAdditionalInformation.parse(data)
 
-    def test_purposeofwwtp_parser_invalid_type(self):
+
+    def test_purposeofwwtpinvalidtype_parser(self):
+        scenario_name = self.get_scenario_name()
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test purpose of WWTP parser invalid type", additional_information=[])
+
         data = 12345
         with self.assertRaises(ValueError):
             PurposeOfWWTPAdditionalInformation.parse(data)
 
     # rate constant
 
-    def test_setter_and_getter_valid(self):
+
+    def test_rateconstant_information(self):
+        scenario_name = self.get_scenario_name()
         info = RateConstantAdditionalInformation()
+        lower_value = 0.1
+        upper_value = 0.5
+        order_value = "first order"
+        corrected_value = "sorption corrected"
+        comment_value = "Test comment"
 
-        # Valid values
-        valid_lower = 0.1
-        valid_upper = 0.5
-        valid_order = "first order"
-        valid_corrected = "sorption corrected"
-        #valid_comment = "Test comment"
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test rate constant",
+                               additional_information=[])
 
-        info.set_rateconstantlower(valid_lower)
-        info.set_rateconstantupper(valid_upper)
-        info.set_rateconstantorder(valid_order)
-        info.set_rateconstantcorrected(valid_corrected)
-        #info.set_rateconstantcomment(valid_comment)
+        info.set_rateconstantlower(lower_value)
+        info.set_rateconstantupper(upper_value)
+        info.set_rateconstantorder(order_value)
+        info.set_rateconstantcorrected(corrected_value)
+        info.set_rateconstantcomment(comment_value)
 
-        self.assertEqual(info.get_rateconstantlower(), valid_lower)
-        self.assertEqual(info.get_rateconstantupper(), valid_upper)
-        self.assertEqual(info.get_rateconstantorder(), valid_order)
-        self.assertEqual(info.get_rateconstantcorrected(), valid_corrected)
-        self.assertIsNone(info.get_rateconstantcomment())
+        scen.update_scenario(additional_information=[info])
+        print(scen.get_additional_information())
+        retrieved_info = scen.get_additional_information()[0]
 
-    def test_setter_invalid(self):
-        info = RateConstantAdditionalInformation()
-
-        # Invalid values
-        invalid_lower = "abc"
-        invalid_upper = "def"
-        invalid_order = "third order"
-        invalid_corrected = "sorption and biodegradation corrected"
-        invalid_comment = 12345
-
-        with self.assertRaises(ValueError):
-            info.set_rateconstantlower(invalid_lower)
-
-        with self.assertRaises(ValueError):
-            info.set_rateconstantupper(invalid_upper)
-
-        with self.assertRaises(ValueError):
-            info.set_rateconstantorder(invalid_order)
-
-        with self.assertRaises(ValueError):
-            info.set_rateconstantcorrected(invalid_corrected)
+        self.assertEqual(retrieved_info.get_rateconstantlower(), lower_value)
+        self.assertEqual(retrieved_info.get_rateconstantupper(), upper_value)
+        self.assertEqual(retrieved_info.get_rateconstantorder(), order_value)
+        self.assertEqual(retrieved_info.get_rateconstantcorrected(), corrected_value)
+        self.assertEqual(retrieved_info.get_rateconstantcomment(), comment_value)
 
 
-    def test_parser_valid(self):
+
+    def test_rateconstant_information_parser(self):
+        scenario_name = self.get_scenario_name()
         data_string = "first order;sorption corrected;0.1 - 0.5;Test comment"
         info = RateConstantAdditionalInformation.parse(data_string)
 
-        self.assertEqual(info.get_rateconstantorder(), "first order")
-        self.assertEqual(info.get_rateconstantcorrected(), "sorption corrected")
-        self.assertEqual(info.get_rateconstantlower(), 0.1)
-        self.assertEqual(info.get_rateconstantupper(), 0.5)
-        self.assertEqual(info.get_rateconstantcomment(), "Test comment")
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test rate constant parser",
+                               additional_information=[])
 
-    def test_parser_valid_no_comment(self):
-        data_string = "second order;sorption corrected;0.1 - 0.5;no comment"
-        info = RateConstantAdditionalInformation.parse(data_string)
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
 
-        self.assertEqual(info.get_rateconstantorder(), "second order")
-        self.assertEqual(info.get_rateconstantcorrected(), "sorption corrected")
-        self.assertEqual(info.get_rateconstantlower(), 0.1)
-        self.assertEqual(info.get_rateconstantupper(), 0.5)
-        self.assertEqual(info.get_rateconstantcomment(),"no comment")
+        self.assertEqual(retrieved_info.get_rateconstantorder(), "first order")
+        self.assertEqual(retrieved_info.get_rateconstantcorrected(), "sorption corrected")
+        self.assertEqual(retrieved_info.get_rateconstantlower(), 0.1)
+        self.assertEqual(retrieved_info.get_rateconstantupper(), 0.5)
+        self.assertEqual(retrieved_info.get_rateconstantcomment(), "Test comment")
 
-    def test_parser_malformed_data(self):
-        data_string = "first order;sorption corrected;0.1 - 0.5;Test comment"
-        info = RateConstantAdditionalInformation.parse(data_string)
-
-        self.assertEqual(info.get_rateconstantorder(), "first order")
-        self.assertEqual(info.get_rateconstantcorrected(), "sorption corrected")
-        self.assertEqual(info.get_rateconstantlower(), 0.1)
-        self.assertEqual(info.get_rateconstantupper(), 0.5)
-        self.assertEqual(info.get_rateconstantcomment(), "Test comment")
 
 
     # redox 
-    def test_setter_and_getter_valid(self):
+
+    def test_redoxsetterandgettervalid(self):
+        
         info = RedoxAdditionalInformation()
 
-        # Valid redox types
         valid_types = ['aerob', 'anaerob', 'anaerob: iron-reducing', 'anaerob: sulfate-reducing',
                        'anaerob: methanogenic conditions', 'oxic', 'nitrate-reducing']
 
         for redox_type in valid_types:
-            info.set_redoxType(redox_type)
-            self.assertEqual(info.get_redoxType(), redox_type)
+            scen = Scenario.create(self.pkg, name=redox_type, description="to test redox", additional_information=[])
 
-    def test_setter_invalid(self):
+            info.set_redoxType(redox_type)
+            scen.update_scenario(additional_information=[info])
+            retrieved_info = scen.get_additional_information()[0]
+            self.assertEqual(retrieved_info.get_redoxType(), redox_type)
+
+    def test_redoxsetterinvalid(self):
         info = RedoxAdditionalInformation()
 
-        # Invalid redox types
         invalid_types = ['oxidative', 'anaerobic: sulfur-reducing', 'oxic: high oxygen']
 
         for redox_type in invalid_types:
+            scen = Scenario.create(self.pkg, name=redox_type, description="to test redox", additional_information=[])
+
             with self.assertRaises(ValueError):
                 info.set_redoxType(redox_type)
+                scen.update_scenario(additional_information=[info])
 
-    def test_parser_valid(self):
+    def test_redox_parser(self):
+        scenario_name = self.get_scenario_name()
         data_string = "aerob"
         info = RedoxAdditionalInformation.parse(data_string)
-        self.assertEqual(info.get_redoxType(), "aerob")
+
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test redox", additional_information=[])
+
+        
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
+        self.assertEqual(retrieved_info.get_redoxType(), "aerob")
 
     def test_parser_invalid(self):
         # Test parsing with invalid data
@@ -1409,214 +1528,812 @@ class TestAdditionalInformationIntegration(unittest.TestCase):
             RedoxAdditionalInformation.parse("invalid_redox_type")
 
 
+
     # redox potential
 
-    def test_setter_and_getter_valid(self):
+    def test_redoxpotentialsetterandgetter(self):
+        scenario_name = self.get_scenario_name()
         info = RedoxPotentialAdditionalInformation()
-        info.set_lowPotentialWater(100.0)
-        info.set_highPotentialWater(200.0)
-        info.set_lowPotentialSediment(-50.0)
-        info.set_highPotentialSediment(10.0)
 
-        self.assertEqual(info.get_lowPotentialWater(), 100.0)
-        self.assertEqual(info.get_highPotentialWater(), 200.0)
-        self.assertEqual(info.get_lowPotentialSediment(), -50.0)
-        self.assertEqual(info.get_highPotentialSediment(), 10.0)
+        # Valid values
+        valid_low_water = 100.0
+        valid_high_water = 300.0
+        valid_low_sediment = -200.0
+        valid_high_sediment = 100.0
 
-    def test_parser_with_valid_data(self):
-        data = "100.0 - 200.0;-50.0 - 10.0"
-        info = RedoxPotentialAdditionalInformation.parse(data)
+        
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test redox potential",
+                               additional_information=[])
 
-        self.assertEqual(info.get_lowPotentialWater(), 100.0)
-        self.assertEqual(info.get_highPotentialWater(), 200.0)
-        self.assertEqual(info.get_lowPotentialSediment(), -50.0)
-        self.assertEqual(info.get_highPotentialSediment(), 10.0)
+        
+        info.set_lowPotentialWater(valid_low_water)
+        info.set_highPotentialWater(valid_high_water)
+        info.set_lowPotentialSediment(valid_low_sediment)
+        info.set_highPotentialSediment(valid_high_sediment)
+        scen.update_scenario(additional_information=[info])
 
-    def test_parser_with_NA(self):
-        data = "NA;NA"
-        info = RedoxPotentialAdditionalInformation.parse(data)
+        retrieved_info = scen.get_additional_information()[0]
+        self.assertEqual(retrieved_info.get_lowPotentialWater(), valid_low_water)
+        self.assertEqual(retrieved_info.get_highPotentialWater(), valid_high_water)
+        self.assertEqual(retrieved_info.get_lowPotentialSediment(), valid_low_sediment)
+        self.assertEqual(retrieved_info.get_highPotentialSediment(), valid_high_sediment)
 
-        self.assertIsNone(info.get_lowPotentialWater())
-        self.assertIsNone(info.get_highPotentialWater())
-        self.assertIsNone(info.get_lowPotentialSediment())
-        self.assertIsNone(info.get_highPotentialSediment())
+    def test_redoxpotential_parser(self):
+        scenario_name = self.get_scenario_name()
+        data_string = "100.0 - 300.0;-200.0 - 100.0"
+        info = RedoxPotentialAdditionalInformation.parse(data_string)
+
+        
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test redox potential",
+                               additional_information=[])
+
+        
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
+        self.assertEqual(retrieved_info.get_lowPotentialWater(), 100.0)
+        self.assertEqual(retrieved_info.get_highPotentialWater(), 300.0)
+        self.assertEqual(retrieved_info.get_lowPotentialSediment(), -200.0)
+        self.assertEqual(retrieved_info.get_highPotentialSediment(), 100.0)
+
+
 
     # reference 
 
-    def test_setter_and_getter(self):
+
+    def test_referencesetterandgetter_valid(self):
+        scenario_name = self.get_scenario_name()
         info = ReferenceAdditionalInformation()
-        info.set_reference("PMID:12345678")
 
-        self.assertEqual(info.get_reference(), "PMID:12345678")
+        # Valid value
+        valid_reference = "123456"
 
-    def test_parser_with_valid_data(self):
-        data = "PMID:12345678"
-        info = ReferenceAdditionalInformation.parse(data)
+        
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test reference",
+                               additional_information=[])
 
-        self.assertEqual(info.get_reference(), "PMID:12345678")
+        
+        info.set_reference(valid_reference)
+        scen.update_scenario(additional_information=[info])
+
+        retrieved_info = scen.get_additional_information()[0]
+        self.assertEqual(retrieved_info.get_reference(), valid_reference)
+
+    def test_reference_parser(self):
+        scenario_name = self.get_scenario_name()
+        data_string = "123456"
+        info = ReferenceAdditionalInformation.parse(data_string)
+
+        
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test reference",
+                               additional_information=[])
+
+        
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
+        self.assertEqual(retrieved_info.get_reference(), "123456")
 
     # sampling depth
-    def test_setter_and_getter(self):
+
+    def test_samplingdepthsetterandgetter(self):
+        scenario_name = self.get_scenario_name()
         info = SamplingDepthAdditionalInformation()
-        info.set_samplingDepthMin(10.0)
-        info.set_samplingDepthMax(20.0)
 
-        self.assertEqual(info.get_samplingDepthMin(), 10.0)
-        self.assertEqual(info.get_samplingDepthMax(), 20.0)
+        # Valid values
+        valid_min_depth = 10.0
+        valid_max_depth = 20.0
 
-    def test_parser_with_single_depth(self):
-        data = "15.0"
-        info = SamplingDepthAdditionalInformation.parse(data)
+        
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test sampling depth",
+                               additional_information=[])
 
-        self.assertEqual(info.get_samplingDepthMin(), 15.0)
-        self.assertEqual(info.get_samplingDepthMax(), 15.0)
+        
+        info.set_samplingDepthMin(valid_min_depth)
+        info.set_samplingDepthMax(valid_max_depth)
+        scen.update_scenario(additional_information=[info])
 
-    def test_parser_with_range(self):
-        data = "10.0;20.0"
-        info = SamplingDepthAdditionalInformation.parse(data)
+        retrieved_info = scen.get_additional_information()[0]
+        self.assertEqual(retrieved_info.get_samplingDepthMin(), valid_min_depth)
+        self.assertEqual(retrieved_info.get_samplingDepthMax(), valid_max_depth)
 
-        self.assertEqual(info.get_samplingDepthMin(), 10.0)
-        self.assertEqual(info.get_samplingDepthMax(), 20.0)
+    def test_samplingdepth_parser(self):
+        scenario_name = self.get_scenario_name()
+        data_string = "10.0;20.0"
+        info = SamplingDepthAdditionalInformation.parse(data_string)
+
+        
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test sampling depth",
+                               additional_information=[])
+
+        
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
+        self.assertEqual(retrieved_info.get_samplingDepthMin(), 10.0)
+        self.assertEqual(retrieved_info.get_samplingDepthMax(), 20.0)
+
+    def test_samplingdepthsingle_value_parser(self):
+        scenario_name = self.get_scenario_name()
+        data_string = "10.0"
+        info = SamplingDepthAdditionalInformation.parse(data_string)
+
+        
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test sampling depth",
+                               additional_information=[])
+
+        
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
+        self.assertEqual(retrieved_info.get_samplingDepthMin(), 10.0)
+        self.assertEqual(retrieved_info.get_samplingDepthMax(), 10.0)
 
     # sediment porosity
 
-    def test_setter_and_getter(self):
+    def test_sedimentporosity_information(self):
+        scenario_name = self.get_scenario_name()
         info = SedimentPorosityAdditionalInformation()
-        info.set_sedimentporosity(0.4)
+        porosity_value = 0.45
 
-        self.assertEqual(info.get_sedimentporosity(), 0.4)
+        
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test sediment porosity",
+                               additional_information=[])
 
-    def test_parser(self):
-        data = "0.35"
-        info = SedimentPorosityAdditionalInformation.parse(data)
+        info.set_sedimentporosity(porosity_value)
 
-        self.assertNotEqual(info.get_sedimentporosity(), 0.35)
+        
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_sedimentporosity(), porosity_value)
+
+
+    def test_sedimentporosity_information_parser(self):
+        scenario_name = self.get_scenario_name()
+        data_string = "0.45"
+        info = SedimentPorosityAdditionalInformation.parse(data_string)
+
+        
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test sediment porosity parser",
+                               additional_information=[])
+
+        
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_sedimentporosity(), 0.45)
+
 
     # sludge retention time
-    def test_setter_and_getter(self):
+
+    def test_sludgeretentiontime_information(self):
+        scenario_name = self.get_scenario_name()
         info = SludgeRetentionTimeAdditionalInformation()
-        info.set_sludgeretentiontimeType('sludge age')
-        info.set_sludgeretentiontime(20.5)
+        retention_time_type = "sludge age"
+        retention_time_value = 10.5
 
-        self.assertEqual(info.get_sludgeretentiontimeType(), 'sludge age')
-        self.assertEqual(info.get_sludgeretentiontime(), 20.5)
+        
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test sludge retention time",
+                               additional_information=[])
 
-    def test_parser(self):
-        data = "sludge retention time;25.0"
-        info = SludgeRetentionTimeAdditionalInformation.parse(data)
+        info.set_sludgeretentiontimeType(retention_time_type)
+        info.set_sludgeretentiontime(retention_time_value)
 
-        self.assertEqual(info.get_sludgeretentiontimeType(), 'sludge retention time')
-        self.assertEqual(info.get_sludgeretentiontime(), 25.0)
+        
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_sludgeretentiontimeType(), retention_time_type)
+        self.assertEqual(retrieved_info.get_sludgeretentiontime(), retention_time_value)
+
+
+
+    def test_sludgeretentiontime_information_parser(self):
+        scenario_name = self.get_scenario_name()
+        data_string = "sludge age;10.5"
+        info = SludgeRetentionTimeAdditionalInformation.parse(data_string)
+
+        
+        scen = Scenario.create(self.pkg, name=scenario_name, description="to test sludge retention time parser",
+                               additional_information=[])
+
+        
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_sludgeretentiontimeType(), "sludge age")
+        self.assertEqual(retrieved_info.get_sludgeretentiontime(), 10.5)
+
+    def test_sludgeretentiontime_information_parser_invalid(self):
+        data_string = "invalid_type;10.5"
+        with self.assertRaises(ValueError):
+            SludgeRetentionTimeAdditionalInformation.parse(data_string)
+
+    def test_sludgeretentiontime_information_parser_type_error(self):
+        data_string = "sludge age;not_a_float"
+        with self.assertRaises(ValueError):
+            SludgeRetentionTimeAdditionalInformation.parse(data_string)
 
     # soil classification system
-    def test_setter_and_getter(self):
+    def test_soilclassificationsystem_information(self):
         info = SoilClassificationAdditionalInformation()
-        info.set_soilclassificationsystem('USDA')
+        classification_system = "USDA"
 
-        self.assertEqual(info.get_soilclassificationsystem(), 'USDA')
+        
+        scen = Scenario.create(self.pkg, name=self.get_scenario_name(), description="to test soil classification system",
+                               additional_information=[])
 
-    def test_parser(self):
-        data = "UK"
-        info = SoilClassificationAdditionalInformation.parse(data)
+        info.set_soilclassificationsystem(classification_system)
 
-        self.assertEqual(info.get_soilclassificationsystem(), 'UK')
+        
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_soilclassificationsystem(), classification_system)
+
+
+
+    def test_soilclassificationsystem_information_parser(self):
+        data_string = "USDA"
+        info = SoilClassificationAdditionalInformation.parse(data_string)
+
+        
+        scen = Scenario.create(self.pkg, name=self.get_scenario_name(), description="to test soil classification system parser",
+                               additional_information=[])
+
+        
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_soilclassificationsystem(), "USDA")
+
+    def test_soilclassificationsystem_information_parser_invalid(self):
+        data_string = "invalid_system"
+        with self.assertRaises(ValueError):
+            SoilClassificationAdditionalInformation.parse(data_string)
+
+
 
     # soil source
 
-
-    def test_setter_and_getter(self):
+    def test_soilsourcedata_information(self):
         info = SoilSourceAdditionalInformation()
-        info.set_soilsourcedata('Sample Location A')
+        soil_source_data = "Magden"
 
-        self.assertEqual(info.get_soilsourcedata(), 'Sample Location A')
+        
+        scen = Scenario.create(self.pkg, name=self.get_scenario_name(), description="to test soil source data",
+                               additional_information=[])
 
-    def test_parser(self):
-        data = "Sample Location B"
-        info = SoilSourceAdditionalInformation.parse(data)
+        info.set_soilsourcedata(soil_source_data)
 
-        self.assertEqual(info.get_soilsourcedata(), 'Sample Location B')
+        
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_soilsourcedata(), soil_source_data)
+
+
+
+    def test_soilsourcedata_information_parser(self):
+        data_string = "Field A"
+        info = SoilSourceAdditionalInformation.parse(data_string)
+
+        
+        scen = Scenario.create(self.pkg, name=self.get_scenario_name(), description="to test soil source data parser",
+                               additional_information=[])
+
+        
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_soilsourcedata(), "Field A")
+
+
 
     # soil texture type
     
-    def test_setter_and_getter(self):
-        info = SoilTexture1AdditionalInformation()
-        info.set_soilTextureType("CLAY")
+    def test_soilclassificationsystem_information(self):
+        allowed_types = ["USDA", "UK_ADAS", "UK", "DE", "International"]
+        for soil_classification_type in allowed_types:
+            info = SoilClassificationAdditionalInformation()
 
-        self.assertEqual(info.get_soilTextureType(), "CLAY")
+            
+            scen = Scenario.create(self.pkg, name=self.get_scenario_name(), description=f"to test soil classification: {soil_classification_type}",
+                                   additional_information=[])
 
-    def test_setter_invalid_value(self):
-        info = SoilTexture1AdditionalInformation()
-        with self.assertRaises(ValueError) as context:
-            info.set_soilTextureType("INVALID_TEXTURE")
-        self.assertTrue("INVALID_TEXTURE is not an allowed soilTextureType" in str(context.exception))
+            info.set_soilclassificationsystem(soil_classification_type)
 
-    def test_parser(self):
-        data = "SANDY_LOAM"
-        info = SoilTexture1AdditionalInformation.parse(data)
+            
+            scen.update_scenario(additional_information=[info])
+            retrieved_info = scen.get_additional_information()[0]
+            if soil_classification_type == "UK_ADAS":
+                self.assertEqual(retrieved_info.get_soilclassificationsystem(), "UK ADAS")
+            else:
+                self.assertEqual(retrieved_info.get_soilclassificationsystem(), soil_classification_type)
 
-        self.assertEqual(info.get_soilTextureType(), "SANDY_LOAM")
+    def test_soilclassificationsysteminvalid_information(self):
+        invalid_types = ["Invalid", "Type"]
+        for soil_classification_type in invalid_types:
+            info = SoilClassificationAdditionalInformation()
 
-    def test_parser_invalid_value(self):
-        data = "INVALID_TEXTURE"
-        with self.assertRaises(ValueError) as context:
-            SoilTexture1AdditionalInformation.parse(data)
-        self.assertTrue("INVALID_TEXTURE is not an allowed soilTextureType" in str(context.exception))
+            
+            scen = Scenario.create(self.pkg, name=self.get_scenario_name(), description=f"to test invalid soil classification: {soil_classification_type}",
+                                   additional_information=[])
+
+            # Try setting invalid type
+            with self.assertRaises(ValueError):
+                info.set_soilclassificationsystem(soil_classification_type)
+
+
+    def test_soilclassificationsystem_information_parser(self):
+        data_string = "USDA"
+        info = SoilClassificationAdditionalInformation.parse(data_string)
+
+        
+        scen = Scenario.create(self.pkg, name=self.get_scenario_name(), description="to test soil classification parser",
+                               additional_information=[])
+
+        
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_soilclassificationsystem(), "USDA")
+
+    def test_soilclassificationsystem_information_parser_invalid(self):
+        data_string = "Invalid"
+        with self.assertRaises(ValueError):
+            SoilClassificationAdditionalInformation.parse(data_string)
+
 
     # soil texture 2
 
-    def test_setter_and_getter(self):
-        data = {
-            "sand": 45.0,
-            "silt": 34.0,
-            "clay": 21.0
-        }
-        soil_texture = SoilTexture2AdditionalInformation(**data)
-        self.assertEqual(soil_texture.get_sand(), 45.0)
-        self.assertEqual(soil_texture.get_silt(), 34.0)
-        self.assertEqual(soil_texture.get_clay(), 21.0)
+    def test_soiltexture2_information(self):
+        test_data = [
+            {"sand": 45.0, "silt": 34.0, "clay": 21.0},
+            {"sand": 20.0, "silt": 50.0, "clay": 30.0},
+            {"sand": 10.0, "silt": 30.0, "clay": 60.0}
+        ]
 
-    def test_parser(self):
+        for data in test_data:
+            info = SoilTexture2AdditionalInformation()
+
+            
+            scen = Scenario.create(self.pkg, name=self.get_scenario_name(), description="to test soil texture 2",
+                                   additional_information=[])
+
+            
+            info.set_sand(data["sand"])
+            info.set_silt(data["silt"])
+            info.set_clay(data["clay"])
+
+            
+            scen.update_scenario(additional_information=[info])
+            retrieved_info = scen.get_additional_information()[0]
+
+            self.assertEqual(retrieved_info.get_sand(), data["sand"])
+            self.assertEqual(retrieved_info.get_silt(), data["silt"])
+            self.assertEqual(retrieved_info.get_clay(), data["clay"])
+
+    def test_soiltexture2_information_parser(self):
         data_string = "Soil texture 2: 45.0% sand; 34.0% silt; 21.0% clay"
-        soil_texture = SoilTexture2AdditionalInformation.parse(data_string)
-        self.assertEqual(soil_texture.get_sand(), 45.0)
-        self.assertEqual(soil_texture.get_silt(), 34.0)
-        self.assertEqual(soil_texture.get_clay(), 21.0)
+        info = SoilTexture2AdditionalInformation.parse(data_string)
 
-    def test_parser_with_whitespace(self):
-        data_string = "Soil texture 2:  45.0% sand; 34.0% silt; 21.0% clay  "
-        soil_texture = SoilTexture2AdditionalInformation.parse(data_string)
-        self.assertEqual(soil_texture.get_sand(), 45.0)
-        self.assertEqual(soil_texture.get_silt(), 34.0)
-        self.assertEqual(soil_texture.get_clay(), 21.0)
+        
+        scen = Scenario.create(self.pkg, name=self.get_scenario_name(), description="to test soil texture 2 parser",
+                               additional_information=[])
 
-    def test_parser_with_different_order(self):
-        data_string = "Soil texture 2: 34.0% silt; 21.0% clay; 45.0% sand"
-        soil_texture = SoilTexture2AdditionalInformation.parse(data_string)
-        self.assertNotEqual(soil_texture.get_sand(), 45.0)
-        self.assertNotEqual(soil_texture.get_silt(), 34.0)
-        self.assertNotEqual(soil_texture.get_clay(), 21.0)
+        
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_sand(), 45.0)
+        self.assertEqual(retrieved_info.get_silt(), 34.0)
+        self.assertEqual(retrieved_info.get_clay(), 21.0)
 
 
-    # solvent compound solution
+    # source scenario
 
-    def test_setter_and_getter(self):
-        info = SolventForCompoundSolutionAdditionalInformation()
-        info.set_solventforcompoundsolution1(50.0)
-        info.set_solventforcompoundsolution2(30.0)
-        info.set_solventforcompoundsolution3(20.0)
+    def test_sourcescenario_information(self):
+        test_data = "https://envipath.org/package/57c34a2f-6310-49b1-92df-a50b5f055d6e/scenario/f844990a-6944-4677-9287-8550999ce672"
 
-        self.assertEqual(info.get_solventforcompoundsolution1(), 50.0)
-        self.assertEqual(info.get_solventforcompoundsolution2(), 30.0)
-        self.assertEqual(info.get_solventforcompoundsolution3(), 20.0)
+    
+        info = SourceScenarioAdditionalInformation()
 
-    def test_parser(self):
-        data = "50.0;30.0;20.0"
-        info = SolventForCompoundSolutionAdditionalInformation.parse(data)
+        
+        scen = Scenario.create(self.pkg, name=self.get_scenario_name(), description="to test source scenario",
+                                additional_information=[])
 
-        self.assertEqual(info.get_solventforcompoundsolution1(), 50.0)
-        self.assertEqual(info.get_solventforcompoundsolution2(), 30.0)
-        self.assertEqual(info.get_solventforcompoundsolution3(), 20.0)
+        info.set_sourcescenario(test_data)
 
+        
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_sourcescenario(), "http[64 chars]enario/f844990a-6944-4677-9287-8550999ce672;Aeration - (00012)")
+
+    def test_sourcescenario_information_parser(self):
+        data_string = "https://envipath.org/package/57c34a2f-6310-49b1-92df-a50b5f055d6e/scenario/f844990a-6944-4677-9287-8550999ce672"
+        info = SourceScenarioAdditionalInformation.parse(data_string)
+
+        
+        scen = Scenario.create(self.pkg, name=self.get_scenario_name(), description="to test source scenario parser",
+                               additional_information=[])
+
+        
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_sourcescenario(), "https://envipath.org/package/57c34a2f-6310-49b1-92df-a50b5f055d6e/scenario/f844990a-6944-4677-9287-8550999ce672;Aeration - (00012)")
+
+
+    # spike compound
+    def test_spikecompoundsetter_and_getter(self):
+        scenario_name = self.get_scenario_name()
+        
+        scen = Scenario.create(self.pkg, name=scenario_name, description="Test setter and getter", additional_information=[])
+
+        info = SpikeCompoundAdditionalInformation()
+        
+        info.set_spikeComp("https://envipath.org/package/57c34a2f-6310-49b1-92df-a50b5f055d6e/compound/1a719d31-643b-46bc-93d7-25039f1d8c44/structure/6f6021ec-ef10-4593-8bd0-438267a2d520")
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
+        self.assertEqual(retrieved_info.get_spikeComp(), "structure 0000001")
+
+        info.set_spikeComp("C1=CC=CC=C1")  # example SMILE
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
+        self.assertEqual(retrieved_info.get_spikeComp(), "structure 0000001")
+
+    def test_spikecompound_parser(self):
+        scenario_name = self.get_scenario_name()
+        
+        scen = Scenario.create(self.pkg, name=scenario_name, description="Test parser", additional_information=[])
+        
+        data_string = "https://envipath.org/package/57c34a2f-6310-49b1-92df-a50b5f055d6e/compound/1a719d31-643b-46bc-93d7-25039f1d8c44/structure/6f6021ec-ef10-4593-8bd0-438267a2d520"
+        info = SpikeCompoundAdditionalInformation.parse(data_string)
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
+        self.assertEqual(retrieved_info.get_spikeComp(), "structure 0000001")
+
+        data_string = "C1=CC=CC=C1"  # example SMILE
+        info = SpikeCompoundAdditionalInformation.parse(data_string)
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
+        self.assertEqual(retrieved_info.get_spikeComp(), "structure 0000001")
+
+
+    # temperature
+    def test_temperature_information(self):
+        
+        test_data = [
+            {"temperatureMin": 10.5, "temperatureMax": 20.5},
+            {"temperatureMin": 5.0, "temperatureMax": 25.0},
+            {"temperatureMin": -5.0, "temperatureMax": 15.0}
+        ]
+
+        for data in test_data:
+            info = TemperatureAdditionalInformation()
+
+            
+            scen = Scenario.create(self.pkg, name=self.get_scenario_name(), description="to test temperature",
+                                   additional_information=[])
+
+            info.set_temperatureMin(data["temperatureMin"])
+            info.set_temperatureMax(data["temperatureMax"])
+
+            
+            scen.update_scenario(additional_information=[info])
+            retrieved_info = scen.get_additional_information()[0]
+
+            self.assertEqual(retrieved_info.get_temperatureMin(), data["temperatureMin"])
+            self.assertEqual(retrieved_info.get_temperatureMax(), data["temperatureMax"])
+
+    def test_temperature_information_parser(self):
+        data_string = "5.0;25.0"
+        info = TemperatureAdditionalInformation.parse(data_string)
+
+        
+        scen = Scenario.create(self.pkg, name=self.get_scenario_name(), description="to test temperature parser",
+                               additional_information=[])
+
+        
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_temperatureMin(), 5.0)
+        self.assertEqual(retrieved_info.get_temperatureMax(), 25.0)
+
+    # total organic carbon (TOC)
+
+    def test_total_organic_carbon_information(self):
+        test_data = [
+            {"totalorganiccarbonStart": 5.0, "totalorganiccarbonEnd": 15.0},
+            {"totalorganiccarbonStart": 2.5, "totalorganiccarbonEnd": 10.0},
+            {"totalorganiccarbonStart": 0.0, "totalorganiccarbonEnd": 20.0}
+        ]
+
+        for data in test_data:
+            info = TotalOrganicCarbonAdditionalInformation()
+
+            
+            scen = Scenario.create(self.pkg, name=self.get_scenario_name(), description="to test total organic carbon",
+                                   additional_information=[])
+
+            info.set_totalorganiccarbonStart(data["totalorganiccarbonStart"])
+            info.set_totalorganiccarbonEnd(data["totalorganiccarbonEnd"])
+
+            
+            scen.update_scenario(additional_information=[info])
+            retrieved_info = scen.get_additional_information()[0]
+
+            self.assertEqual(retrieved_info.get_totalorganiccarbonStart(), data["totalorganiccarbonStart"])
+            self.assertEqual(retrieved_info.get_totalorganiccarbonEnd(), data["totalorganiccarbonEnd"])
+
+    def test_total_organic_carbon_information_parser(self):
+        data_string = "2.5;10.0"
+        info = TotalOrganicCarbonAdditionalInformation.parse(data_string)
+
+        
+        scen = Scenario.create(self.pkg, name=self.get_scenario_name(), description="to test total organic carbon parser",
+                               additional_information=[])
+
+        
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_totalorganiccarbonStart(), 2.5)
+        self.assertEqual(retrieved_info.get_totalorganiccarbonEnd(), 10.0)
+
+
+    # tss
+
+    def test_tss_information(self):
+        
+        info = TSSAdditionalInformation()
+
+        
+        scen = Scenario.create(self.pkg, name=self.get_scenario_name(), description="to test TSS",
+                                additional_information=[])
+
+        info.set_ttsStart(8.0)
+        info.set_ttsEnd(12.0)
+
+        
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_ttsStart(), 8.0)
+        self.assertEqual(retrieved_info.get_ttsEnd(), 12.0)
+
+    def test_tss_information_parser(self):
+        data_string = "2.5 - 10.0"
+        info = TSSAdditionalInformation.parse(data_string)
+
+        
+        scen = Scenario.create(self.pkg, name=self.get_scenario_name(), description="to test TSS parser",
+                               additional_information=[])
+
+        
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_ttsStart(), 2.5)
+        self.assertEqual(retrieved_info.get_ttsEnd(), 10.0)
+
+
+    # type of compound addition
+    def test_typeofaddition_information(self):
+        test_data = [
+            "spiking in solvent",
+            "plating",
+            "other"
+        ]
+
+        for data in test_data:
+            info = TypeOfAdditionAdditionalInformation()
+
+            
+            scen = Scenario.create(self.pkg, name=self.get_scenario_name(), description="to test Type of Addition",
+                                   additional_information=[])
+
+            info.set_typeofaddition(data)
+
+            
+            scen.update_scenario(additional_information=[info])
+            retrieved_info = scen.get_additional_information()[0]
+
+            self.assertEqual(retrieved_info.get_typeofaddition(), data)
+
+    def test_typeofaddition_information_parser(self):
+        data_string = "spiking in solvent"
+        info = TypeOfAdditionAdditionalInformation.parse(data_string)
+
+        
+        scen = Scenario.create(self.pkg, name=self.get_scenario_name(), description="to test Type of Addition parser",
+                               additional_information=[])
+
+        
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_typeofaddition(), "spiking in solvent")
+
+
+
+    # type of aeration
+
+    def test_typeofaeration_information(self):
+        test_data = [
+            "stirring",
+            "shaking",
+            "bubbling air",
+            "bubbling air and stirring",
+            "other"
+        ]
+
+        for data in test_data:
+            info = TypeOfAerationAdditionalInformation()
+
+            
+            scen = Scenario.create(self.pkg, name=self.get_scenario_name(), description="to test Type of Aeration",
+                                   additional_information=[])
+
+            info.set_typeofaeration(data)
+
+            
+            scen.update_scenario(additional_information=[info])
+            retrieved_info = scen.get_additional_information()[0]
+
+            self.assertEqual(retrieved_info.get_typeofaeration(), data)
+
+    def test_typeofaeration_information_parser(self):
+        data_string = "stirring"
+        info = TypeOfAerationAdditionalInformation.parse(data_string)
+
+        
+        scen = Scenario.create(self.pkg, name=self.get_scenario_name(), description="to test Type of Aeration parser",
+                               additional_information=[])
+
+        
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_typeofaeration(), "stirring")
+
+    def test_invalid_typeofaeration(self):
+        with self.assertRaises(ValueError):
+            TypeOfAerationAdditionalInformation().set_typeofaeration("invalid type")
+   
+    # volatile tss
+    def test_volatiletts_information(self):
+        test_data = [
+            ("10.5", "20.5"),
+            ("15.2", None),
+            (None, "25.3"),
+        ]
+
+        for start, end in test_data:
+            info = VolatileTSSAdditionalInformation()
+
+            
+            scen = Scenario.create(self.pkg, name=self.get_scenario_name(), description="to test Volatile TSS",
+                                   additional_information=[])
+
+            if start:
+                info.set_volatilettsStart(float(start))
+            if end:
+                info.set_volatilettsEnd(float(end))
+
+            
+            scen.update_scenario(additional_information=[info])
+            retrieved_info = scen.get_additional_information()[0]
+
+            self.assertEqual(retrieved_info.get_volatilettsStart(), float(start) if start else float(end))
+            self.assertEqual(retrieved_info.get_volatilettsEnd(), float(end) if end else float(start))
+
+    def test_volatiletts_information_parser(self):
+        data_string = "10.5 - 20.5"
+        info = VolatileTSSAdditionalInformation.parse(data_string)
+
+        
+        scen = Scenario.create(self.pkg, name=self.get_scenario_name(), description="to test Volatile TSS parser",
+                               additional_information=[])
+
+        
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_volatilettsStart(), 10.5)
+        self.assertEqual(retrieved_info.get_volatilettsEnd(), 20.5)
+
+    def test_invalid_volatiletts(self):
+        with self.assertRaises(TypeError):
+            VolatileTSSAdditionalInformation().set_volatilettsStart("invalid value")
+    
+    # water storage capacity
+    def test_waterstoragecapacity_information(self):
+
+        info = WaterStorageCapacityAdditionalInformation()
+
+        
+        scen = Scenario.create(self.pkg, name=self.get_scenario_name(), description="to test Water Storage Capacity",
+                                additional_information=[])
+
+        
+        info.set_wst(10.5)
+        info.set_wstConditions("0.1 bar = pF2.0")
+        info.set_maximumWaterstoragecapacity(20.5)
+
+        
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_wst(), 10.5)
+        self.assertEqual(retrieved_info.get_wstConditions(),"0.1 bar = pF2.0")
+        self.assertEqual(retrieved_info.get_maximumWaterstoragecapacity(), 20.5)
+
+    def test_waterstoragecapacity_information_parser(self):
+        data_string = "10.5 - 0.1 bar = pF2.0 - 20.5"
+        info = WaterStorageCapacityAdditionalInformation.parse(data_string)
+
+        
+        scen = Scenario.create(self.pkg, name=self.get_scenario_name(), description="to test Water Storage Capacity parser",
+                               additional_information=[])
+
+        
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
+
+        self.assertEqual(retrieved_info.get_wst(), 10.5)
+        self.assertEqual(retrieved_info.get_wstConditions(), "0.1 bar = pF2.0")
+        self.assertEqual(retrieved_info.get_maximumWaterstoragecapacity(), 20.5)
+
+    def test_invalid_water_storage_capacity(self):
+        with self.assertRaises(ValueError):
+            WaterStorageCapacityAdditionalInformation().set_wst("invalid value")
+
+
+    # parameters measured
+
+    def test_parametersetter_and_getter(self):
+        # Test setter and getter for each parameter
+        valid_parameters = [
+            "NH4+", "NH4-", "NH4-N", "NO3-",
+            "NO2-", "Ntot", "PO43-",
+            "P-tot", "DOC", "none", "NH&#8324&#8314", "NH&#8324&#8315","NH&#8324-N",
+            "NO&#8323&#8315","NO&#8322&#8315","N&#8348&#8338&#8348",
+            "PO&#8324&#179&#8315","P&#8348&#8338&#8348"
+        ]
+        
+        for param in ["NH4+", "NH4-", "NH4-N", "NO3-", "NO2-", "Ntot", "PO43-", "P-tot", "DOC", "none"]:
+            scenario_name = param
+            scen = Scenario.create(self.pkg, name=scenario_name, description="Test setter and getter", additional_information=[])
+
+            info = ParametersMeasuredAdditionalInformation()
+            info.set_addparametersmeasured(param)
+            scen.update_scenario(additional_information=[info])
+
+            retrieved_info = scen.get_additional_information()[0]
+            self.assertIn(retrieved_info.get_addparametersmeasured(),valid_parameters)
+
+    def test_parameter_parser(self):
+        
+        valid_parameters = [
+            "NH4+", "NH4-", "NH4-N", "NO3-",
+            "NO2-", "Ntot", "PO43-",
+            "P-tot", "DOC", "none", "NH&#8324&#8314","NH&#8324&#8315","NH&#8324-N",
+            "NO&#8323&#8315","NO&#8322&#8315","N&#8348&#8338&#8348",
+            "PO&#8324&#179&#8315","P&#8348&#8338&#8348"
+        ]
+        for param in ["NH4+", "NH4-", "NH4-N", "NO3-", "NO2-", "Ntot", "PO43-", "P-tot", "DOC", "none"]:
+            scenario_name = param
+            scen = Scenario.create(self.pkg, name=scenario_name, description="Test parser", additional_information=[])
+
+            data_string = param
+            info = ParametersMeasuredAdditionalInformation.parse(data_string)
+            scen.update_scenario(additional_information=[info])
+
+            retrieved_info = scen.get_additional_information()[0]
+            
+
+            self.assertIn(retrieved_info.get_addparametersmeasured(),valid_parameters)
 
 
 
@@ -1677,13 +2394,11 @@ class TestAdditionalInformationIntegration(unittest.TestCase):
         dissolved_oxygen_data = "2.0;8.0"
         dissolved_oxygen_info = DissolvedOxygenConcentrationAdditionalInformation.parse(dissolved_oxygen_data)
 
-        # Update scenario with the additional information
+        
         scen_parser.update_scenario(additional_information=[dissolved_oxygen_info])
 
-        # Retrieve the additional information from the scenario
         retrieved_info = scen_parser.get_additional_information()[0]
 
-        # Verify the values for DissolvedOxygenConcentrationAdditionalInformation
         self.assertEqual(retrieved_info.get_DissolvedoxygenconcentrationLow(), 2.0)
         self.assertEqual(retrieved_info.get_DissolvedoxygenconcentrationHigh(), 8.0)
 
@@ -1707,17 +2422,13 @@ class TestAdditionalInformationIntegration(unittest.TestCase):
     def test_OxygenUptakeRate_parser(self):
         scenario_name = self.get_scenario_name()
         scen_parser = Scenario.create(self.pkg,name=scenario_name,description="to test",additional_information= [])
-        # Test DissolvedOxygenConcentrationAdditionalInformation
         data = "2.0;8.0"
         info = OxygenUptakeRateAdditionalInformation.parse(data)
 
-        # Update scenario with the additional information
-        scen_parser.update_scenario(info)
+        scen_parser.update_scenario(additional_information=[info])
 
-        # Retrieve the additional information from the scenario
         retrieved_info = scen_parser.get_additional_information()[0]
 
-        # Verify the values for DissolvedOxygenConcentrationAdditionalInformation
         self.assertEqual(retrieved_info.get_oxygenuptakerateStart(), 2.0)
         self.assertEqual(retrieved_info.get_oxygenuptakerateEnd(), 8.0)
 
