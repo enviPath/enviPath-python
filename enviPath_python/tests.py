@@ -1427,7 +1427,7 @@ class TestAdditionalInformationIntegration(unittest.TestCase):
         info = RateConstantAdditionalInformation()
         lower_value = 0.1
         upper_value = 0.5
-        order_value = "first order"
+        order_value = "First order"
         corrected_value = "sorption corrected"
         comment_value = "Test comment"
 
@@ -1441,7 +1441,7 @@ class TestAdditionalInformationIntegration(unittest.TestCase):
         info.set_rateconstantcomment(comment_value)
 
         scen.update_scenario(additional_information=[info])
-        print(scen.get_additional_information())
+        
         retrieved_info = scen.get_additional_information()[0]
 
         self.assertEqual(retrieved_info.get_rateconstantlower(), lower_value)
@@ -1454,7 +1454,7 @@ class TestAdditionalInformationIntegration(unittest.TestCase):
 
     def test_rateconstant_information_parser(self):
         scenario_name = self.get_scenario_name()
-        data_string = "first order;sorption corrected;0.1 - 0.5;Test comment"
+        data_string = "First order;sorption corrected;0.1 - 0.5;Test comment"
         info = RateConstantAdditionalInformation.parse(data_string)
 
         scen = Scenario.create(self.pkg, name=scenario_name, description="to test rate constant parser",
@@ -1463,7 +1463,7 @@ class TestAdditionalInformationIntegration(unittest.TestCase):
         scen.update_scenario(additional_information=[info])
         retrieved_info = scen.get_additional_information()[0]
 
-        self.assertEqual(retrieved_info.get_rateconstantorder(), "first order")
+        self.assertEqual(retrieved_info.get_rateconstantorder(), "First order")
         self.assertEqual(retrieved_info.get_rateconstantcorrected(), "sorption corrected")
         self.assertEqual(retrieved_info.get_rateconstantlower(), 0.1)
         self.assertEqual(retrieved_info.get_rateconstantupper(), 0.5)
@@ -1987,6 +1987,50 @@ class TestAdditionalInformationIntegration(unittest.TestCase):
         scen.update_scenario(additional_information=[info])
         retrieved_info = scen.get_additional_information()[0]
         self.assertEqual(retrieved_info.get_spikeComp(), "structure 0000001")
+
+    # spike concentration
+
+    def test_spikeconcentrationsetter_and_getter(self):
+        scenario_name = self.get_scenario_name()
+        
+        scen = Scenario.create(self.pkg, name=scenario_name, description="Test setter and getter", additional_information=[])
+
+        info = SpikeConcentrationAdditionalInformation()
+        
+        info.set_spikeConcentration(10.5)
+
+        for unit in SpikeConcentrationAdditionalInformation.valid_units:
+            info.set_spikeconcentrationUnit(unit)
+            scen.update_scenario(additional_information=[info])
+            retrieved_info = scen.get_additional_information()[0]
+            self.assertEqual(retrieved_info.get_spikeconcentrationUnit(), unit)
+            self.assertEqual(retrieved_info.get_spikeConcentration(), 10.5)
+
+    def test_spikeconcententrationsetterinvalid_value(self):
+        scenario_name = self.get_scenario_name()
+        
+        scen = Scenario.create(self.pkg, name=scenario_name, description="Test setter invalid value", additional_information=[])
+        info = SpikeConcentrationAdditionalInformation()
+        
+        with self.assertRaises(ValueError):
+            info.set_spikeConcentration("not_a_float")  
+
+        with self.assertRaises(ValueError):
+            info.set_spikeconcentrationUnit("INVALID_UNIT")  
+
+    def test_spikeconcentration_parser(self):
+        scenario_name = self.get_scenario_name()
+        
+        scen = Scenario.create(self.pkg, name=scenario_name, description="Test parser", additional_information=[])
+        
+        
+        data_string = "10.5"
+        info = SpikeConcentrationAdditionalInformation.parse(data_string)
+        scen.update_scenario(additional_information=[info])
+        retrieved_info = scen.get_additional_information()[0]
+        self.assertEqual(retrieved_info.get_spikeConcentration(), 10.5)
+        
+
 
 
     # temperature

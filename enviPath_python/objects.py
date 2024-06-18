@@ -5947,7 +5947,7 @@ class RateConstantAdditionalInformation(AdditionalInformation):
     If only one is set, the other one takes the same value. 
     """
     name = "rateconstant"
-    mandatories = ['rateconstantorder', 'rateconstantcorrected']
+    mandatories = ["rateconstantorder","rateconstantcorrected"]
 
     # Setter
     def set_rateconstantlower(self, value):
@@ -5978,10 +5978,10 @@ class RateConstantAdditionalInformation(AdditionalInformation):
         """
         Sets the order of the rate constant.
 
-        :param value: The order of the rate constant. Must be either "zero order", "first order", "second order","pseudo first order"
+        :param value: The order of the rate constant. Must be either "Zero order", "First order", "Second order","Pseudo first order". 
         :type value: str
         """
-        if not value in ["zero order", "first order", "second order","pseudo first order"]:
+        if not value in ["Zero order", "First order", "Second order","Pseudo first order"]:
             raise ValueError(f"{value} is not an allowed order. must be one of the allowed values.")
         else:
             self.params["rateconstantorder"] = value
@@ -6141,7 +6141,7 @@ class SolventForCompoundSolutionAdditionalInformation(AdditionalInformation):
         """
         Sets the first solvent used for compound solution.
 
-        :param value: The first solvent used for compound solution.
+        :param value: The first solvent used for compound solution. Valid solvents are "MeOH", "EtOH", "H2O", "DMSO", "acetone","H&#8322O".
         :type value: str
         """
         if value not in self.valid_solvents:
@@ -6152,7 +6152,7 @@ class SolventForCompoundSolutionAdditionalInformation(AdditionalInformation):
         """
         Sets the second solvent used for compound solution.
 
-        :param value: The second solvent used for compound solution.
+        :param value: The second solvent used for compound solution. Valid solvents are "MeOH", "EtOH", "H2O", "DMSO", "acetone","H&#8322O".
         :type value: str
         """
         if value not in self.valid_solvents:
@@ -6163,7 +6163,7 @@ class SolventForCompoundSolutionAdditionalInformation(AdditionalInformation):
         """
         Sets the third solvent used for compound solution.
 
-        :param value: The third solvent used for compound solution.
+        :param value: The third solvent used for compound solution. Valid solvents are "MeOH", "EtOH", "H2O", "DMSO", "acetone","H&#8322O".
         :type value: str
         """
         if value not in self.valid_solvents:
@@ -6393,7 +6393,7 @@ class SpikeConcentrationAdditionalInformation(AdditionalInformation):
     name = "spikeconcentration"
     mandatories = []
 
-    valid_units = ['&#956g/L', '&#956g/kg wet soil', 'g/kg dry soil', 'mg/L', 'mg/kg wet soil', 'mg/kg dry soil', 'ppm']
+    valid_units = ['MUG_PER_L', 'MUG_PER_KG_WET', 'MUG_PER_KG_DRY', 'MG_PER_L', 'MG_PER_KG_WET', 'MG_PER_KG_DRY', 'PPM']
 
     # Setter
     def set_spikeConcentration(self, value):
@@ -6410,16 +6410,18 @@ class SpikeConcentrationAdditionalInformation(AdditionalInformation):
 
     def set_spikeconcentrationUnit(self, value):
         """
-        Sets the unit for the spike concentration.
+        Sets the unit for the spike concentration. Must be one of the following:
+        'MUG_PER_L', 'MUG_PER_KG_WET', 'MUG_PER_KG_DRY', 'MG_PER_L', 'MG_PER_KG_WET', 'MG_PER_KG_DRY', 'PPM'
 
         :param value: The unit for the spike concentration.
         :type value: str
         """
         if value in self.valid_units:
             self.params["spikeconcentrationUnit"] = value
+        
         else:
-            raise ValueError(f"spike concentration unit must be one of the valid units. {value} is not valid.")
-
+            raise ValueError(f"{value} is not a valid unit.")
+        
     # Getter
     def get_spikeConcentration(self):
         """
@@ -6451,9 +6453,9 @@ class SpikeConcentrationAdditionalInformation(AdditionalInformation):
         :return: SpikeConcentrationAdditionalInformation instance.
         :rtype: SpikeConcentrationAdditionalInformation
         """
-    
         
-        res = {"spikeConcentration": float(parts[0])}
+        
+        res = {"spikeConcentration": float(data_string)}
  
 
         return cls(**res)
