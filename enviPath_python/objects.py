@@ -2673,7 +2673,7 @@ class OxygenDemandAdditionalInformation(AdditionalInformation):
     # Getter
     def get_oxygendemandType(self):
         """
-        Retrieves The oxygen demand type
+        Retrieves the oxygen demand type
 
         :return: The oxygen demand value of the influent if set; otherwise, None
         :rtype: str
@@ -2682,7 +2682,7 @@ class OxygenDemandAdditionalInformation(AdditionalInformation):
 
     def get_oxygendemandInfluent(self):
         """
-        Retrieves The influent oxygend demand value
+        Retrieves the influent oxygen demand value
         
         :return: The influent oxygen demand value if set; otherwise, None
         :rtype: str
@@ -2691,7 +2691,7 @@ class OxygenDemandAdditionalInformation(AdditionalInformation):
 
     def get_oxygendemandEffluent(self):
         """
-        retrieves The effluent oxygend demand value
+        retrieves The effluent oxygen demand value
 
         :return: The effluent oxygen demand value if set; otherwise, None
         :rtype: str
@@ -3186,9 +3186,9 @@ class SoilTexture1AdditionalInformation(AdditionalInformation):
         :raises ValueError: If the value is not one of the allowed soil texture types.
         """
         allowed_types = [
-            "CLAY", "SANDY_CLAY", "SILTY_CLAY", "SANDY_CLAY_LOAM", "SANDY_LOAM",
-            "SILTY_CLAY_LOAM", "SAND", "LOAMY_SAND", "LOAM", "SILT_LOAM", "SILT", "CLAY_LOAM",
-            "SILTY_SAND", "SANDY_SILT_LOAM"
+            "CLAY", "SANDY CLAY", "SILTY CLAY", "SANDY CLAY LOAM", "SANDY LOAM",
+            "SILTY CLAY LOAM", "SAND", "LOAMY SAND", "LOAM", "SILT LOAM", "SILT", "CLAY LOAM",
+            "SILTY SAND", "SANDY SILT LOAM"
         ]
         if value.upper() not in allowed_types:
             raise ValueError("{} is not an allowed soilTextureType".format(value))
@@ -4672,10 +4672,10 @@ class HumidityAdditionalInformation(AdditionalInformation):
     This class represents additional information about experimental humidity.
     """
     name = "humidity"
-    mandatories = ["expHumid"]
+    mandatories = ["waterStorageCapacity"]
 
     # Setter
-    def set_expHumid(self, value):
+    def set_waterStorageCapacity(self, value):
         """
         Sets the experimental humidity value.
 
@@ -4683,19 +4683,60 @@ class HumidityAdditionalInformation(AdditionalInformation):
         :type value: float
         """
         if isinstance(value, float) and 0 <= value <= 100:
-            self.params["expHumid"] = value
+            self.params["waterStorageCapacity"] = value
         else:
-            raise ValueError("expHumid must be a float between 0 and 100.")
+            raise ValueError("waterStorageCapacity must be a float between 0 and 100.")
+
+    def set_waterStorageConditions(self, value):
+        """
+        Sets the experimental conditions.
+
+        :param value: The experimental conditions, the pressure.
+        :type value: str
+        """
+        if isinstance(value, str):
+            self.params["waterStorageConditions"] = value
+        else:
+            raise ValueError("waterStorageConditions must be a str.")
+
+    def set_waterStorageMaxHold(self, value):
+        """
+        Sets the experimental maximum humidity value.
+
+        :param value: The maximum experimental humidity value, represented as a percentage.
+        :type value: float
+        """
+        self.params["waterStorageMaxHold"] = value
 
     # Getter
-    def get_expHumid(self):
+    def get_waterStorageCapacity(self):
         """
         Retrieves the experimental humidity value.
 
         :return: The experimental humidity value if set; otherwise, None.
         :rtype: float
         """
-        return self.params.get("expHumid", None)
+        return self.params.get("waterStorageCapacity", None)
+
+    # Getter
+    def get_waterStorageConditions(self):
+        """
+        Retrieves the experimental humidity conditions.
+
+        :return: The experimental humidity conditions value if set; otherwise, None.
+        :rtype: str
+        """
+        return self.params.get("waterStorageConditions", None)
+
+    # Getter
+    def get_waterStorageMaxHold(self):
+        """
+        Retrieves the experimental maximum humidity value.
+
+        :return: The experimental maximum humidity value if set; otherwise, None.
+        :rtype: float
+        """
+        return self.params.get("waterStorageMaxHold", None)
 
     # Parser
     @classmethod
@@ -4708,8 +4749,12 @@ class HumidityAdditionalInformation(AdditionalInformation):
         :return: An instance of HumidityAdditionalInformation populated with the parsed data.
         :rtype: HumidityAdditionalInformation
         """
+
+        parts = data_string.split(' - ')
         res = {
-            "expHumid": float(data_string),
+            "waterStorageCapacity": float(parts[0]),
+            "waterStorageConditions": parts[1] if len(parts) == 2 else "",
+            "waterStorageMaxHold": float(parts[2]) if len(parts) == 3 else None,
         }
 
         return cls(**res)
@@ -5103,15 +5148,7 @@ class WaterStorageCapacityAdditionalInformation(AdditionalInformation):
         :param value: The water storage threshold conditions.
         :type value: str
         """
-        valid_conditions = [
-            "0 water bar = pF0", "0.01 bar = pF1.0", "0.03 bar = pF1.5", "0.06 bar = pF1.8", 
-            "0.1 bar = pF2.0", "0.2 bar = pF2.3", "1/3 bar = pF2.5", "0.5 bar = pF2.7", 
-            "1.0 bar = pF3.0", "2.5 bar = pF3.4", "15 bar = pF4.2"
-        ]
-        if value.lower() in [cond.lower() for cond in valid_conditions]:
-            self.params["wstConditions"] = value
-        else:
-            raise ValueError(f"{value} is not a valid wstCondition.")
+        self.params["wstConditions"] = value
 
     # Getter
     def get_wst(self):
