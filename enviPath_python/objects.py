@@ -2583,6 +2583,9 @@ class AdditionalInformation(ABC):
                 raise ValueError("{} not set".format(m))
         return self
 
+    def get_unit(self):
+        return self.params.get("unit")
+    
     @classmethod
     def _parse_default(cls, data_string, keys):
         parts = data_string.split(";")
@@ -2878,14 +2881,12 @@ class AerationTypeAdditionalInformation(AdditionalInformation):
         """
         Sets the type of aeration.
 
-        :param value: The type of aeration. Must be one of the following "stirring", "shaking", "bubbling air", "bubbling air and stiring", "other"
+        :param value: The type of aeration. Must be one of the following "stirring", "shaking", "bubbling air", "bubbling air and stiring", "other" 
+        otherwise it could cause an error.
         :type value: str
         """
-        allowed_values = ["stirring", "shaking", "bubbling air", "bubbling air and stirring", "other"]
-        if value in allowed_values:
-            self.params["aerationtype"] = value
-        else:
-            raise ValueError(f"aeration type must be one of {allowed_values}.")
+        self.params["aerationtype"] = value
+
     # Getter
     def get_aerationtype(self):
         """
@@ -4287,12 +4288,7 @@ class HalfLifeAdditionalInformation(AdditionalInformation):
         :param value: The source of the half-life information.
         :type value: str
         """
-        value = value.lower()
-        allowed_values = ['reported','calculated','neither']
-        if value in allowed_values:
-            self.params["source"] = value
-        else:
-            raise ValueError(f'{value} is not an allowed source value.')
+        self.params["source"] = value
         
     def set_firstOrder(self, value):
         """
@@ -4400,10 +4396,11 @@ class HalfLifeAdditionalInformation(AdditionalInformation):
         :rtype: HalfLifeAdditionalInformation
         """
         parts = data_string.split(';')
-        print(parts)
         dt50 = parts[3]
         if parts[0] == 'SFO':
             fo = True
+        else:
+            fo = False
 
         res = {
             'firstOrder': fo,
@@ -5376,10 +5373,9 @@ class BioreactorAdditionalInformation(AdditionalInformation):
         :param value: The size of the bioreactor, measured in mL.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["bioreactorsize"] = value
-        else:
-            raise ValueError("bioreactorsize must be a float.")
+        
+        self.params["bioreactorsize"] = value
+
 
     # Getter
     def get_bioreactortype(self):
@@ -5416,11 +5412,11 @@ class BioreactorAdditionalInformation(AdditionalInformation):
 
         if len(parts) > 1:
             res['bioreactortype'] = parts[0]
-            res['bioreactorsize'] = float(parts[1])
+            res['bioreactorsize'] = parts[1]
         else:
             parts = data_string.split(', ')
             res['bioreactortype'] = parts[0]
-            res['bioreactorsize'] = float(parts[1])
+            res['bioreactorsize'] = parts[1]
 
         return cls(**res)
     
@@ -6025,15 +6021,13 @@ class RateConstantAdditionalInformation(AdditionalInformation):
 
     def set_rateconstantcorrected(self, value):
         """
-        Sets the corrected rate constant value.
+        Sets the corrected rate constant value. 
 
         :param value: The corrected rate constant value. Must be either "sorption corrected", "abiotic degradation corrected", "sorption corrected & abiotic degradation corrected".
+                    could cause an error otherwise.
         :type value: str
         """
-        if not value in ["sorption corrected", "abiotic degradation corrected", "sorption corrected & abiotic degradation corrected"]:
-            raise ValueError(f"{value} not an allowed corrected rate constant value.")
-        else:
-            self.params["rateconstantcorrected"] = value
+        self.params["rateconstantcorrected"] = value
 
     def set_rateconstantcomment(self, value):
         """
@@ -6469,15 +6463,6 @@ class SpikeConcentrationAdditionalInformation(AdditionalInformation):
         """
         return self.params.get("spikeConcentration", None)
 
-    def get_spikeconcentrationUnit(self):
-        """
-        Gets the unit for the spike concentration.
-
-        :return: The unit for the spike concentration, or None if not set.
-        :rtype: str or None
-        """
-        return self.params.get("spikeconcentrationUnit", None)
-
     # Parser
     @classmethod
     def parse(cls, data_string):
@@ -6759,7 +6744,7 @@ class AcidityAdditionalInformation(AdditionalInformation):
         :type value: str
         """
         value = value.upper()
-        if value not in ['', 'WATER', 'KCL', 'CACL2']:
+        if value not in ['', 'WATER', 'KCL', 'CACL2', 'CACL&#8322']:
             raise ValueError(f"{value} is not allowed as acidityType.")
         self.params["acidityType"] = value
 
