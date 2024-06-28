@@ -20,7 +20,7 @@ from abc import ABC, abstractmethod
 from collections import namedtuple, defaultdict
 from io import BytesIO
 from typing import List, Optional, Union
-from enviPath_python.enums import Endpoint, ClassifierType, FingerprinterType, AssociationType, EvaluationType, \
+from enums import Endpoint, ClassifierType, FingerprinterType, AssociationType, EvaluationType, \
     Permission
 
 
@@ -2642,13 +2642,12 @@ class OxygenDemandAdditionalInformation(AdditionalInformation):
         """
         allowed_values = ['Chemical Oxygen Demand (COD)', 'Biological Oxygen Demand (BOD)']
         
-        if not isinstance(value, str):
-            raise ValueError("Oxygen demand type must be a string.")
         
         if value not in allowed_values:
             raise ValueError(f"Oxygen demand type must be one of {allowed_values}.")
         
-        self.params["oxygendemandType"] = value
+        else:
+            self.params["oxygendemandType"] = value
 
 
     def set_oxygendemandInfluent(self, value):
@@ -2658,10 +2657,10 @@ class OxygenDemandAdditionalInformation(AdditionalInformation):
         :param value: The influent value of the oxygen demand, measured in mg/L.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["oxygendemandInfluent"] = value
-        else:
-            raise ValueError("Influent oxygen demand must be a float.")
+ 
+        self.params["oxygendemandInfluent"] = value
+       
+
 
     def set_oxygendemandEffluent(self, value):
         """
@@ -2714,8 +2713,8 @@ class OxygenDemandAdditionalInformation(AdditionalInformation):
         """
         res = {
             'oxygendemandType': data_string.split(';')[0],
-            'oxygendemandInfluent': float(data_string.split(';')[1]),
-            'oxygendemandEffluent': float(data_string.split(';')[2]),
+            'oxygendemandInfluent': data_string.split(';')[1],
+            'oxygendemandEffluent': data_string.split(';')[2],
         }
     
         return cls(**res)
@@ -2740,10 +2739,8 @@ class DissolvedOxygenConcentrationAdditionalInformation(AdditionalInformation):
         :param value: The lower limit of dissolved oxygen concentration, measured in mg/L.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["DissolvedoxygenconcentrationLow"] = value
-        else:
-            raise ValueError("Dissolved oxygen concentration low limit must be a float.")
+        self.params["DissolvedoxygenconcentrationLow"] = value
+       
 
     def set_DissolvedoxygenconcentrationHigh(self, value):
         """
@@ -2752,10 +2749,7 @@ class DissolvedOxygenConcentrationAdditionalInformation(AdditionalInformation):
         :param value: The upper limit of dissolved oxygen concentration, measured in mg/L.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["DissolvedoxygenconcentrationHigh"] = value
-        else:
-            raise ValueError("Dissolved oxygen concentration high limit must be a float.")
+        self.params["DissolvedoxygenconcentrationHigh"] = value
 
     # Getter
     def get_DissolvedoxygenconcentrationLow(self):
@@ -2788,8 +2782,8 @@ class DissolvedOxygenConcentrationAdditionalInformation(AdditionalInformation):
         """
         low, high = data_string.split(';')
         res = {
-            'DissolvedoxygenconcentrationLow': float(low),
-            'DissolvedoxygenconcentrationHigh': float(high),
+            'DissolvedoxygenconcentrationLow': low,
+            'DissolvedoxygenconcentrationHigh': high,
         }
         return cls(**res)
 
@@ -2812,10 +2806,7 @@ class OxygenUptakeRateAdditionalInformation(AdditionalInformation):
         :param value: The start value of the oxygen uptake rate, measured in mg/L/hr.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["oxygenuptakerateStart"] = value
-        else:
-            raise ValueError("Oxygen uptake rate start value must be a float.")
+        self.params["oxygenuptakerateStart"] = value
 
     def set_oxygenuptakerateEnd(self, value):
         """
@@ -2824,10 +2815,8 @@ class OxygenUptakeRateAdditionalInformation(AdditionalInformation):
         :param value: The end value of the oxygen uptake rate, measured in mg/L/hr.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["oxygenuptakerateEnd"] = value
-        else:
-            raise ValueError("Oxygen uptake rate end value must be a float.")
+        self.params["oxygenuptakerateEnd"] = value
+        
 
     # Getter
     def get_oxygenuptakerateStart(self):
@@ -3324,66 +3313,66 @@ class SoilTexture2AdditionalInformation(AdditionalInformation):
 
 class AmmoniaUptakeRateAdditionalInformation(AdditionalInformation):
     """
-    Creates an ammonia uptake rate additional information object.
+    Creates an amiona uptake rate additional information object.
 
-    This class represents additional information about the ammonia uptake rate,
+    This class represents additional information about the amiona uptake rate,
     including the start and end values. Either start and/or end value must be defined.
     """
-    name = "ammoniauptakerate"
+    name = "amionauptakerate"
     mandatories = []
 
     # Setter
-    def set_ammoniauptakerateStart(self, value):
+    def set_amionauptakerateStart(self, value):
         """
-        Sets the start value for ammonia uptake rate.
+        Sets the start value for amiona uptake rate.
 
-        :param value: The start value for ammonia uptake rate.
+        :param value: The start value for amiona uptake rate.
         :type value: float
         """
         
-        self.params["ammoniauptakerateStart"] = float(value)
+        self.params["amionauptakerateStart"] = float(value)
 
-    def set_ammoniauptakerateEnd(self, value):
+    def set_amionauptakerateEnd(self, value):
         """
-        Sets the end value for ammonia uptake rate.
+        Sets the end value for amiona uptake rate.
 
-        :param value: The end value for ammonia uptake rate.
+        :param value: The end value for amiona uptake rate.
         :type value: float
         """
         
-        self.params["ammoniauptakerateEnd"] = float(value)
+        self.params["amionauptakerateEnd"] = float(value)
 
     # Getter
-    def get_ammoniauptakerateStart(self):
+    def get_amionauptakerateStart(self):
         """
-        Retrieves the start value for ammonia uptake rate.
+        Retrieves the start value for amiona uptake rate.
 
-        :return: The start value for ammonia uptake rate if set; otherwise, None.
+        :return: The start value for amiona uptake rate if set; otherwise, None.
         :rtype: float
         """
-        return self.params.get("ammoniauptakerateStart", None)
+        return self.params.get("amionauptakerateStart", None)
 
-    def get_ammoniauptakerateEnd(self):
+    def get_amionauptakerateEnd(self):
         """
-        Retrieves the end value for ammonia uptake rate.
+        Retrieves the end value for amiona uptake rate.
 
-        :return: The end value for ammonia uptake rate if set; otherwise, None.
+        :return: The end value for amiona uptake rate if set; otherwise, None.
         :rtype: float
         """
-        return self.params.get("ammoniauptakerateEnd", None)
+        return self.params.get("amionauptakerateEnd", None)
 
     # Parser
     @classmethod
     def parse(cls, data_string):
         """
-        Parses a string containing ammonia uptake rate information to initialize an instance.
+        Parses a string containing amiona uptake rate information to initialize an instance.
 
-        :param data_string: A semicolon-separated string in the form of 'ammoniauptakerateStart;ammoniauptakerateEnd' either start and/or end value must be defined.
+        :param data_string: A semicolon-separated string in the form of 'amionauptakerateStart;amionauptakerateEnd' either start and/or end value must be defined.
         :type data_string: str
         :return: An instance of AmmoniaUptakeRateAdditionalInformation populated with the parsed data.
         :rtype: AmmoniaUptakeRateAdditionalInformation
         """
-        return cls._parse_default(data_string, ['ammoniauptakerateStart', 'ammoniauptakerateEnd'])
+        return cls._parse_default(data_string, ['amionauptakerateStart', 'amionauptakerateEnd'])
 
 
 class TemperatureAdditionalInformation(AdditionalInformation):
@@ -3711,8 +3700,6 @@ class OMContentAdditionalInformation(AdditionalInformation):
         :param value: The OM content measured in organic matter.
         :type value: float
         """
-        if not isinstance(value, float):
-            raise ValueError("omcontentInOM must be a float.")
         self.params["omcontentInOM"] = value
 
     def set_omcontentINOC(self, value):
@@ -3722,8 +3709,6 @@ class OMContentAdditionalInformation(AdditionalInformation):
         :param value: The OM content, measured in organic carbon.
         :type value: float
         """
-        if not isinstance(value, float):
-            raise ValueError("omcontentINOC must be a float.")
         self.params["omcontentINOC"] = value
 
     # Getter
@@ -3760,16 +3745,16 @@ class OMContentAdditionalInformation(AdditionalInformation):
         res = {}
         if len(parts) > 2:
             res = {
-                "omcontentInOM": float(parts[0]),
-                "omcontentINOC": float(parts[2])
+                "omcontentInOM": parts[0],
+                "omcontentINOC": parts[2]
             }
         elif parts[1] in ["OM"]:
             res = {
-                "omcontentInOM": float(parts[0])
+                "omcontentInOM": parts[0]
             }
         elif parts[1] in ["OC"]:
             res = {
-                "omcontentINOC": float(parts[0])
+                "omcontentINOC": parts[0]
             }
 
         return cls(**res)
@@ -4679,10 +4664,9 @@ class HumidityAdditionalInformation(AdditionalInformation):
         :param value: The experimental humidity value, represented as a percentage.
         :type value: float
         """
-        if isinstance(value, float) and 0 <= value <= 100:
-            self.params["waterStorageCapacity"] = value
-        else:
-            raise ValueError("waterStorageCapacity must be a float between 0 and 100.")
+    
+        self.params["waterStorageCapacity"] = value
+        
 
     def set_waterStorageConditions(self, value):
         """
@@ -4691,10 +4675,8 @@ class HumidityAdditionalInformation(AdditionalInformation):
         :param value: The experimental conditions, the pressure.
         :type value: str
         """
-        if isinstance(value, str):
-            self.params["waterStorageConditions"] = value
-        else:
-            raise ValueError("waterStorageConditions must be a str.")
+  
+        self.params["waterStorageConditions"] = value
 
     def set_waterStorageMaxHold(self, value):
         """
@@ -5121,10 +5103,9 @@ class WaterStorageCapacityAdditionalInformation(AdditionalInformation):
         :param value: The water hold capacity, measured in g water/100g dry soil.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["wst"] = value
-        else:
-            raise ValueError("wst must be of type float.")
+      
+        self.params["wst"] = value
+
 
     def set_maximumWaterstoragecapacity(self, value):
         """
@@ -5133,10 +5114,8 @@ class WaterStorageCapacityAdditionalInformation(AdditionalInformation):
         :param value: The maximum water storage capacity, measured in g water/100g dry soil.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["maximumWaterstoragecapacity"] = value
-        else:
-            raise ValueError("maximumwaterstoragecapacity must be of type float.")
+        
+        self.params["maximumWaterstoragecapacity"] = value
 
     def set_wstConditions(self, value):
         """
@@ -5190,11 +5169,11 @@ class WaterStorageCapacityAdditionalInformation(AdditionalInformation):
         parts = data_string.split(' - ')
         res = {}
         if parts[0].lower() not in ["na", ""]:
-            res["wst"] = float(parts[0])
+            res["wst"] = parts[0]
         if parts[1].lower() not in ["na", ""]:
             res["wstConditions"] = parts[1]
         if parts[2].lower() not in ["na", ""]:
-            res["maximumWaterstoragecapacity"] = float(parts[2])
+            res["maximumWaterstoragecapacity"] = parts[2]
 
         return cls(**res)
 
@@ -5856,6 +5835,7 @@ class FinalCompoundConcentrationAdditionalInformation(AdditionalInformation):
         :return: The final compound concentration value if set; otherwise, None.
         :rtype: float
         """
+        
         return self.params.get("finalcompoundconcentration", None)
 
     # Parser
