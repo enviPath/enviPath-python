@@ -2639,15 +2639,8 @@ class OxygenDemandAdditionalInformation(AdditionalInformation):
 
         :param value: The value to set. Must be one of 'Chemical Oxygen Demand (COD)' or 'Biological Oxygen Demand (BOD)'.
         :type value: str
-        """
-        allowed_values = ['Chemical Oxygen Demand (COD)', 'Biological Oxygen Demand (BOD)']
-        
-        
-        if value not in allowed_values:
-            raise ValueError(f"Oxygen demand type must be one of {allowed_values}.")
-        
-        else:
-            self.params["oxygendemandType"] = value
+        """    
+        self.params["oxygendemandType"] = value
 
 
     def set_oxygendemandInfluent(self, value):
@@ -2687,7 +2680,7 @@ class OxygenDemandAdditionalInformation(AdditionalInformation):
         Retrieves the influent oxygen demand value
         
         :return: The influent oxygen demand value if set; otherwise, None
-        :rtype: str
+        :rtype: float or None
         """
         return self.params.get("oxygendemandInfluent", None)
 
@@ -2696,7 +2689,7 @@ class OxygenDemandAdditionalInformation(AdditionalInformation):
         retrieves The effluent oxygen demand value
 
         :return: The effluent oxygen demand value if set; otherwise, None
-        :rtype: str
+        :rtype: float or None
         """
         return self.params.get("oxygendemandEffluent", None)
 
@@ -2757,7 +2750,7 @@ class DissolvedOxygenConcentrationAdditionalInformation(AdditionalInformation):
         Retrieves the lower limit for dissolved oxygen concentration.
 
         :return: The lower limit of dissolved oxygen concentration if set; otherwise, None.
-        :rtype: str
+        :rtype: float
         """
         return self.params.get("DissolvedoxygenconcentrationLow", None)
 
@@ -2766,7 +2759,7 @@ class DissolvedOxygenConcentrationAdditionalInformation(AdditionalInformation):
         Retrieves the upper limit for dissolved oxygen concentration.
 
         :return: The upper limit of dissolved oxygen concentration if set; otherwise, None.
-        :rtype: str
+        :rtype: float
         """
         return self.params.get("DissolvedoxygenconcentrationHigh", None)
 
@@ -2787,7 +2780,75 @@ class DissolvedOxygenConcentrationAdditionalInformation(AdditionalInformation):
         }
         return cls(**res)
 
+class EnzymeAdditionalInformation(AdditionalInformation):
+    """
+    Creates an Enzyme additional information object.
 
+    This class represents additional information about enzymes.
+    """
+    name = "enzyme"
+    mandatories = ["enzymeName", "enzymeECNumber"]
+
+    # Setter
+    def set_enzymeName(self, value):
+        """
+        Sets the enzyme name.
+
+        :param value: The name of the enzyme.
+        :type value: str
+        """
+        self.params["enzymeName"] = value
+
+    def set_enzymeECNumber(self, value):
+        """
+        Sets the enzyme EC number.
+
+        :param value: The EC number of the enzyme.
+        :type value: str
+        """
+        self.params["enzymeECNumber"] = value
+
+    # Getter
+    def get_enzymeName(self):
+        """
+        Gets the enzyme name.
+
+        :return: The name of the enzyme, or None if not set.
+        :rtype: str or None
+        """
+        return self.params.get("enzymeName", None)
+
+    def get_enzymeECNumber(self):
+        """
+        Gets the enzyme EC number.
+
+        :return: The EC number of the enzyme, or None if not set.
+        :rtype: str or None
+        """
+        return self.params.get("enzymeECNumber", None)
+
+    # Parser
+    @classmethod
+    def parse(cls, data_string):
+        """
+        Parses the data_string to create an EnzymeAdditionalInformation instance.
+
+        :param data_string: A string in the format 'enzymeName (enzymeECNumber)'.
+        :type data_string: str
+        :return: EnzymeAdditionalInformation instance.
+        :rtype: EnzymeAdditionalInformation
+        """
+        start = data_string.find('(')
+        end = data_string.find(')')
+        res = {
+            "enzymeName": data_string[:start].strip(),
+            "enzymeECNumber": data_string[start + 1:end]
+        }
+        return cls(**res)
+
+
+    
+    
 class OxygenUptakeRateAdditionalInformation(AdditionalInformation):
     """
     Creates an Oxygen Uptake Rate additional information object.
@@ -2824,7 +2885,7 @@ class OxygenUptakeRateAdditionalInformation(AdditionalInformation):
         Retrieves the start value for the oxygen uptake rate.
 
         :return: The start value of the oxygen uptake rate if set; otherwise, None.
-        :rtype: float
+        :rtype: float or None
         """
         return self.params.get("oxygenuptakerateStart", None)
 
@@ -2833,7 +2894,7 @@ class OxygenUptakeRateAdditionalInformation(AdditionalInformation):
         Retrieves the end value for the oxygen uptake rate.
 
         :return: The end value of the oxygen uptake rate if set; otherwise, None.
-        :rtype: float
+        :rtype: float or None
         """
         return self.params.get("oxygenuptakerateEnd", None)
 
@@ -2850,8 +2911,8 @@ class OxygenUptakeRateAdditionalInformation(AdditionalInformation):
         """
         start, end = data_string.split(';')
         res = {
-            'oxygenuptakerateStart': float(start),
-            'oxygenuptakerateEnd': float(end),
+            'oxygenuptakerateStart': start,
+            'oxygenuptakerateEnd': end,
         }
         return cls(**res)
 
@@ -2920,10 +2981,9 @@ class PhosphorusContentAdditionalInformation(AdditionalInformation):
         :param value: The phosphorus content in influent.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["phosphoruscontentInfluent"] = value
-        else:
-            raise ValueError("phosphoruscontentInfluent must be a float.")
+   
+        self.params["phosphoruscontentInfluent"] = value
+
 
     def set_phosphoruscontentEffluent(self, value):
         """
@@ -2932,10 +2992,8 @@ class PhosphorusContentAdditionalInformation(AdditionalInformation):
         :param value: The phosphorus content in effluent, measured in mg/L.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["phosphoruscontentEffluent"] = value
-        else:
-            raise ValueError("phosphoruscontentEffluent must be a float.")
+       
+        self.params["phosphoruscontentEffluent"] = value
 
     # Getter
     def get_phosphoruscontentInfluent(self):
@@ -2943,7 +3001,7 @@ class PhosphorusContentAdditionalInformation(AdditionalInformation):
         Retrieves the influent phosphorus content.
 
         :return: The phosphorus content in influent if set; otherwise, None.
-        :rtype: float
+        :rtype: float or None
         """
         return self.params.get("phosphoruscontentInfluent", None)
 
@@ -2952,7 +3010,7 @@ class PhosphorusContentAdditionalInformation(AdditionalInformation):
         Retrieves the effluent phosphorus content.
 
         :return: The phosphorus content in effluent if set; otherwise, None.
-        :rtype: float
+        :rtype: float or None
         """
         return self.params.get("phosphoruscontentEffluent", None)
 
@@ -4115,10 +4173,7 @@ class NitrogenContentAdditionalInformation(AdditionalInformation):
         :param value: The nitrogen content in the influent, measured in mg/L.
         :type value: float
         """
-        if isinstance(value,float):
-            self.params["nitrogencontentInfluent"] = value
-        else:
-            raise ValueError('nitrogencontentInfluent must be of type float')
+        self.params["nitrogencontentInfluent"] = value
 
     def set_nitrogencontentEffluent(self, value):
         """
@@ -4127,10 +4182,8 @@ class NitrogenContentAdditionalInformation(AdditionalInformation):
         :param value: The nitrogen content in the effluent, measured in mg/L.
         :type value: float
         """
-        if isinstance(value,float):
-            self.params["nitrogencontentEffluent"] = value
-        else:
-            raise ValueError('nitrogencontentEffluent must be of type float')
+        self.params["nitrogencontentEffluent"] = value
+
 
     # Getter
     def get_nitrogencontentType(self):
@@ -4138,6 +4191,7 @@ class NitrogenContentAdditionalInformation(AdditionalInformation):
         Retrieves the type of nitrogen content.
 
         :return: The type of nitrogen content if set; otherwise, None.
+        :rtype: float
         
         """
         return self.params.get("nitrogencontentType", None)
@@ -4203,23 +4257,89 @@ class ReferringScenarioAdditionalInformation(AdditionalInformation):
         return cls._parse_default(data_string, ['referringscenario'])
 
 
+class RuleLikelihoodAdditionalInformation(AdditionalInformation):
+    """
+    Creates a Rule Likelihood additional information object.
 
+    This class represents additional information about the likelihood of a rule.
+    """
+    name = "rulelikelihood"
+    mandatories = ["ruleLikelihood"]
+
+    # Setter
+    def set_ruleLikelihood(self, value):
+        """
+        Sets the rule likelihood.
+
+        :param value: The likelihood of the rule, must be one of "verylikely", "likely", "possible", "unlikely", "veryUnlikely".
+        :type value: str
+        """
+        self.params["ruleLikelihood"] = value.lower()
+
+    # Getter
+    def get_ruleLikelihood(self):
+        """
+        Gets the rule likelihood.
+
+        :return: The rule likelihood, or None if not set.
+        :rtype: str or None
+        """
+        return self.params.get("ruleLikelihood", None)
+
+    # Parser
+    @classmethod
+    def parse(cls, data_string):
+        """
+        Parses the data_string to create a RuleLikelihoodAdditionalInformation instance.
+
+        :param data_string: A string containing the rule likelihood.
+        :type data_string: str
+        :return: RuleLikelihoodAdditionalInformation instance.
+        :rtype: RuleLikelihoodAdditionalInformation
+        """
+        return cls._parse_default(data_string, ["ruleLikelihood"])
 
 class ModelBayesPredictionProbabilityAdditionalInformation(AdditionalInformation):
+    """
+    Creates a Model Bayes Prediction Probability additional information object.
+
+    This class represents additional information about the Bayesian prediction probability from a model.
+    """
     name = "modelbayespredictionprob"
     mandatories = ['modelbayespredictionprob']
 
     # Setter
     def set_modelbayespredictionprob(self, value):
+        """
+        Sets the Bayesian prediction probability.
+
+        :param value: The Bayesian prediction probability.
+        :type value: float
+        """
         self.params["modelbayespredictionprob"] = value
 
     # Getter
     def get_modelbayespredictionprob(self):
+        """
+        Gets the Bayesian prediction probability.
+
+        :return: The Bayesian prediction probability, or None if not set.
+        :rtype: float or None
+        """
         return self.params.get("modelbayespredictionprob", None)
 
     # Parser
     @classmethod
     def parse(cls, data_string):
+        """
+        Parses the data_string to create a ModelBayesPredictionProbabilityAdditionalInformation instance.
+
+        :param data_string: A string containing the Bayesian prediction probability.
+        :type data_string: str
+        :return: ModelBayesPredictionProbabilityAdditionalInformation instance.
+        :rtype: ModelBayesPredictionProbabilityAdditionalInformation
+        """
+        
         return cls._parse_default(data_string, ['modelbayespredictionprob'])
 
 
@@ -4240,10 +4360,8 @@ class HalfLifeAdditionalInformation(AdditionalInformation):
         :param value: The lower bound of the half-life, measured in days.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["lower"] = value
-        else:
-            raise ValueError("Lower bound must be a float.")
+        self.params["lower"] = value
+
 
     def set_upper(self, value):
         """
@@ -4252,10 +4370,7 @@ class HalfLifeAdditionalInformation(AdditionalInformation):
         :param value: The upper bound of the half-life, measured in days.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["upper"] = value
-        else:
-            raise ValueError("Upper bound must be a float.")
+        self.params["upper"] = value
 
     def set_comment(self, value):
         """
@@ -4282,10 +4397,8 @@ class HalfLifeAdditionalInformation(AdditionalInformation):
         :param value: True if it's a first-order reaction, False otherwise.
         :type value: bool
         """
-        if isinstance(value,bool):
-            self.params["firstOrder"] = value
-        else:
-            raise ValueError(f'{value} is not a boolean. Must be either True or False')
+        self.params["firstOrder"] = value
+
 
 #    def set_model(self, value):
 #        """
@@ -4356,7 +4469,7 @@ class HalfLifeAdditionalInformation(AdditionalInformation):
         Retrieves the model used for half-life estimation.
 
         :return: The model used for half-life estimation if set; otherwise, None.
-       :rtype: str
+        :rtype: str
         """
         return self.params.get("model", None)
 
@@ -4416,10 +4529,7 @@ class HalfLifeWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The total low half-life value, meaured in days.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["total_low"] = value
-        else:
-            raise ValueError("total_low must be a float.")
+        self.params["total_low"] = value
 
     def set_total_high(self, value):
         """
@@ -4428,10 +4538,7 @@ class HalfLifeWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The total high half-life value, meaured in days.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["total_high"] = value
-        else:
-            raise ValueError("total_high must be a float.")
+        self.params["total_high"] = value
 
     def set_water_low(self, value):
         """
@@ -4440,10 +4547,7 @@ class HalfLifeWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The water low half-life value, meaured in days.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["water_low"] = value
-        else:
-            raise ValueError("water_low must be a float.")
+        self.params["water_low"] = value
 
     def set_water_high(self, value):
         """
@@ -4452,10 +4556,7 @@ class HalfLifeWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The water high half-life value, meaured in days.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["water_high"] = value
-        else:
-            raise ValueError("water_high must be a float.")
+        self.params["water_high"] = value
 
     def set_sediment_low(self, value):
         """
@@ -4464,10 +4565,7 @@ class HalfLifeWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The sediment low half-life value, meaured in days.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["sediment_low"] = value
-        else:
-            raise ValueError("sediment_low must be a float.")
+        self.params["sediment_low"] = value
 
     def set_sediment_high(self, value):
         """
@@ -4476,10 +4574,7 @@ class HalfLifeWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The sediment high half-life value, meaured in days.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["sediment_high"] = value
-        else:
-            raise ValueError("sediment_high must be a float.")
+        self.params["sediment_high"] = value
 
     def set_fit_ws(self, value):
         """
@@ -4756,10 +4851,7 @@ class InitialMassSedimentAdditionalInformation(AdditionalInformation):
         :param value: The initial mass of sediment, measured in g.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["initial_mass_sediment"] = value
-        else:
-            raise ValueError("initial_mass_sediment must be a float.")
+        self.params["initial_mass_sediment"] = value
 
     def set_wet_or_dry(self, value):
         """
@@ -4828,10 +4920,7 @@ class InitialVolumeWaterAdditionalInformation(AdditionalInformation):
         :param value: The initial volume of water, measured in mL.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["initialvolumewater"] = value
-        else:
-            raise ValueError("initialvolumewater must be a float.")
+        self.params["initialvolumewater"] = value
 
     # Getter
     def get_initialvolumewater(self):
@@ -4839,7 +4928,7 @@ class InitialVolumeWaterAdditionalInformation(AdditionalInformation):
         Retrieves the initial volume of water.
 
         :return: The initial volume of water if set; otherwise, None.
-        :rtype: float
+        :rtype: float or None
         """
         return self.params.get("initialvolumewater", None)
     
@@ -4859,6 +4948,48 @@ class InitialVolumeWaterAdditionalInformation(AdditionalInformation):
             "initialvolumewater": float(data_string),
         }
         return cls(**res)
+
+class InitiatingOrganismAdditionalInformation(AdditionalInformation):
+    """
+    Creates an Initiating Organism additional information object.
+
+    This class represents additional information about the initiating organism in a study.
+    """
+    name = "initorganism"
+    mandatories = []
+
+    # Setter
+    def set_organism(self, value):
+        """
+        Sets the organism.
+
+        :param value: The initiating organism.
+        :type value: str
+        """
+        self.params["organism"] = value
+
+    # Getter
+    def get_organism(self):
+        """
+        Gets the organism.
+
+        :return: The initiating organism, or None if not set.
+        :rtype: str or None
+        """
+        return self.params.get("organism", None)
+    
+    # Parser
+    @classmethod
+    def parse(cls, data_string):
+        """
+        Parses the data_string to create an InitiatingOrganismAdditionalInformation instance.
+
+        :param data_string: A string containing the initiating organism.
+        :type data_string: str
+        :return: InitiatingOrganismAdditionalInformation instance.
+        :rtype: InitiatingOrganismAdditionalInformation
+        """
+        return cls._parse_default(data_string, ['organism'])
 
 
 class InoculumSourceAdditionalInformation(AdditionalInformation):
@@ -4921,11 +5052,8 @@ class LagPhaseAdditionalInformation(AdditionalInformation):
         :param value: The lag phase value, represented in minutes.
         :type value: float
         """
-        if isinstance(value,float):
+        self.params["lagphase"] = value
 
-            self.params["lagphase"] = value
-        else:
-            raise ValueError(f'{value} must be of type float.')
     # Getter
     def get_lagphase(self):
         """
@@ -4970,10 +5098,8 @@ class LocationAdditionalInformation(AdditionalInformation):
         :param value: The location value.
         :type value: str
         """
-        if isinstance(value,str):
-            self.params["location"] = value
-        else: 
-            raise ValueError(f'{value} must be a string')
+        self.params["location"] = value
+
     # Getter
     def get_location(self):
         """
@@ -4999,21 +5125,47 @@ class LocationAdditionalInformation(AdditionalInformation):
 
 
 class ProposedIntermediateAdditionalInformation(AdditionalInformation):
+    """
+    Creates a Proposed Intermediate additional information object.
+
+    This class represents additional information about proposed intermediates in a study.
+    """
     name = "proposedintermediate"
     mandatories = ['proposed']
 
     # Setter
     def set_proposed(self, value):
+        """
+        Sets the proposed intermediate.
+
+        :param value: The proposed intermediate.
+        :type value: str
+        """
         self.params["proposed"] = value
 
     # Getter
     def get_proposed(self):
+        """
+        Gets the proposed intermediate.
+
+        :return: The proposed intermediate, or None if not set.
+        :rtype: str or None
+        """
         return self.params.get("proposed", None)
 
     # Parser
     @classmethod
     def parse(cls, data_string):
+        """
+        Parses the data_string to create a ProposedIntermediateAdditionalInformation instance.
+
+        :param data_string: A string containing the proposed intermediate.
+        :type data_string: str
+        :return: ProposedIntermediateAdditionalInformation instance.
+        :rtype: ProposedIntermediateAdditionalInformation
+        """
         return cls._parse_default(data_string, ['proposed'])
+
 
 
 class VolatileTSSAdditionalInformation(AdditionalInformation):
@@ -5033,8 +5185,6 @@ class VolatileTSSAdditionalInformation(AdditionalInformation):
         :param value: The start value of volatile TSS, measured in g/L.
         :type value: float
         """
-        if not isinstance(value, float):
-            raise TypeError("Value must be a float")
         self.params["volatilettsStart"] = value
 
     def set_volatilettsEnd(self, value):
@@ -5044,8 +5194,6 @@ class VolatileTSSAdditionalInformation(AdditionalInformation):
         :param value: The end value of volatile TSS, measured in g/L.
         :type value: float
         """
-        if not isinstance(value, float):
-            raise TypeError("Value must be a float")
         self.params["volatilettsEnd"] = value
 
     # Getter
@@ -5308,7 +5456,7 @@ class BiologicalTreatmentTechnologyAdditionalInformation(AdditionalInformation):
         Retrieves the biological treatment technology value.
 
         :return: The biological treatment technology value if set; otherwise, None.
-        :rtype: str
+        :rtype: str or None
         """
         return self.params.get("biologicaltreatmenttechnology", None)
 
@@ -5362,7 +5510,7 @@ class BioreactorAdditionalInformation(AdditionalInformation):
         Retrieves the bioreactor type.
 
         :return: The bioreactor type if set; otherwise, None.
-        :rtype: str
+        :rtype: str or None
         """
         return self.params.get("bioreactortype", None)
 
@@ -5371,7 +5519,7 @@ class BioreactorAdditionalInformation(AdditionalInformation):
         Retrieves the bioreactor size.
 
         :return: The bioreactor size if set; otherwise, None.
-        :rtype: str
+        :rtype: str or None
         """
         return self.params.get("bioreactorsize", None)
 
@@ -5415,10 +5563,7 @@ class BioMassAdditionalInformation(AdditionalInformation):
 
         :param value: A numeric value representing the starting microbial biomass, measured in μg C/g soil
         """
-        if isinstance(value, float):
-            self.params["biomassStart"] = value
-        else:
-            raise ValueError("biomassStart must be a float.")
+        self.params["biomassStart"] = value
         
 
     def set_biomassEnd(self, value):
@@ -5427,10 +5572,7 @@ class BioMassAdditionalInformation(AdditionalInformation):
 
         :param value: A numeric value representing the ending microbial biomass, measured in μg C/g soil
         """
-        if isinstance(value, float):
-            self.params["biomassEnd"] = value
-        else:
-            raise ValueError("biomassEnd must be a float.")
+        self.params["biomassEnd"] = value
 
     # Getter
     def get_biomassStart(self):
@@ -5446,6 +5588,7 @@ class BioMassAdditionalInformation(AdditionalInformation):
         Retrieves the ending microbial biomass.
 
         :return: The ending microbial biomass if set; otherwise, None.
+        :rtype: str or None
         """
         return self.params.get("biomassEnd", None)
     
@@ -5480,10 +5623,7 @@ class BioMassWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The starting cell count for microbial biomass in water, measured in cells/mL.
         :type value: int
         """
-        if isinstance(value, float):
-            self.params["start_water_cells"] = value
-        else:
-            raise ValueError("start_water_cells must be a float.")
+        self.params["start_water_cells"] = value
 
     def set_end_water_cells(self, value):
         """
@@ -5492,10 +5632,7 @@ class BioMassWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The ending cell count for microbial biomass in water, measured in cells/mL
         :type value: int
         """
-        if isinstance(value, float):
-            self.params["end_water_cells"] = value
-        else:
-            raise ValueError("end_water_cells must be a float.")
+        self.params["end_water_cells"] = value
 
     def set_start_sediment_cells(self, value):
         """
@@ -5504,10 +5641,7 @@ class BioMassWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The starting cell count for microbial biomass in sediment, measured in cells/g.
         :type value: int
         """
-        if isinstance(value, float):
-            self.params["start_sediment_cells"] = value
-        else:
-            raise ValueError("start_sediment_cells must be a float.")
+        self.params["start_sediment_cells"] = value
 
     def set_end_sediment_cells(self, value):
         """
@@ -5528,10 +5662,7 @@ class BioMassWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The starting microbial biomass mass in sediment, measured in mg C/g.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["start_sediment_mg"] = value
-        else:
-            raise ValueError("start_sediment_mg must be a float.")
+        self.params["start_sediment_mg"] = value
 
     def set_end_sediment_mg(self, value):
         """
@@ -5540,10 +5671,7 @@ class BioMassWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The ending microbial biomass mass in sediment, measured in mg C/g.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["end_sediment_mg"] = value
-        else:
-            raise ValueError("end_sediment_mg must be a float.")
+        self.params["end_sediment_mg"] = value
 
     # Getter
     def get_start_water_cells(self):
@@ -5648,10 +5776,7 @@ class BulkDensityAdditionalInformation(AdditionalInformation):
         :param value: The bulk density value, measured in g/cm3.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["bulkdensity"] = value
-        else:
-            raise ValueError("bulkdensity must be a float.")
+        self.params["bulkdensity"] = value
 
 
     # Getter
@@ -5699,10 +5824,7 @@ class CECAdditionalInformation(AdditionalInformation):
         :param value: The cation exchange capacity data, measured in mEq/100g.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["cecdata"] = value
-        else:
-            raise ValueError("cecdata must be a float.")
+        self.params["cecdata"] = value
 
     # Getter
     def get_cecdata(self):
@@ -5748,10 +5870,7 @@ class ColumnHeightAdditionalInformation(AdditionalInformation):
         :param value: The column height in water, measured in cm.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["column_height_water"] = value
-        else:
-            raise ValueError("column_height_water must be a float.")
+        self.params["column_height_water"] = value
 
     def set_column_height_sediment(self, value):
         """
@@ -5760,10 +5879,7 @@ class ColumnHeightAdditionalInformation(AdditionalInformation):
         :param value: The column height in sediment, measured in cm.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["column_height_sediment"] = value
-        else:
-            raise ValueError("column_height_sediment must be a float.")
+        self.params["column_height_sediment"] = value
 
     # Getter
     def get_column_height_water(self):
@@ -5822,10 +5938,7 @@ class FinalCompoundConcentrationAdditionalInformation(AdditionalInformation):
         :type value: float
         :raises ValueError: If the provided value is not a float.
         """
-        if isinstance(value, float):
-            self.params["finalcompoundconcentration"] = value
-        else:
-            raise ValueError("finalcompoundconcentration must be a float.")
+        self.params["finalcompoundconcentration"] = value
 
     # Getter
     def get_finalcompoundconcentration(self):
@@ -5856,20 +5969,45 @@ class FinalCompoundConcentrationAdditionalInformation(AdditionalInformation):
 
 
 class TypeOfAdditionAdditionalInformation(AdditionalInformation):
+    """
+    Creates a Type Of Addition additional information object.
+
+    This class represents additional information about the type of addition in a study.
+    """
     name = "typeofaddition"
     mandatories = ['typeofaddition']
 
     # Setter
     def set_typeofaddition(self, value):
+        """
+        Sets the type of addition.
+
+        :param value: The type of addition.
+        :type value: str
+        """
         self.params["typeofaddition"] = value
 
     # Getter
     def get_typeofaddition(self):
+        """
+        Gets the type of addition.
+
+        :return: The type of addition, or None if not set.
+        :rtype: str or None
+        """
         return self.params.get("typeofaddition", None)
 
     # Parser
     @classmethod
     def parse(cls, data_string):
+        """
+        Parses the data_string to create a TypeOfAdditionAdditionalInformation instance.
+
+        :param data_string: A string containing the type of addition.
+        :type data_string: str
+        :return: TypeOfAdditionAdditionalInformation instance.
+        :rtype: TypeOfAdditionAdditionalInformation
+        """
         return cls._parse_default(data_string, ['typeofaddition'])
 
 
@@ -5923,8 +6061,7 @@ class PurposeOfWWTPAdditionalInformation(AdditionalInformation):
         if value not in allowed_values:
             raise ValueError(f"{value} is not an allowed value. Allowed values are: {', '.join(allowed_values)}")
         
-        else:
-            self.params["purposeofwwtp"] = value
+        self.params["purposeofwwtp"] = value
 
     # Getter
     def get_purposeofwwtp(self):
@@ -5970,10 +6107,7 @@ class RateConstantAdditionalInformation(AdditionalInformation):
         :param value: The lower rate constant value.
         :type value: float
         """
-        if not isinstance(value,float):
-            raise ValueError("rateconstantlower must be a float")
-        else:
-            self.params["rateconstantlower"] = value
+        self.params["rateconstantlower"] = value
 
     def set_rateconstantupper(self, value):
         """
@@ -5982,10 +6116,7 @@ class RateConstantAdditionalInformation(AdditionalInformation):
         :param value: The upper rate constant value.
         :type value: float
         """
-        if not isinstance(value,float):
-            raise ValueError("rateconstantupper must be a float")
-        else:
-            self.params["rateconstantupper"] = value
+        self.params["rateconstantupper"] = value
 
     def set_rateconstantorder(self, value):
         """
@@ -5994,10 +6125,7 @@ class RateConstantAdditionalInformation(AdditionalInformation):
         :param value: The order of the rate constant. Must be either "Zero order", "First order", "Second order","Pseudo first order". 
         :type value: str
         """
-        if not value in ["Zero order", "First order", "Second order","Pseudo first order"]:
-            raise ValueError(f"{value} is not an allowed order. must be one of the allowed values.")
-        else:
-            self.params["rateconstantorder"] = value
+        self.params["rateconstantorder"] = value
 
     def set_rateconstantcorrected(self, value):
         """
@@ -6005,7 +6133,7 @@ class RateConstantAdditionalInformation(AdditionalInformation):
 
         :param value: The corrected rate constant value. Must be either "sorption corrected", "abiotic degradation corrected", "sorption corrected & abiotic degradation corrected".
                     could cause an error otherwise.
-        :type value: str
+        :type value: str 
         """
         self.params["rateconstantcorrected"] = value
 
@@ -6024,7 +6152,7 @@ class RateConstantAdditionalInformation(AdditionalInformation):
         Retrieves the lower rate constant value.
 
         :return: The lower rate constant value if set; otherwise, None.
-        :rtype: float
+        :rtype: float or None 
         """
         return self.params.get("rateconstantlower", None)
 
@@ -6033,7 +6161,7 @@ class RateConstantAdditionalInformation(AdditionalInformation):
         Retrieves the upper rate constant value.
 
         :return: The upper rate constant value if set; otherwise, None.
-        :rtype: float
+        :rtype: float or None
         """
         return self.params.get("rateconstantupper", None)
 
@@ -6042,7 +6170,7 @@ class RateConstantAdditionalInformation(AdditionalInformation):
         Retrieves the order of the rate constant.
 
         :return: The order of the rate constant if set; otherwise, None.
-        :rtype: str
+        :rtype: str or None
         """
         return self.params.get("rateconstantorder", None)
 
@@ -6051,7 +6179,7 @@ class RateConstantAdditionalInformation(AdditionalInformation):
         Retrieves the corrected rate constant value.
 
         :return: The corrected rate constant value if set; otherwise, None.
-        :rtype: str
+        :rtype: str or None
         """
         return self.params.get("rateconstantcorrected", None)
 
@@ -6060,7 +6188,7 @@ class RateConstantAdditionalInformation(AdditionalInformation):
         Retrieves the comment related to the rate constant.
 
         :return: The comment about the rate constant if set; otherwise, None.
-        :rtype: str
+        :rtype: str or None
         """
         return self.params.get("rateconstantcomment", None)
 
@@ -6106,10 +6234,7 @@ class SampleLocationAdditionalInformation(AdditionalInformation):
         :param value: The sample location.
         :type value: str
         """
-        if isinstance(value,str):
-            self.params["samplelocation"] = value
-        else: 
-            raise ValueError(f'{value} must be a string')
+        self.params["samplelocation"] = value
         
     
     # Getter
@@ -6118,7 +6243,7 @@ class SampleLocationAdditionalInformation(AdditionalInformation):
         Retrieves the sample location.
 
         :return: The sample location if set; otherwise, None.
-        :rtype: str 
+        :rtype: str or None
         """
         return self.params.get("samplelocation", None)
     
@@ -6276,8 +6401,6 @@ class SourceOfLiquidMatrixAdditionalInformation(AdditionalInformation):
         :param value: The source of the liquid matrix.
         :type value: str
         """
-        if not isinstance(value, str):
-            raise TypeError("Value must be a string")
         self.params["sourceofliquidmatrix"] = value
 
     # Getter
@@ -6324,8 +6447,6 @@ class SourceScenarioAdditionalInformation(AdditionalInformation):
         :param value: The source scenario as scenario ID.
         :type value: str
         """
-        if not isinstance(value, str):
-            raise TypeError("Value must be a string")
         self.params["sourcescenario"] = value
 
     # Getter
@@ -6414,10 +6535,7 @@ class SpikeConcentrationAdditionalInformation(AdditionalInformation):
         :param value: The spike concentration value.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["spikeConcentration"] = value
-        else:
-            raise ValueError("spikeConcentration must be of type float")
+        self.params["spikeConcentration"] = value
 
     def set_spikeconcentrationUnit(self, value):
         """
@@ -6427,11 +6545,8 @@ class SpikeConcentrationAdditionalInformation(AdditionalInformation):
         :param value: The unit for the spike concentration.
         :type value: str
         """
-        if value in self.valid_units:
-            self.params["spikeconcentrationUnit"] = value
+        self.params["spikeconcentrationUnit"] = value
         
-        else:
-            raise ValueError(f"{value} is not a valid unit.")
         
     # Getter
     def get_spikeConcentration(self):
@@ -6455,11 +6570,8 @@ class SpikeConcentrationAdditionalInformation(AdditionalInformation):
         :return: SpikeConcentrationAdditionalInformation instance.
         :rtype: SpikeConcentrationAdditionalInformation
         """
-        
-        
         res = {"spikeConcentration": float(data_string)}
  
-
         return cls(**res)
 
 
@@ -6480,8 +6592,6 @@ class OriginalSludgeAmountAdditionalInformation(AdditionalInformation):
         :param value: The original sludge amount, measured in mL.
         :type value: float
         """
-        if not isinstance(value, float):
-            raise ValueError("originalsludgeamount must be a float.")
         self.params["originalsludgeamount"] = value
 
     # Getter
@@ -6526,10 +6636,7 @@ class OxygenContentWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The low oxygen content in water, measured in mg/L.
         :type value: float
         """
-        if value == "NA" or isinstance(value, float):
-            self.params["oxygen_content_water_low"] = value
-        else:
-            raise ValueError("oxygen_content_water_low must be 'NA' or a float.")
+        self.params["oxygen_content_water_low"] = value
 
     def set_oxygen_content_water_high(self, value):
         """
@@ -6538,10 +6645,7 @@ class OxygenContentWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The high oxygen content in water, measured in mg/L.
         :type value: float
         """
-        if value == "NA" or isinstance(value, float):
-            self.params["oxygen_content_water_high"] = value
-        else:
-            raise ValueError("oxygen_content_water_high must be 'NA' or a float.")
+        self.params["oxygen_content_water_high"] = value
     
     def set_oxygen_content_sediment_low(self, value):
         """
@@ -6550,10 +6654,7 @@ class OxygenContentWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The low oxygen content in sediment, given in percentage.
         :type value: float
         """
-        if value == "NA" or isinstance(value, float):
-            self.params["oxygen_content_sediment_low"] = value
-        else:
-            raise ValueError("oxygen_content_sediment_low must be 'NA' or a float.")
+        self.params["oxygen_content_sediment_low"] = value
     
     def set_oxygen_content_sediment_high(self, value):
         """
@@ -6562,10 +6663,7 @@ class OxygenContentWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The high oxygen content in sediment, given in percentage.
         :type value: float
         """
-        if value == "NA" or isinstance(value, float):
-            self.params["oxygen_content_sediment_high"] = value
-        else:
-            raise ValueError("oxygen_content_sediment_high must be 'NA' or a float.")
+        self.params["oxygen_content_sediment_high"] = value
 
     # Getter
     def get_oxygen_content_water_low(self):
@@ -6651,10 +6749,7 @@ class TypeOfAerationAdditionalInformation(AdditionalInformation):
         :param value: The type of aeration.
         :type value: str
         """
-        if value.lower() in ["stirring", "shaking", "bubbling air", "bubbling air and stirring", "other"]:
-            self.params["typeofaeration"] = value
-        else:
-            raise ValueError(f"{value} not an allowed type.")
+        self.params["typeofaeration"] = value
 
     # Getter
     def get_typeofaeration(self):
@@ -6699,10 +6794,7 @@ class AcidityAdditionalInformation(AdditionalInformation):
         :param value: The low pH value.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["lowPh"] = value
-        else:
-            raise ValueError("Low pH value must be a float.")
+        self.params["lowPh"] = value
 
     def set_highPh(self, value):
         """
@@ -6711,10 +6803,7 @@ class AcidityAdditionalInformation(AdditionalInformation):
         :param value: The high pH value.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["highPh"] = value
-        else:
-            raise ValueError("High pH value must be a float.")
+        self.params["highPh"] = value
 
     def set_acidityType(self, value):
         """
@@ -6723,9 +6812,6 @@ class AcidityAdditionalInformation(AdditionalInformation):
         :param value: The type of acidity. Either '','WATER', 'KCL', 'CACL2'.
         :type value: str
         """
-        value = value.upper()
-        if value not in ['', 'WATER', 'KCL', 'CACL2', 'CACL&#8322']:
-            raise ValueError(f"{value} is not allowed as acidityType.")
         self.params["acidityType"] = value
 
     # Getter
@@ -6800,10 +6886,7 @@ class AcidityWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The low pH value for water.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["pH_water_low"] = value
-        else:
-            raise ValueError("pH water low value must be a float.")
+        self.params["pH_water_low"] = value
 
     def set_pH_water_high(self, value):
         """
@@ -6812,10 +6895,7 @@ class AcidityWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The high pH value for water.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["pH_water_high"] = value
-        else:
-            raise ValueError("pH water high value must be a float.")
+        self.params["pH_water_high"] = value
 
     def set_pH_sediment_low(self, value):
         """
@@ -6824,10 +6904,7 @@ class AcidityWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The low pH value for sediment.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["pH_sediment_low"] = value
-        else:
-            raise ValueError("pH sediment low value must be a float.")
+        self.params["pH_sediment_low"] = value
 
     def set_pH_sediment_high(self, value):
         """
@@ -6836,10 +6913,7 @@ class AcidityWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The high pH value for sediment.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["pH_sediment_high"] = value
-        else:
-            raise ValueError("pH sediment high value must be a float.")
+        self.params["pH_sediment_high"] = value
 
     def set_acidityType(self, value):
         """
@@ -6990,8 +7064,6 @@ class RedoxPotentialAdditionalInformation(AdditionalInformation):
         :param value: The low potential value for water, measured in mV.
         :type value: float
         """
-        if not isinstance(value, float):
-            raise TypeError("Value must be a float")
         self.params["lowPotentialWater"] = value
 
     def set_highPotentialWater(self, value):
@@ -7001,8 +7073,6 @@ class RedoxPotentialAdditionalInformation(AdditionalInformation):
         :param value: The high potential value for water, measured in mV.
         :type value: float
         """
-        if not isinstance(value, float):
-            raise TypeError("Value must be a float")
         self.params["highPotentialWater"] = value
 
     def set_lowPotentialSediment(self, value):
@@ -7012,8 +7082,6 @@ class RedoxPotentialAdditionalInformation(AdditionalInformation):
         :param value: The low potential value for sediment, measured in mV.
         :type value: float
         """
-        if not isinstance(value, float):
-            raise TypeError("Value must be a float")
         self.params["lowPotentialSediment"] = value
 
     def set_highPotentialSediment(self, value):
@@ -7023,8 +7091,6 @@ class RedoxPotentialAdditionalInformation(AdditionalInformation):
         :param value: The high potential value for sediment, measured in mV.
         :type value: float
         """
-        if not isinstance(value, float):
-            raise TypeError("Value must be a float")
         self.params["highPotentialSediment"] = value
 
     # Getter
@@ -7148,8 +7214,6 @@ class SamplingDepthAdditionalInformation(AdditionalInformation):
         :param value: The minimum sampling depth, measured in cm.
         :type value: float
         """
-        if not isinstance(value, float):
-            raise TypeError("Value must be a float")
         self.params["samplingDepthMin"] = value
 
     def set_samplingDepthMax(self, value):
@@ -7159,8 +7223,6 @@ class SamplingDepthAdditionalInformation(AdditionalInformation):
         :param value: The maximum sampling depth, measured in cm.
         :type value: float
         """
-        if not isinstance(value, float):
-            raise TypeError("Value must be a float")
         self.params["samplingDepthMax"] = value
 
     # Getter    
@@ -7223,10 +7285,7 @@ class SedimentPorosityAdditionalInformation(AdditionalInformation):
         :param value: The sediment porosity.
         :type value: str or float
         """
-        if isinstance(value,float):
-            self.params["sedimentporosity"] = value
-        else:
-            raise ValueError("sedimentporosity must be of type float")
+        self.params["sedimentporosity"] = value
     
     # Getter
     def get_sedimentporosity(self):
