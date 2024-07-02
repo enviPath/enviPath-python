@@ -3,6 +3,7 @@ myst-nb
 networkx
 pandas
 plotly
+python-libsbml
 rdkit
 sphinx
 sphinx-book-theme
