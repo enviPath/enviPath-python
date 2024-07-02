@@ -1004,6 +1004,22 @@ class Compound(ReviewableEnviPathObject):
         :return: SMILES of the Compound
         """
         return self.get_default_structure().get_smiles()
+    
+    def get_pubchem_references(self) -> List[str]:
+        """
+        Retrieves the links to pubChem of similar compounds
+
+        :return: A list of links to PubChem Compounds
+        """
+        return self._get('pubchemCompoundReferences')
+    
+    def get_external_references(self) -> dict:
+        """
+        Retrieves the links to external sources of similar compounds
+
+        :return: A dictionary of links with keys being an identifier for the database
+        """
+        return self._get('externalReferences')
 
     def get_inchi(self) -> str:
         """
@@ -1136,6 +1152,22 @@ class CompoundStructure(ReviewableEnviPathObject):
         :return: List of Reaction objects
         """
         return self._create_from_nested_json('reactions', Reaction)
+    
+    def get_pubchem_references(self) -> List[str]:
+        """
+        Retrieves the links to pubChem of similar compounds
+
+        :return: A list of links to PubChem Compounds
+        """
+        return self._get('pubchemCompoundReferences')
+    
+    def get_external_references(self) -> dict:
+        """
+        Retrieves the links to external sources of similar compounds
+
+        :return: A dictionary of links with keys being an identifier for the database
+        """
+        return self._get('externalReferences')
 
     def get_halflifes(self, scenario_type: str = None) -> List['HalfLife']:
         """
@@ -1290,6 +1322,14 @@ class Reaction(ReviewableEnviPathObject):
             return rule_type(self.requester, **rules[0])
         except ValueError:
             return None
+    
+    def get_rhea_references(self) -> List[str]:
+        """
+        Retrieves the links to Rhea for the given reaction
+
+        :return: A list of links to rhea with similar reactions
+        """
+        return self._get('rheaReferences')
 
     @staticmethod
     def create(package: Package, smirks: str = None, educt: CompoundStructure = None, product: CompoundStructure = None,
