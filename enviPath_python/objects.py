@@ -20,7 +20,7 @@ from abc import ABC, abstractmethod
 from collections import namedtuple, defaultdict
 from io import BytesIO
 from typing import List, Optional, Union
-from enums import Endpoint, ClassifierType, FingerprinterType, AssociationType, EvaluationType, \
+from enviPath_python.enums import Endpoint, ClassifierType, FingerprinterType, AssociationType, EvaluationType, \
     Permission
 
 
@@ -1248,7 +1248,7 @@ class Reaction(ReviewableEnviPathObject):
         :return: A list of objects
         """
         return self._get('medlineRefs')
-        
+
     def get_substrates(self) -> List['CompoundStructure']:
         """
         Retrieves the substrates of the reaction
@@ -1256,7 +1256,7 @@ class Reaction(ReviewableEnviPathObject):
         :return: A List of CompoundStructure
         """
         return self._create_from_nested_json('educts', CompoundStructure)
-        
+
     def get_educts(self) -> List['CompoundStructure']:
         """
         DEPRECATED
@@ -2401,8 +2401,6 @@ class Pathway(ReviewableEnviPathObject):
         for edge in self.get_edges():
             educts = [node_mapping[x.get_id()] for x in edge.get_start_nodes()]
             products = [node_mapping[x.get_id()] for x in edge.get_end_nodes()]
-            if self.get_id() == 'http://localhost:8080/package/f444f7ae-b9b9-469c-bfa8-e7b83eba42a9/pathway/ee26b1b7-53e4-4a1b-b212-b78435e392de':
-                print(edge.get_reaction().is_multistep())
             copied_edge = Edge.create(copied_pathway, educts=educts, products=products,
                                       multistep=edge.get_reaction().is_multistep())
             mapping[edge.get_id()] = copied_edge.get_id()
@@ -2585,7 +2583,7 @@ class AdditionalInformation(ABC):
 
     def get_unit(self):
         return self.params.get("unit")
-    
+
     @classmethod
     def _parse_default(cls, data_string, keys):
         parts = data_string.split(";")
@@ -2631,17 +2629,20 @@ class OxygenDemandAdditionalInformation(AdditionalInformation):
     """
     name = "oxygendemand"
     mandatories = ['oxygendemandType', 'oxygendemandInfluent', 'oxygendemandEffluent']
+    allowed_types = ['Chemical Oxygen Demand (COD)', 'Biological Oxygen Demand (BOD5)']
 
     # Setter
     def set_oxygendemandType(self, value):
         """
         Sets the oxygen demand type.
 
-        :param value: The value to set. Must be one of 'Chemical Oxygen Demand (COD)' or 'Biological Oxygen Demand (BOD)'.
+        :param value: The value to set. Must be one of '', 'Chemical Oxygen Demand (COD)',
+            'Biological Oxygen Demand (BOD5)'.
         :type value: str
-        """    
+        """
+        if value not in self.allowed_types:
+            raise ValueError(f"The value {value} does not belong to the set of allowed values {self.allowed_types}")
         self.params["oxygendemandType"] = value
-
 
     def set_oxygendemandInfluent(self, value):
         """
@@ -2650,10 +2651,8 @@ class OxygenDemandAdditionalInformation(AdditionalInformation):
         :param value: The influent value of the oxygen demand, measured in mg/L.
         :type value: float
         """
- 
-        self.params["oxygendemandInfluent"] = value
-       
 
+        self.params["oxygendemandInfluent"] = float(value)
 
     def set_oxygendemandEffluent(self, value):
         """
@@ -2663,7 +2662,7 @@ class OxygenDemandAdditionalInformation(AdditionalInformation):
         :type value: float
         """
 
-        self.params["oxygendemandEffluent"] = value
+        self.params["oxygendemandEffluent"] = float(value)
 
     # Getter
     def get_oxygendemandType(self):
@@ -2699,7 +2698,8 @@ class OxygenDemandAdditionalInformation(AdditionalInformation):
         """
         Parses a semicolon-separated data_string and returns the instantiated additional information object.
 
-        :param data_string: A semicolon separated string in the format 'oxygendemandType;oxygendemandInfluent;oxygendemandEffluent' 
+        :param data_string: A semicolon separated string in the format '
+            oxygendemandType;oxygendemandInfluent;oxygendemandEffluent'
         :type data_string: str
         :return: The additional information object instantiated with the parsed data.
         :rtype: OxygenDemandAdditionalInformation
@@ -2709,9 +2709,7 @@ class OxygenDemandAdditionalInformation(AdditionalInformation):
             'oxygendemandInfluent': data_string.split(';')[1],
             'oxygendemandEffluent': data_string.split(';')[2],
         }
-    
         return cls(**res)
-
 
 
 class DissolvedOxygenConcentrationAdditionalInformation(AdditionalInformation):
@@ -2732,8 +2730,7 @@ class DissolvedOxygenConcentrationAdditionalInformation(AdditionalInformation):
         :param value: The lower limit of dissolved oxygen concentration, measured in mg/L.
         :type value: float
         """
-        self.params["DissolvedoxygenconcentrationLow"] = value
-       
+        self.params["DissolvedoxygenconcentrationLow"] = float(value)
 
     def set_DissolvedoxygenconcentrationHigh(self, value):
         """
@@ -2742,7 +2739,7 @@ class DissolvedOxygenConcentrationAdditionalInformation(AdditionalInformation):
         :param value: The upper limit of dissolved oxygen concentration, measured in mg/L.
         :type value: float
         """
-        self.params["DissolvedoxygenconcentrationHigh"] = value
+        self.params["DissolvedoxygenconcentrationHigh"] = float(value)
 
     # Getter
     def get_DissolvedoxygenconcentrationLow(self):
@@ -2766,9 +2763,11 @@ class DissolvedOxygenConcentrationAdditionalInformation(AdditionalInformation):
     @classmethod
     def parse(cls, data_string):
         """
-        Parses a string containing the low and high limits for dissolved oxygen concentration and returns the additional information object.
+        Parses a string containing the low and high limits for dissolved oxygen concentration and returns the
+        additional information object.
 
-        :param data_string: A semicolon separated string in the format 'DissolvedoxygenconcentrationLow;DissolvedoxygenconcentrationHigh' 
+        :param data_string: A semicolon separated string in the format
+            'DissolvedoxygenconcentrationLow;DissolvedoxygenconcentrationHigh'
         :type data_string: str
         :return: An instance of DissolvedOxygenConcentrationAdditionalInformation populated with the parsed data.
         :rtype: DissolvedOxygenConcentrationAdditionalInformation
@@ -2779,6 +2778,7 @@ class DissolvedOxygenConcentrationAdditionalInformation(AdditionalInformation):
             'DissolvedoxygenconcentrationHigh': high,
         }
         return cls(**res)
+
 
 class EnzymeAdditionalInformation(AdditionalInformation):
     """
@@ -2847,8 +2847,6 @@ class EnzymeAdditionalInformation(AdditionalInformation):
         return cls(**res)
 
 
-    
-    
 class OxygenUptakeRateAdditionalInformation(AdditionalInformation):
     """
     Creates an Oxygen Uptake Rate additional information object.
@@ -2867,7 +2865,7 @@ class OxygenUptakeRateAdditionalInformation(AdditionalInformation):
         :param value: The start value of the oxygen uptake rate, measured in mg/L/hr.
         :type value: float
         """
-        self.params["oxygenuptakerateStart"] = value
+        self.params["oxygenuptakerateStart"] = float(value)
 
     def set_oxygenuptakerateEnd(self, value):
         """
@@ -2876,8 +2874,7 @@ class OxygenUptakeRateAdditionalInformation(AdditionalInformation):
         :param value: The end value of the oxygen uptake rate, measured in mg/L/hr.
         :type value: float
         """
-        self.params["oxygenuptakerateEnd"] = value
-        
+        self.params["oxygenuptakerateEnd"] = float(value)
 
     # Getter
     def get_oxygenuptakerateStart(self):
@@ -2925,16 +2922,20 @@ class AerationTypeAdditionalInformation(AdditionalInformation):
     """
     name = "aerationtype"
     mandatories = ['aerationtype']
+    allowed_types = ["stirring", "shaking", "bubbling air", "bubbling air and stiring", "other"]
 
     # Setter
     def set_aerationtype(self, value):
         """
         Sets the type of aeration.
 
-        :param value: The type of aeration. Must be one of the following "stirring", "shaking", "bubbling air", "bubbling air and stiring", "other" 
+        :param value: The type of aeration. Must be one of the following "stirring", "shaking", "bubbling air",
+            "bubbling air and stiring", "other"
         otherwise it could cause an error.
         :type value: str
         """
+        if value not in self.allowed_types:
+            raise ValueError(f"The value {value} is not one of the allowed values {self.allowed_types}")
         self.params["aerationtype"] = value
 
     # Getter
@@ -2981,9 +2982,8 @@ class PhosphorusContentAdditionalInformation(AdditionalInformation):
         :param value: The phosphorus content in influent.
         :type value: float
         """
-   
-        self.params["phosphoruscontentInfluent"] = value
 
+        self.params["phosphoruscontentInfluent"] = float(value)
 
     def set_phosphoruscontentEffluent(self, value):
         """
@@ -2992,8 +2992,8 @@ class PhosphorusContentAdditionalInformation(AdditionalInformation):
         :param value: The phosphorus content in effluent, measured in mg/L.
         :type value: float
         """
-       
-        self.params["phosphoruscontentEffluent"] = value
+
+        self.params["phosphoruscontentEffluent"] = float(value)
 
     # Getter
     def get_phosphoruscontentInfluent(self):
@@ -3020,7 +3020,8 @@ class PhosphorusContentAdditionalInformation(AdditionalInformation):
         """
         Parses a string containing phosphorus content information to initialize an instance.
 
-        :param data_string: A semi-colon seperated string in the format 'phosphoruscontentInfluent;phosphoruscontentEffluent' or just 'phosphoruscontentInfluent'.
+        :param data_string: A semi-colon seperated string in the format
+            'phosphoruscontentInfluent;phosphoruscontentEffluent' or just 'phosphoruscontentInfluent'.
         :type data_string: str
         :return: An instance of PhosphorusContentAdditionalInformation populated with the parsed data.
         :rtype: PhosphorusContentAdditionalInformation
@@ -3038,20 +3039,46 @@ class PhosphorusContentAdditionalInformation(AdditionalInformation):
 
 
 class MinorMajorAdditionalInformation(AdditionalInformation):
+    """
+    Object that implements the Transformation product importance
+    """
     name = "minormajor"
     mandatories = ['radiomin']
+    allowed_values = ["minor", "major"]
 
     # Setter
     def set_radiomin(self, value):
-        self.params["radiomin"] = value
+        """
+        Sets the value for the transformation product importance
+
+        :param value: a text value similar to 'minor' or 'major'
+        :type value: str
+        """
+        if value.lower() in self.allowed_values:
+            self.params["radiomin"] = value.lower().capitalize()
+        else:
+            raise ValueError(f"Value is not one the allowed_values {self.allowed_values}")
 
     # Getter
     def get_radiomin(self):
+        """
+        Gets the value of transformation product importance
+
+        :rtype: str
+        """
         return self.params.get("radiomin", None)
 
     # Parser
     @classmethod
     def parse(cls, data_string):
+        """
+        Parses the data_string to extract the value of radiomin
+
+        :param data_string: the string containing the values of transformation product importance
+        :type data_string: str
+        :return: An instance of MinorMajorAdditionalInformation populated with the parsed data.
+        :rtype: MinorMajorAdditionalInformation
+        """
         return cls._parse_default(data_string, ['radiomin'])
 
 
@@ -3063,6 +3090,7 @@ class SludgeRetentionTimeAdditionalInformation(AdditionalInformation):
     """
     name = "sludgeretentiontime"
     mandatories = ['sludgeretentiontimeType', 'sludgeretentiontime']
+    allowed_values = ['sludge age', 'sludge retention time']
 
     # Setter
     def set_sludgeretentiontimeType(self, value):
@@ -3072,11 +3100,9 @@ class SludgeRetentionTimeAdditionalInformation(AdditionalInformation):
         :param value: The type of sludge retention time, either 'sludge age' or 'sludge retention time'.
         :type value: str
         """
-        if value in ['sludge age','sludge retention time']:
-            self.params["sludgeretentiontimeType"] = value
-
-        else: 
-            raise ValueError("f({value} is not an allowed sludge retention time type")
+        if value not in self.allowed_values:
+            raise ValueError(f"({value} is not an allowed sludge retention time type {self.allowed_values}")
+        self.params["sludgeretentiontimeType"] = value
 
     def set_sludgeretentiontime(self, value):
         """
@@ -3085,10 +3111,8 @@ class SludgeRetentionTimeAdditionalInformation(AdditionalInformation):
         :param value: The sludge retention time, given in days.
         :type value: float
         """
-        if isinstance(value,float):
-            self.params["sludgeretentiontime"] = value
-        else:
-            raise ValueError('sludgeretentiontime must be of type float')
+        self.params["sludgeretentiontime"] = float(value)
+
     # Getter
     def get_sludgeretentiontimeType(self):
         """
@@ -3134,6 +3158,7 @@ class SoilClassificationAdditionalInformation(AdditionalInformation):
     """
     name = "soilclassificationsystem"
     mandatories = ["soilclassificationsystem"]
+    allowed_values = ["USDA", "UK_ADAS", "UK ADAS", "UK", "DE", "International"]
 
     # Setter
     def set_soilclassificationsystem(self, value):
@@ -3143,8 +3168,9 @@ class SoilClassificationAdditionalInformation(AdditionalInformation):
         :param value: The soil classification system. Must be either 'USDA', 'UK_ADAS', 'UK', 'DE', 'International'.
         :type value: str
         """
-        if value.upper() not in ["USDA", "UK_ADAS", "UK ADAS","UK", "DE", "INTERNATIONAL"]:
-            raise ValueError("{} is not allowed as soilclassificationsystem".format(value))
+        if value not in self.allowed_values:
+            raise ValueError("{} is not allowed as soilclassificationsystem {}".format(value,
+                                                                                       self.allowed_values))
         self.params["soilclassificationsystem"] = value
 
     # Getter
@@ -3189,7 +3215,7 @@ class SoilSourceAdditionalInformation(AdditionalInformation):
         :type value: str
         """
         self.params["soilsourcedata"] = value
-    
+
     # Getter
     def get_soilsourcedata(self):
         """
@@ -3223,7 +3249,12 @@ class SoilTexture1AdditionalInformation(AdditionalInformation):
     """
     name = "soiltexture1"
     mandatories = ["soilTextureType"]
-    
+    allowed_types = [
+        "CLAY", "SANDY CLAY", "SILTY CLAY", "SANDY CLAY LOAM", "SANDY LOAM",
+        "SILTY CLAY LOAM", "SAND", "LOAMY SAND", "LOAM", "SILT LOAM", "SILT", "CLAY LOAM",
+        "SILTY SAND", "SANDY SILT LOAM"
+    ]
+
     # Setter
     def set_soilTextureType(self, value):
         """
@@ -3233,13 +3264,8 @@ class SoilTexture1AdditionalInformation(AdditionalInformation):
         :type value: str
         :raises ValueError: If the value is not one of the allowed soil texture types.
         """
-        allowed_types = [
-            "CLAY", "SANDY CLAY", "SILTY CLAY", "SANDY CLAY LOAM", "SANDY LOAM",
-            "SILTY CLAY LOAM", "SAND", "LOAMY SAND", "LOAM", "SILT LOAM", "SILT", "CLAY LOAM",
-            "SILTY SAND", "SANDY SILT LOAM"
-        ]
-        if value.upper() not in allowed_types:
-            raise ValueError("{} is not an allowed soilTextureType".format(value))
+        if value.upper() not in self.allowed_types:
+            raise ValueError("{} is not an allowed soilTextureType {}".format(value, self.allowed_types))
         self.params["soilTextureType"] = value
 
     # Getter
@@ -3251,7 +3277,7 @@ class SoilTexture1AdditionalInformation(AdditionalInformation):
         :rtype: str or None
         """
         return self.params.get("soilTextureType")
-    
+
     # Parser
     @classmethod
     def parse(cls, data_string):
@@ -3284,9 +3310,7 @@ class SoilTexture2AdditionalInformation(AdditionalInformation):
         :param value: The sand percentage, measured in %.
         :type value: float
         """
-        if not isinstance(value, float):
-            raise TypeError("Value must be a float")
-        self.params["sand"] = value
+        self.params["sand"] = float(value)
 
     def set_silt(self, value):
         """
@@ -3295,9 +3319,7 @@ class SoilTexture2AdditionalInformation(AdditionalInformation):
         :param value: The silt percentage, measured in %.
         :type value: float
         """
-        if not isinstance(value, float):
-            raise TypeError("Value must be a float")
-        self.params["silt"] = value
+        self.params["silt"] = float(value)
 
     def set_clay(self, value):
         """
@@ -3306,9 +3328,7 @@ class SoilTexture2AdditionalInformation(AdditionalInformation):
         :param value: The clay percentage, measured in %.
         :type value: float
         """
-        if not isinstance(value, float):
-            raise TypeError("Value must be a float")
-        self.params["clay"] = value
+        self.params["clay"] = float(value)
 
     # Getter 
     def get_sand(self):
@@ -3337,14 +3357,15 @@ class SoilTexture2AdditionalInformation(AdditionalInformation):
         :rtype: float or None
         """
         return self.params.get("clay", None)
-    
+
     # Parser
     @classmethod
     def parse(cls, data_string):
         """
         Parses the data_string to create a SoilTexture2AdditionalInformation instance.
 
-        :param data_string: String containing soil texture data in the format 'Soil texture 2: 45.0% sand; 34.0% silt; 34.0% clay'.
+        :param data_string: String containing soil texture data in the format 'Soil texture 2: 45.0% sand; 34.0% silt;
+            34.0% clay'.
         :type data_string: str
         :return: SoilTexture2AdditionalInformation instance.
         :rtype: SoilTexture2AdditionalInformation
@@ -3356,7 +3377,7 @@ class SoilTexture2AdditionalInformation(AdditionalInformation):
         while True:
             index = data_string.find("%", last_index + 1)
             if index == -1:
-                break  
+                break
             last_index = index
             count += 1
             if count == 1:
@@ -3371,9 +3392,9 @@ class SoilTexture2AdditionalInformation(AdditionalInformation):
 
 class AmmoniaUptakeRateAdditionalInformation(AdditionalInformation):
     """
-    Creates an amiona uptake rate additional information object.
+    Creates an AmmoniaUptakeRateAdditionalInformation object.
 
-    This class represents additional information about the amiona uptake rate,
+    This class represents additional information about the ammonia uptake rate,
     including the start and end values. Either start and/or end value must be defined.
     """
     name = "amionauptakerate"
@@ -3382,39 +3403,39 @@ class AmmoniaUptakeRateAdditionalInformation(AdditionalInformation):
     # Setter
     def set_amionauptakerateStart(self, value):
         """
-        Sets the start value for amiona uptake rate.
+        Sets the start value for ammonia uptake rate.
 
-        :param value: The start value for amiona uptake rate.
+        :param value: The start value for ammonia uptake rate.
         :type value: float
         """
-        
+
         self.params["amionauptakerateStart"] = float(value)
 
     def set_amionauptakerateEnd(self, value):
         """
-        Sets the end value for amiona uptake rate.
+        Sets the end value for ammonia uptake rate.
 
-        :param value: The end value for amiona uptake rate.
+        :param value: The end value for ammonia uptake rate.
         :type value: float
         """
-        
+
         self.params["amionauptakerateEnd"] = float(value)
 
     # Getter
     def get_amionauptakerateStart(self):
         """
-        Retrieves the start value for amiona uptake rate.
+        Retrieves the start value for ammonia uptake rate.
 
-        :return: The start value for amiona uptake rate if set; otherwise, None.
+        :return: The start value for ammonia uptake rate if set; otherwise, None.
         :rtype: float
         """
         return self.params.get("amionauptakerateStart", None)
 
     def get_amionauptakerateEnd(self):
         """
-        Retrieves the end value for amiona uptake rate.
+        Retrieves the end value for ammonia uptake rate.
 
-        :return: The end value for amiona uptake rate if set; otherwise, None.
+        :return: The end value for ammonia uptake rate if set; otherwise, None.
         :rtype: float
         """
         return self.params.get("amionauptakerateEnd", None)
@@ -3423,9 +3444,10 @@ class AmmoniaUptakeRateAdditionalInformation(AdditionalInformation):
     @classmethod
     def parse(cls, data_string):
         """
-        Parses a string containing amiona uptake rate information to initialize an instance.
+        Parses a string containing ammonia uptake rate information to initialize an instance.
 
-        :param data_string: A semicolon-separated string in the form of 'amionauptakerateStart;amionauptakerateEnd' either start and/or end value must be defined.
+        :param data_string: A semicolon-separated string in the form of 'amionauptakerateStart;amionauptakerateEnd'
+            either start and/or end value must be defined.
         :type data_string: str
         :return: An instance of AmmoniaUptakeRateAdditionalInformation populated with the parsed data.
         :rtype: AmmoniaUptakeRateAdditionalInformation
@@ -3435,13 +3457,13 @@ class AmmoniaUptakeRateAdditionalInformation(AdditionalInformation):
 
 class TemperatureAdditionalInformation(AdditionalInformation):
     """
-    Creates a temperature additional information object.
+    Creates a TemperatureAdditionalInformation object.
 
     This class represents additional information about the temperature. 
     Minimal and maximal temperature values can be set.
     """
     name = "temperature"
-    mandatories = []
+    mandatories = ["temperatureMin"]
 
     # Setter
     def set_temperatureMin(self, value):
@@ -3451,9 +3473,7 @@ class TemperatureAdditionalInformation(AdditionalInformation):
         :param value: The minimum temperature, measured in degrees Celsius.
         :type value: float
         """
-        if not isinstance(value, float):
-            raise TypeError("Value must be a float")
-        self.params["temperatureMin"] = value
+        self.params["temperatureMin"] = float(value)
 
     def set_temperatureMax(self, value):
         """
@@ -3462,9 +3482,7 @@ class TemperatureAdditionalInformation(AdditionalInformation):
         :param value: The maximum temperature, measured in degrees Celsius.
         :type value: float
         """
-        if not isinstance(value, float):
-            raise TypeError("Value must be a float")
-        self.params["temperatureMax"] = value
+        self.params["temperatureMax"] = float(value)
 
     # Getter
     def get_temperatureMin(self):
@@ -3496,22 +3514,17 @@ class TemperatureAdditionalInformation(AdditionalInformation):
         :return: TemperatureAdditionalInformation instance.
         :rtype: TemperatureAdditionalInformation
         """
-        parts = data_string.split(';')
-        res = {
-            'temperatureMin': float(parts[0]),
-            'temperatureMax': float(parts[1]),
-        }
-        return cls(**res)
+        return cls._parse_default(data_string, ['temperatureMin', 'temperatureMax'])
 
 
 class TotalOrganicCarbonAdditionalInformation(AdditionalInformation):
     """
-    Creates a total organic carbon additional information object.
+    Creates a TotalOrganicCarbonAdditionalInformation object.
 
     This class represents additional information about total organic carbon (TOC) values.
     """
     name = "totalorganiccarbon"
-    mandatories = []
+    mandatories = ["totalorganiccarbonStart"]
 
     # Setter
     def set_totalorganiccarbonStart(self, value):
@@ -3522,11 +3535,8 @@ class TotalOrganicCarbonAdditionalInformation(AdditionalInformation):
         :type value: float
         :raises ValueError: If the value is not a float.
         """
-        if isinstance(value, float):
-            self.params["totalorganiccarbonStart"] = value
-        else:
-            raise ValueError("totalorganiccarbonStart must be of type float.")
-        
+        self.params["totalorganiccarbonStart"] = float(value)
+
     def set_totalorganiccarbonEnd(self, value):
         """
         Sets the end value for total organic carbon.
@@ -3535,11 +3545,8 @@ class TotalOrganicCarbonAdditionalInformation(AdditionalInformation):
         :type value: float
         :raises ValueError: If the value is not a float.
         """
-        if isinstance(value, float):
-            self.params["totalorganiccarbonEnd"] = value
-        else:
-            raise ValueError("totalorganiccarbonEnd must be of type float.")
-        
+        self.params["totalorganiccarbonEnd"] = float(value)
+
     # Getter
     def get_totalorganiccarbonStart(self):
         """
@@ -3570,12 +3577,7 @@ class TotalOrganicCarbonAdditionalInformation(AdditionalInformation):
         :return: TotalOrganicCarbonAdditionalInformation instance.
         :rtype: TotalOrganicCarbonAdditionalInformation
         """
-        parts = data_string.split(';')
-        res = {
-            'totalorganiccarbonStart': float(parts[0]),
-            'totalorganiccarbonEnd': float(parts[1]),
-        }
-        return cls(**res)
+        return cls._parse_default(data_string, ["totalorganiccarbonStart", "totalorganiccarbonEnd"])
 
 
 class TSSAdditionalInformation(AdditionalInformation):
@@ -3595,10 +3597,7 @@ class TSSAdditionalInformation(AdditionalInformation):
         :param value: The start value for tts, measured in g/L.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["ttsStart"] = value
-        else:
-            raise ValueError("ttsStart must be of type float.")
+        self.params["ttsStart"] = float(value)
 
     def set_ttsEnd(self, value):
         """
@@ -3607,10 +3606,7 @@ class TSSAdditionalInformation(AdditionalInformation):
         :param value: The end value for tts, measured in g/L.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["ttsEnd"] = value
-        else:
-            raise ValueError("ttsEnd must be of type float.")
+        self.params["ttsEnd"] = float(value)
 
     # Getter
     def get_ttsStart(self):
@@ -3649,14 +3645,17 @@ class TSSAdditionalInformation(AdditionalInformation):
         }
         return cls(**res)
 
+
 class TypeOfAdditionAdditionalInformation(AdditionalInformation):
     """
     Creates a Type of Addition additional information object.
 
-    This class represents additional information about the type of compound addition which is either spiking in solvent, plating or some other type.
+    This class represents additional information about the type of compound addition which is either spiking in solvent,
+        plating or some other type.
     """
     name = "typeofaddition"
     mandatories = ['typeofaddition']
+    allowed_values = ['spiking in solvent', 'plating', 'other']
 
     # Setter
     def set_typeofaddition(self, value):
@@ -3666,10 +3665,9 @@ class TypeOfAdditionAdditionalInformation(AdditionalInformation):
         :param value: The type of addition.
         :type value: str
         """
-        if value in ['spiking in solvent', 'plating', 'other']:
-            self.params["typeofaddition"] = value
-        else:
+        if value not in self.allowed_values:
             raise ValueError(f"{value} not an allowed addition type")
+        self.params["typeofaddition"] = value
 
     # Getter
     def get_typeofaddition(self):
@@ -3712,8 +3710,6 @@ class NutrientsAdditionalInformation(AdditionalInformation):
         :param value: The information about the addition of nutrients.
         :type value: str
         """
-        if not isinstance(value, str):
-            raise ValueError("additionofnutrients must be a string.")
         self.params["additionofnutrients"] = value
 
     # Getter
@@ -3737,8 +3733,7 @@ class NutrientsAdditionalInformation(AdditionalInformation):
         :return: An instance of NutrientsAdditionalInformation populated with the parsed data.
         :rtype: NutrientsAdditionalInformation
         """
-        res = {'additionofnutrients': data_string}
-        return cls(**res)
+        return cls._parse_default(data_string, ['additionofnutrients'])
 
 
 class OMContentAdditionalInformation(AdditionalInformation):
@@ -3758,7 +3753,7 @@ class OMContentAdditionalInformation(AdditionalInformation):
         :param value: The OM content measured in organic matter.
         :type value: float
         """
-        self.params["omcontentInOM"] = value
+        self.params["omcontentInOM"] = float(value)
 
     def set_omcontentINOC(self, value):
         """
@@ -3767,7 +3762,7 @@ class OMContentAdditionalInformation(AdditionalInformation):
         :param value: The OM content, measured in organic carbon.
         :type value: float
         """
-        self.params["omcontentINOC"] = value
+        self.params["omcontentINOC"] = float(value)
 
     # Getter
     def get_omcontentInOM(self):
@@ -3778,7 +3773,7 @@ class OMContentAdditionalInformation(AdditionalInformation):
         :rtype: float
         """
         return self.params.get("omcontentInOM", None)
-    
+
     def get_omcontentINOC(self):
         """
         Retrieves the OM content in OC.
@@ -3787,7 +3782,7 @@ class OMContentAdditionalInformation(AdditionalInformation):
         :rtype: float
         """
         return self.params.get("omcontentINOC", None)
-    
+
     # Parser
     @classmethod
     def parse(cls, data_string):
@@ -3839,9 +3834,7 @@ class OrganicCarbonWaterAdditionalInformation(AdditionalInformation):
         :param value: The low value of TOC, measured in mg/L.
         :type value: float
         """
-        if not isinstance(value, float):
-            raise ValueError("TOC_low must be a float.")
-        self.params["TOC_low"] = value
+        self.params["TOC_low"] = float(value)
 
     def set_TOC_high(self, value):
         """
@@ -3851,9 +3844,7 @@ class OrganicCarbonWaterAdditionalInformation(AdditionalInformation):
         :param value: The high value of TOC, measured in mg/L.
         :type value: float
         """
-        if not isinstance(value, float):
-            raise ValueError("TOC_high must be a float.")
-        self.params["TOC_high"] = value
+        self.params["TOC_high"] = float(value)
 
     def set_DOC_low(self, value):
         """
@@ -3863,9 +3854,7 @@ class OrganicCarbonWaterAdditionalInformation(AdditionalInformation):
         :param value: The low value of DOC, measured in mg/L.
         :type value: float
         """
-        if not isinstance(value, float):
-            raise ValueError("DOC_low must be a float.")
-        self.params["DOC_low"] = value
+        self.params["DOC_low"] = float(value)
 
     def set_DOC_high(self, value):
         """
@@ -3875,9 +3864,7 @@ class OrganicCarbonWaterAdditionalInformation(AdditionalInformation):
         :param value: The high value of DOC, measured in mg/L.
         :type value: float
         """
-        if not isinstance(value, float):
-            raise ValueError("DOC_high must be a float.")
-        self.params["DOC_high"] = value
+        self.params["DOC_high"] = float(value)
 
     # Getter
     def get_TOC_low(self):
@@ -3930,13 +3917,10 @@ class OrganicCarbonWaterAdditionalInformation(AdditionalInformation):
         res = {}
         parts = data_string.split(";")
         if parts[0] != "NA":
-            res["TOC_low"] = float(parts[0].split(" - ")[0])
-            res["TOC_high"] = float(parts[0].split(" - ")[1])
-        
+            res["TOC_low"], res["TOC_high"] = parts[0].split(" - ")
         if parts[1] != "NA":
-            res["DOC_low"] = float(parts[1].split(" - ")[0])
-            res["DOC_high"] = float(parts[1].split(" - ")[1])
-        
+            res["DOC_low"], res["DOC_high"] = parts[1].split(" - ")
+
         return cls(**res)
 
 
@@ -3944,8 +3928,9 @@ class OrganicContentAdditionalInformation(AdditionalInformation):
     """
     Creates an organic content additional information object.
 
-    This class represents additional information about organic content in water-sediment studies such as organic matter (OM) and organic carbon (OC).
-    Low (minimal) and high (maximal) values can be set. If only either low or high value is set, then both low and high are set to this value.
+    This class represents additional information about organic content in water-sediment studies such as organic matter
+    (OM) and organic carbon (OC). Low (minimal) and high (maximal) values can be set. If only either low or high value
+    is set, then both low and high are set to this value.
     """
     name = "organiccontent"
     mandatories = []
@@ -3958,9 +3943,7 @@ class OrganicContentAdditionalInformation(AdditionalInformation):
         :param value: The low value of OC content.
         :type value: float
         """
-        if not isinstance(value, float):
-            raise ValueError("OC_content_low must be a float.")
-        self.params["OC_content_low"] = value
+        self.params["OC_content_low"] = float(value)
 
     def set_OC_content_high(self, value):
         """
@@ -3969,9 +3952,7 @@ class OrganicContentAdditionalInformation(AdditionalInformation):
         :param value: The high value of OC content.
         :type value: float
         """
-        if not isinstance(value, float):
-            raise ValueError("OC_content_high must be a float.")
-        self.params["OC_content_high"] = value
+        self.params["OC_content_high"] = float(value)
 
     def set_OM_content_low(self, value):
         """
@@ -3980,9 +3961,7 @@ class OrganicContentAdditionalInformation(AdditionalInformation):
         :param value: The low value of OM content.
         :type value: float
         """
-        if not isinstance(value, float):
-            raise ValueError("OM_content_low must be a float.")
-        self.params["OM_content_low"] = value
+        self.params["OM_content_low"] = float(value)
 
     def set_OM_content_high(self, value):
         """
@@ -3991,9 +3970,7 @@ class OrganicContentAdditionalInformation(AdditionalInformation):
         :param value: The high value of OM content.
         :type value: float
         """
-        if not isinstance(value, float):
-            raise ValueError("OM_content_high must be a float.")
-        self.params["OM_content_high"] = value
+        self.params["OM_content_high"] = float(value)
 
     # Getter
     def get_OC_content_low(self):
@@ -4038,7 +4015,8 @@ class OrganicContentAdditionalInformation(AdditionalInformation):
         """
         Parses a string containing organic content information to initialize an instance.
 
-        :param data_string: A string in the format e.g 'OC_content_low - OC_content_high;NA' or 'OC_content_low - OC_content_low;OM_content_low - OM_content_high'
+        :param data_string: A string in the format e.g 'OC_content_low - OC_content_high;NA' or
+            'OC_content_low - OC_content_low;OM_content_low - OM_content_high'
         :type data_string: str
         :return: An instance of OrganicContentAdditionalInformation populated with the parsed data.
         :rtype: OrganicContentAdditionalInformation
@@ -4046,31 +4024,51 @@ class OrganicContentAdditionalInformation(AdditionalInformation):
         res = {}
         parts = data_string.split(";")
         if parts[0] != "NA":
-            res["OC_content_low"] = float(parts[0].split(" - ")[0])
-            res["OC_content_high"] = float(parts[0].split(" - ")[1])
-        
+            res["OC_content_low"], res["OC_content_high"] = parts[0].split(" - ")
         if parts[1] != "NA":
-            res["OM_content_low"] = float(parts[1].split(" - ")[0])
-            res["OM_content_high"] = float(parts[1].split(" - ")[1])
-        
+            res["OM_content_low"], res["OM_content_high"] = parts[1].split(" - ")
+
         return cls(**res)
 
 
 class InoculumSourceAdditionalInformation(AdditionalInformation):
+    """
+    Creates an InoculumSourceAdditionalInformation object.
+
+    This class represents additional information about source of the inoculum.
+    """
     name = "inoculumsource"
     mandatories = ['inoculumsource']
 
     # Setter
     def set_inoculumsource(self, value):
+        """
+        Sets the value for the inoculum source
+
+        :param value: The source of the inoculum
+        :type value: str
+        """
         self.params["inoculumsource"] = value
 
     # Getter
     def get_inoculumsource(self):
+        """
+        Gets the value for the inoculum source
+
+        :return: the value of the inoculum source
+        :rtype: str
+        """
         return self.params.get("inoculumsource", None)
 
     # Parser
     @classmethod
     def parse(cls, data_string):
+        """
+        Parses a string containing the source of the inoculum to initialize an instance.
+
+        :param data_string: The source of the inoculum
+        :type data_string: str
+        """
         return cls._parse_default(data_string, ['inoculumsource'])
 
 
@@ -4091,10 +4089,7 @@ class DissolvedOrganicCarbonAdditionalInformation(AdditionalInformation):
         :param value: The starting value of dissolved organic carbon, measured in mg C/L.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["dissolvedorganiccarbonStart"] = value
-        else:
-            raise ValueError("dissolvedorganiccarbonStart must be a float.")
+        self.params["dissolvedorganiccarbonStart"] = float(value)
 
     def set_dissolvedorganiccarbonEnd(self, value):
         """
@@ -4103,10 +4098,7 @@ class DissolvedOrganicCarbonAdditionalInformation(AdditionalInformation):
         :param value: The ending value of dissolved organic carbon, measured in mg C/L.
         :type value: float
         """
-        if isinstance(value, float):
-            self.params["dissolvedorganiccarbonEnd"] = value
-        else:
-            raise ValueError("dissolvedorganiccarbonEnd must be a float.")
+        self.params["dissolvedorganiccarbonEnd"] = float(value)
 
     # Getter
     def get_dissolvedorganiccarbonStart(self):
@@ -4133,17 +4125,13 @@ class DissolvedOrganicCarbonAdditionalInformation(AdditionalInformation):
         """
         Parses a string containing dissolved organic carbon information to initialize an instance.
 
-        :param data_string: A semicolon-separated string in the format 'dissolvedorganiccarbonStart;dissolvedorganiccarbonEnd'.
+        :param data_string: A semicolon-separated string in the format
+            'dissolvedorganiccarbonStart;dissolvedorganiccarbonEnd'.
         :type data_string: str
         :return: An instance of DissolvedOrganicCarbonAdditionalInformation populated with the parsed data.
         :rtype: DissolvedOrganicCarbonAdditionalInformation
         """
-        parts = data_string.split(';')
-        res = {
-            'dissolvedorganiccarbonStart': float(parts[0]),
-            'dissolvedorganiccarbonEnd': float(parts[1]),
-        }
-        return cls(**res)
+        return cls._parse_default(data_string, ['dissolvedorganiccarbonStart', 'dissolvedorganiccarbonEnd'])
 
 
 class NitrogenContentAdditionalInformation(AdditionalInformation):
@@ -4154,18 +4142,19 @@ class NitrogenContentAdditionalInformation(AdditionalInformation):
     """
     name = "nitrogencontent"
     mandatories = ['nitrogencontentType']
+    allowed_types = ['NH4MINUSN', 'NTOT', 'NH&#8324-N']
 
     # Setter
     def set_nitrogencontentType(self, value):
         """
         Sets the type of nitrogen content.
 
-        :param value: The type of nitrogen content. The allowed value are 'NH4MINUSN','NTOT'
+        :param value: The type of nitrogen content. The allowed value are 'NH4MINUSN','NTOT', 'NH&#8324-N'
         """
-        if value.upper() in ['NH4MINUSN','NTOT','NH&#8324-N','N&#8348&#8338&#8348']:
-            self.params["nitrogencontentType"] = value.upper()
-        else:
-            raise ValueError(f'{value} is not an allowed type or is written incorrectly')
+        if value.upper() not in self.allowed_types:
+            raise ValueError(f'{value} is not an allowed type or is written incorrectly -> {self.allowed_types}')
+        self.params["nitrogencontentType"] = value.upper()
+
     def set_nitrogencontentInfluent(self, value):
         """
         Sets the influent nitrogen content.
@@ -4173,7 +4162,7 @@ class NitrogenContentAdditionalInformation(AdditionalInformation):
         :param value: The nitrogen content in the influent, measured in mg/L.
         :type value: float
         """
-        self.params["nitrogencontentInfluent"] = value
+        self.params["nitrogencontentInfluent"] = float(value)
 
     def set_nitrogencontentEffluent(self, value):
         """
@@ -4182,8 +4171,7 @@ class NitrogenContentAdditionalInformation(AdditionalInformation):
         :param value: The nitrogen content in the effluent, measured in mg/L.
         :type value: float
         """
-        self.params["nitrogencontentEffluent"] = value
-
+        self.params["nitrogencontentEffluent"] = float(value)
 
     # Getter
     def get_nitrogencontentType(self):
@@ -4220,8 +4208,9 @@ class NitrogenContentAdditionalInformation(AdditionalInformation):
         """
         Parses a string containing nitrogen content information to initialize an instance.
 
-        :param data_string: A string in the format 'nitrogencontentType;nitrogencontentInfluent;nitrogencontentEffluent'.
-                            Depends if both infleunt and effluent want to be passed.
+        :param data_string: A string in the format
+            'nitrogencontentType;nitrogencontentInfluent;nitrogencontentEffluent'. Depends if both infleunt and
+            effluent want to be passed.
         :type data_string: str
         :return: An instance of NitrogenContentAdditionalInformation populated with the parsed data.
         :rtype: NitrogenContentAdditionalInformation
@@ -4240,21 +4229,56 @@ class NitrogenContentAdditionalInformation(AdditionalInformation):
 
 
 class ReferringScenarioAdditionalInformation(AdditionalInformation):
+    """
+    Class that implements a Referring Scenario Additional Information object.
+
+    A referring scenario is a scenario that refers to another one, from which it will extract information frm
+    """
     name = "referringscenario"
     mandatories = ['referringscenario']
 
     # Setter
     def set_referringscenario(self, value):
+        """
+        Sets the referring scenario identifier
+
+        :param value: the URL to the scenario it wants to refer to
+        :type value: str
+        """
         self.params["referringscenario"] = value
 
     # Getter
     def get_referringscenario(self):
+        """
+        Gets the scenario that it is being referred
+
+        :return: The URL to the scenario being referred
+        :rtype: str
+        """
         return self.params.get("referringscenario", None)
 
     # Parser
     @classmethod
     def parse(cls, data_string):
         return cls._parse_default(data_string, ['referringscenario'])
+
+
+class ModelPredictionProbabilityAdditionalInformation(AdditionalInformation):
+    name = "modelpredictionprob"
+    mandatories = ['modelpredictionprob']
+
+    # Setter
+    def set_modelpredictionprob(self, value):
+        self.params["modelpredictionprob"] = value
+
+    # Getter
+    def get_modelpredictionprob(self):
+        return self.params.get("modelpredictionprob", None)
+
+    # Parser
+    @classmethod
+    def parse(cls, data_string):
+        return cls._parse_default(data_string, ['modelpredictionprob'])
 
 
 class RuleLikelihoodAdditionalInformation(AdditionalInformation):
@@ -4265,16 +4289,20 @@ class RuleLikelihoodAdditionalInformation(AdditionalInformation):
     """
     name = "rulelikelihood"
     mandatories = ["ruleLikelihood"]
+    allowed_values = ["VERY_LIKELY", "LIKELY", "POSSIBLE", "UNLIKELY", "VERY_UNLIKELY"]
 
     # Setter
     def set_ruleLikelihood(self, value):
         """
         Sets the rule likelihood.
 
-        :param value: The likelihood of the rule, must be one of "verylikely", "likely", "possible", "unlikely", "veryUnlikely".
+        :param value: The likelihood of the rule, must be one of "VERY_LIKELY", "LIKELY",
+            "POSSIBLE", "UNLIKELY", "VERY_UNLIKELY".
         :type value: str
         """
-        self.params["ruleLikelihood"] = value.lower()
+        if value.upper() not in self.allowed_values:
+            raise ValueError(f"{value} is not in the set of allowed values {self.allowed_values}")
+        self.params["ruleLikelihood"] = value.upper()
 
     # Getter
     def get_ruleLikelihood(self):
@@ -4299,6 +4327,7 @@ class RuleLikelihoodAdditionalInformation(AdditionalInformation):
         """
         return cls._parse_default(data_string, ["ruleLikelihood"])
 
+
 class ModelBayesPredictionProbabilityAdditionalInformation(AdditionalInformation):
     """
     Creates a Model Bayes Prediction Probability additional information object.
@@ -4310,12 +4339,6 @@ class ModelBayesPredictionProbabilityAdditionalInformation(AdditionalInformation
 
     # Setter
     def set_modelbayespredictionprob(self, value):
-        """
-        Sets the Bayesian prediction probability.
-
-        :param value: The Bayesian prediction probability.
-        :type value: float
-        """
         self.params["modelbayespredictionprob"] = value
 
     # Getter
@@ -4339,7 +4362,7 @@ class ModelBayesPredictionProbabilityAdditionalInformation(AdditionalInformation
         :return: ModelBayesPredictionProbabilityAdditionalInformation instance.
         :rtype: ModelBayesPredictionProbabilityAdditionalInformation
         """
-        
+
         return cls._parse_default(data_string, ['modelbayespredictionprob'])
 
 
@@ -4360,8 +4383,7 @@ class HalfLifeAdditionalInformation(AdditionalInformation):
         :param value: The lower bound of the half-life, measured in days.
         :type value: float
         """
-        self.params["lower"] = value
-
+        self.params["lower"] = float(value)
 
     def set_upper(self, value):
         """
@@ -4370,7 +4392,7 @@ class HalfLifeAdditionalInformation(AdditionalInformation):
         :param value: The upper bound of the half-life, measured in days.
         :type value: float
         """
-        self.params["upper"] = value
+        self.params["upper"] = float(value)
 
     def set_comment(self, value):
         """
@@ -4389,7 +4411,7 @@ class HalfLifeAdditionalInformation(AdditionalInformation):
         :type value: str
         """
         self.params["source"] = value
-        
+
     def set_firstOrder(self, value):
         """
         Sets whether the half-life follows a first-order reaction.
@@ -4398,16 +4420,6 @@ class HalfLifeAdditionalInformation(AdditionalInformation):
         :type value: bool
         """
         self.params["firstOrder"] = value
-
-
-#    def set_model(self, value):
-#        """
-#       Sets the model used for half-life estimation.
-#
-#        :param value: The model used for half-life estimation.
-#        :type value: str
-#        """
-#        self.params["model"] = value
 
     def set_fit(self, value):
         """
@@ -4464,15 +4476,6 @@ class HalfLifeAdditionalInformation(AdditionalInformation):
         """
         return self.params.get("firstOrder", None)
 
-    def get_model(self):
-        """
-        Retrieves the model used for half-life estimation.
-
-        :return: The model used for half-life estimation if set; otherwise, None.
-        :rtype: str
-        """
-        return self.params.get("model", None)
-
     def get_fit(self):
         """
         Retrieves the fit value of the half-life.
@@ -4488,20 +4491,16 @@ class HalfLifeAdditionalInformation(AdditionalInformation):
         """
         Parses a string containing half-life information to initialize an instance.
 
-        :param data_string: A string containing half-life information in the format 'model;fit;comment;lower - upper;source'
+        :param data_string: A string containing half-life information in the format 'model;fit;comment;lower -
+            upper;source'
         :type data_string: str
         :return: An instance of HalfLifeAdditionalInformation populated with the parsed data.
         :rtype: HalfLifeAdditionalInformation
         """
         parts = data_string.split(';')
         dt50 = parts[3]
-        if parts[0] == 'SFO':
-            fo = True
-        else:
-            fo = False
-
         res = {
-            'firstOrder': fo,
+            'firstOrder': True if parts[0] == 'SFO' else False,
             'fit': parts[1],
             'comment': parts[2],
             'lower': float(dt50.split(' - ')[0]),
@@ -4520,6 +4519,7 @@ class HalfLifeWaterSedimentAdditionalInformation(AdditionalInformation):
     """
     name = "halflife_ws"
     mandatories = ["total_low", "total_high"]
+    allowed_values = ['', 'reported', 'self-calculated', 'neither']
 
     # Setter
     def set_total_low(self, value):
@@ -4529,7 +4529,7 @@ class HalfLifeWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The total low half-life value, meaured in days.
         :type value: float
         """
-        self.params["total_low"] = value
+        self.params["total_low"] = float(value)
 
     def set_total_high(self, value):
         """
@@ -4538,7 +4538,7 @@ class HalfLifeWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The total high half-life value, meaured in days.
         :type value: float
         """
-        self.params["total_high"] = value
+        self.params["total_high"] = float(value)
 
     def set_water_low(self, value):
         """
@@ -4547,7 +4547,7 @@ class HalfLifeWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The water low half-life value, meaured in days.
         :type value: float
         """
-        self.params["water_low"] = value
+        self.params["water_low"] = float(value)
 
     def set_water_high(self, value):
         """
@@ -4556,7 +4556,7 @@ class HalfLifeWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The water high half-life value, meaured in days.
         :type value: float
         """
-        self.params["water_high"] = value
+        self.params["water_high"] = float(value)
 
     def set_sediment_low(self, value):
         """
@@ -4565,7 +4565,7 @@ class HalfLifeWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The sediment low half-life value, meaured in days.
         :type value: float
         """
-        self.params["sediment_low"] = value
+        self.params["sediment_low"] = float(value)
 
     def set_sediment_high(self, value):
         """
@@ -4574,7 +4574,7 @@ class HalfLifeWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The sediment high half-life value, meaured in days.
         :type value: float
         """
-        self.params["sediment_high"] = value
+        self.params["sediment_high"] = float(value)
 
     def set_fit_ws(self, value):
         """
@@ -4606,17 +4606,14 @@ class HalfLifeWaterSedimentAdditionalInformation(AdditionalInformation):
     def set_source_ws(self, value):
         """
         Sets the source of the water and sediment half-life information. 
-        Allowed value are 'reported', 'calcualted', 'neither'.
+        Allowed value are 'reported', 'self-calculated', 'neither'.
 
         :param value: The source of the water and sediment half-life information.
         :type value: str
         """
-        value = value.lower()
-        allowed_values = ['reported', 'calcualted', 'neither']
-        if value in allowed_values:
-            self.params["source_ws"] = value
-        else:
+        if value not in self.allowed_values:
             raise ValueError(f"{value} is not an allowd source value")
+        self.params["source_ws"] = value
 
     # Getter
     def get_total_low(self):
@@ -4715,102 +4712,59 @@ class HalfLifeWaterSedimentAdditionalInformation(AdditionalInformation):
         """
         Parses a string containing water and sediment half-life information to initialize an instance.
 
-        :param data_string: A string containing water and sediment half-life information in the format 'model;fit;comment;total_low - total_high;water_low - water_high;sediment_low - sediment_high;source'
+        :param data_string: A string containing water and sediment half-life information in the format
+            'model;fit;comment;total_low - total_high;water_low - water_high;sediment_low - sediment_high;source'
         :type data_string: str
         :return: An instance of HalfLifeWaterSedimentAdditionalInformation populated with the parsed data.
         :rtype: HalfLifeWaterSedimentAdditionalInformation
         """
         parts = data_string.split(';')
-        dt50_total = parts[3]
-        dt50_water = parts[4]
-        dt50_sediment = parts[5]
+        dt50_total = parts[3].split(' - ')
+        dt50_water = parts[4].split(' - ')
+        dt50_sediment = parts[5].split(' - ')
 
         res = {
             'model_ws': parts[0],
             'fit_ws': parts[1],
             'comment_ws': parts[2],
-            'total_low': float(dt50_total.split(' - ')[0]),
-            'total_high': float(dt50_total.split(' - ')[1]),
-            'water_low': float(dt50_water.split(' - ')[0]),
-            'water_high': float(dt50_water.split(' - ')[1]),
-            'sediment_low': float(dt50_sediment.split(' - ')[0]),
-            'sediment_high': float(dt50_sediment.split(' - ')[1]),
             'source_ws': parts[6],
         }
 
+        if not dt50_total: res.update({'total_low': float(dt50_total[0]), 'total_high': float(dt50_total[1])})
+        if not dt50_water: res.update({'water_low': float(dt50_water[0]), 'water_high': float(dt50_water[1])})
+        if not dt50_sediment: res.update({'sediment_low': float(dt50_sediment[0]),
+                                          'sediment_high': float(dt50_sediment[1])})
         return cls(**res)
 
 
 class HumidityAdditionalInformation(AdditionalInformation):
-
     """
     Creates a humidity additional information object.
 
     This class represents additional information about experimental humidity.
     """
     name = "humidity"
-    mandatories = ["waterStorageCapacity"]
+    mandatories = ["experimentalHumidity"]
 
     # Setter
-    def set_waterStorageCapacity(self, value):
+    def set_experimentalHumidity(self, value):
         """
         Sets the experimental humidity value.
 
         :param value: The experimental humidity value, represented as a percentage.
         :type value: float
         """
-    
-        self.params["waterStorageCapacity"] = value
-        
-
-    def set_waterStorageConditions(self, value):
-        """
-        Sets the experimental conditions.
-
-        :param value: The experimental conditions, the pressure.
-        :type value: str
-        """
-  
-        self.params["waterStorageConditions"] = value
-
-    def set_waterStorageMaxHold(self, value):
-        """
-        Sets the experimental maximum humidity value.
-
-        :param value: The maximum experimental humidity value, represented as a percentage.
-        :type value: float
-        """
-        self.params["waterStorageMaxHold"] = value
+        self.params["experimentalHumidity"] = float(value)
 
     # Getter
-    def get_waterStorageCapacity(self):
+    def get_experimentalHumidity(self):
         """
         Retrieves the experimental humidity value.
 
         :return: The experimental humidity value if set; otherwise, None.
         :rtype: float
         """
-        return self.params.get("waterStorageCapacity", None)
-
-    # Getter
-    def get_waterStorageConditions(self):
-        """
-        Retrieves the experimental humidity conditions.
-
-        :return: The experimental humidity conditions value if set; otherwise, None.
-        :rtype: str
-        """
-        return self.params.get("waterStorageConditions", None)
-
-    # Getter
-    def get_waterStorageMaxHold(self):
-        """
-        Retrieves the experimental maximum humidity value.
-
-        :return: The experimental maximum humidity value if set; otherwise, None.
-        :rtype: float
-        """
-        return self.params.get("waterStorageMaxHold", None)
+        return self.params.get("experimentalHumidity", None)
 
     # Parser
     @classmethod
@@ -4823,15 +4777,7 @@ class HumidityAdditionalInformation(AdditionalInformation):
         :return: An instance of HumidityAdditionalInformation populated with the parsed data.
         :rtype: HumidityAdditionalInformation
         """
-
-        parts = data_string.split(' - ')
-        res = {
-            "waterStorageCapacity": float(parts[0]),
-            "waterStorageConditions": parts[1] if len(parts) == 2 else "",
-            "waterStorageMaxHold": float(parts[2]) if len(parts) == 3 else None,
-        }
-
-        return cls(**res)
+        return cls._parse_default(data_string, ['experimentalHumidity'])
 
 
 class InitialMassSedimentAdditionalInformation(AdditionalInformation):
@@ -4851,7 +4797,7 @@ class InitialMassSedimentAdditionalInformation(AdditionalInformation):
         :param value: The initial mass of sediment, measured in g.
         :type value: float
         """
-        self.params["initial_mass_sediment"] = value
+        self.params["initial_mass_sediment"] = float(value)
 
     def set_wet_or_dry(self, value):
         """
@@ -4862,7 +4808,7 @@ class InitialMassSedimentAdditionalInformation(AdditionalInformation):
         """
         if value.lower() not in ['wet', 'dry']:
             raise ValueError(f"{value} is not allowed. Must be either wet or dry")
-        self.params["wet_or_dry"] = value.upper()
+        self.params["wet_or_dry"] = value.lower()
 
     # Getter
     def get_initial_mass_sediment(self):
@@ -4894,13 +4840,7 @@ class InitialMassSedimentAdditionalInformation(AdditionalInformation):
         :return: An instance of InitialMassSedimentAdditionalInformation populated with the parsed data.
         :rtype: InitialMassSedimentAdditionalInformation
         """
-        parts = data_string.split(";")
-        res = {
-            "initial_mass_sediment": float(parts[0]),
-            "wet_or_dry": parts[1]
-        }
-
-        return cls(**res)
+        return cls._parse_default(data_string, ['initial_mass_sediment', 'wet_or_dry'])
 
 
 class InitialVolumeWaterAdditionalInformation(AdditionalInformation):
@@ -4909,7 +4849,7 @@ class InitialVolumeWaterAdditionalInformation(AdditionalInformation):
 
     This class represents additional information about the initial volume of water.
     """
-    name = "initialvolumewater" 
+    name = "initialvolumewater"
     mandatories = ["initialvolumewater"]
 
     # Setter
@@ -4920,7 +4860,7 @@ class InitialVolumeWaterAdditionalInformation(AdditionalInformation):
         :param value: The initial volume of water, measured in mL.
         :type value: float
         """
-        self.params["initialvolumewater"] = value
+        self.params["initialvolumewater"] = float(value)
 
     # Getter
     def get_initialvolumewater(self):
@@ -4931,7 +4871,7 @@ class InitialVolumeWaterAdditionalInformation(AdditionalInformation):
         :rtype: float or None
         """
         return self.params.get("initialvolumewater", None)
-    
+
     # Parser
     @classmethod
     def parse(cls, data_string):
@@ -4944,10 +4884,8 @@ class InitialVolumeWaterAdditionalInformation(AdditionalInformation):
         :rtype: InitialVolumeWaterAdditionalInformation
         :raises ValueError: If the provided value is not a float.
         """
-        res = {
-            "initialvolumewater": float(data_string),
-        }
-        return cls(**res)
+        return cls._parse_default(data_string, ['initialvolumewater'])
+
 
 class InitiatingOrganismAdditionalInformation(AdditionalInformation):
     """
@@ -4977,7 +4915,7 @@ class InitiatingOrganismAdditionalInformation(AdditionalInformation):
         :rtype: str or None
         """
         return self.params.get("organism", None)
-    
+
     # Parser
     @classmethod
     def parse(cls, data_string):
@@ -4990,49 +4928,6 @@ class InitiatingOrganismAdditionalInformation(AdditionalInformation):
         :rtype: InitiatingOrganismAdditionalInformation
         """
         return cls._parse_default(data_string, ['organism'])
-
-
-class InoculumSourceAdditionalInformation(AdditionalInformation):
-    """
-    Creates an inoculum source additional information object.
-
-    This class represents additional information about the source of inoculum.
-    """
-    name = "inoculumsource"
-    mandatories = ['inoculumsource']
-
-    # Setter
-    def set_inoculumsource(self, value):
-        """
-        Sets the inoculum source.
-
-        :param value: The source of inoculum.
-        :type value: str
-        """
-        self.params["inoculumsource"] = value
-
-    # Getter
-    def get_inoculumsource(self):
-        """
-        Retrieves the inoculum source.
-
-        :return: The inoculum source if set; otherwise, None.
-        :rtype: str
-        """
-        return self.params.get("inoculumsource", None)
-
-    # Parser
-    @classmethod
-    def parse(cls, data_string):
-        """
-        Parses a string containing inoculum source information to initialize an instance.
-
-        :param data_string: A string representing the inoculum source.
-        :type data_string: str
-        :return: An instance of InoculumSourceAdditionalInformation populated with the parsed data.
-        :rtype: InoculumSourceAdditionalInformation
-        """
-        return cls._parse_default(data_string, ['inoculumsource'])
 
 
 class LagPhaseAdditionalInformation(AdditionalInformation):
@@ -5052,7 +4947,7 @@ class LagPhaseAdditionalInformation(AdditionalInformation):
         :param value: The lag phase value, represented in minutes.
         :type value: float
         """
-        self.params["lagphase"] = value
+        self.params["lagphase"] = float(value)
 
     # Getter
     def get_lagphase(self):
@@ -5063,7 +4958,7 @@ class LagPhaseAdditionalInformation(AdditionalInformation):
         :rtype: float
         """
         return self.params.get("lagphase", None)
-    
+
     # Parser
     @classmethod
     def parse(cls, data_string):
@@ -5075,10 +4970,7 @@ class LagPhaseAdditionalInformation(AdditionalInformation):
         :return: An instance of LagPhaseAdditionalInformation populated with the parsed data.
         :rtype: LagPhaseAdditionalInformation
         """
-        res = {
-            "lagphase": float(data_string),
-        }
-        return cls(**res)
+        return cls._parse_default(data_string, ['lagphase'])
 
 
 class LocationAdditionalInformation(AdditionalInformation):
@@ -5167,7 +5059,6 @@ class ProposedIntermediateAdditionalInformation(AdditionalInformation):
         return cls._parse_default(data_string, ['proposed'])
 
 
-
 class VolatileTSSAdditionalInformation(AdditionalInformation):
     """
     Creates a Volatile TSS (Total Suspended Solids) additional information object.
@@ -5185,7 +5076,7 @@ class VolatileTSSAdditionalInformation(AdditionalInformation):
         :param value: The start value of volatile TSS, measured in g/L.
         :type value: float
         """
-        self.params["volatilettsStart"] = value
+        self.params["volatilettsStart"] = float(value)
 
     def set_volatilettsEnd(self, value):
         """
@@ -5194,7 +5085,7 @@ class VolatileTSSAdditionalInformation(AdditionalInformation):
         :param value: The end value of volatile TSS, measured in g/L.
         :type value: float
         """
-        self.params["volatilettsEnd"] = value
+        self.params["volatilettsEnd"] = float(value)
 
     # Getter
     def get_volatilettsStart(self):
@@ -5234,6 +5125,7 @@ class VolatileTSSAdditionalInformation(AdditionalInformation):
 
         return cls(**res)
 
+
 class WaterStorageCapacityAdditionalInformation(AdditionalInformation):
     """
     Creates a Water Storage Capacity additional information object.
@@ -5251,9 +5143,8 @@ class WaterStorageCapacityAdditionalInformation(AdditionalInformation):
         :param value: The water hold capacity, measured in g water/100g dry soil.
         :type value: float
         """
-      
-        self.params["wst"] = value
 
+        self.params["wst"] = float(value)
 
     def set_maximumWaterstoragecapacity(self, value):
         """
@@ -5262,8 +5153,8 @@ class WaterStorageCapacityAdditionalInformation(AdditionalInformation):
         :param value: The maximum water storage capacity, measured in g water/100g dry soil.
         :type value: float
         """
-        
-        self.params["maximumWaterstoragecapacity"] = value
+
+        self.params["maximumWaterstoragecapacity"] = float(value)
 
     def set_wstConditions(self, value):
         """
@@ -5325,7 +5216,8 @@ class WaterStorageCapacityAdditionalInformation(AdditionalInformation):
 
         return cls(**res)
 
-class ParametersMeasuredAdditionalInformation(AdditionalInformation):
+
+class AdditionalParametersMeasuredAdditionalInformation(AdditionalInformation):
     """
     Creates a Parameters Measured additional information object.
 
@@ -5333,6 +5225,11 @@ class ParametersMeasuredAdditionalInformation(AdditionalInformation):
     """
     name = "addparametersmeasured"
     mandatories = []
+    allowed_values = [
+        "NH4+", "NH4-", "NH4-N", "NO3-", "NO2-", "Ntot", "PO43-", "P-tot", "DOC", "none", "NH&#8324&#8314",
+        "NH&#8324&#8315", "NH&#8324-N", "NO&#8323&#8315", "NO&#8322&#8315", "N&#8348&#8338&#8348",
+        "PO&#8324&#179&#8315", "P&#8348&#8338&#8348"
+    ]
 
     # Setter
     def set_addparametersmeasured(self, value):
@@ -5342,18 +5239,9 @@ class ParametersMeasuredAdditionalInformation(AdditionalInformation):
         :param value: The parameter measured in the sample.
         :type value: str
         """
-        valid_parameters = [
-            "NH4+", "NH4-", "NH4-N", "NO3-",
-            "NO2-", "Ntot", "PO43-",
-            "P-tot", "DOC", "none", "NH&#8324&#8314", "NH&#8324&#8315","NH&#8324-N",
-            "NO&#8323&#8315","NO&#8322&#8315","N&#8348&#8338&#8348",
-            "PO&#8324&#179&#8315","P&#8348&#8338&#8348"
-        ]
-        if value in valid_parameters:
-            self.params["addparametersmeasured"] = value
-        else:
+        if value not in self.allowed_values:
             raise ValueError(f"{value} is not an allowed parameter")
-
+        self.params["addparametersmeasured"] = value
 
     # Getter
     def get_addparametersmeasured(self):
@@ -5376,8 +5264,8 @@ class ParametersMeasuredAdditionalInformation(AdditionalInformation):
         :return: ParametersMeasuredAdditionalInformation instance.
         :rtype: ParametersMeasuredAdditionalInformation
         """
-        res = {'addparametersmeasured': data_string}
-        return cls(**res)
+        return cls._parse_default(data_string, ['addparametersmeasured'])
+
 
 class ConfidenceLevelAdditionalInformation(AdditionalInformation):
     """
@@ -5387,6 +5275,7 @@ class ConfidenceLevelAdditionalInformation(AdditionalInformation):
     """
     name = "confidencelevel"
     mandatories = ['radioconfidence']
+    allowed_values = ["1", "2", "3", "4"]
 
     # Setter
     def set_radioconfidence(self, value):
@@ -5396,11 +5285,9 @@ class ConfidenceLevelAdditionalInformation(AdditionalInformation):
         :param value: The confidence level value.
         :type value: str
         """
-        if value in ["1","2","3","4"]:
-            self.params["radioconfidence"] = value
-        else:
-            raise ValueError(f"{value} is not an allowed confidence level.")
-
+        if str(value) not in self.allowed_values:
+            raise ValueError(f"{value} is not an allowed confidence level: {self.allowed_values}")
+        self.params["radioconfidence"] = str(value)
 
     # Getter
     def get_radioconfidence(self):
@@ -5434,6 +5321,9 @@ class BiologicalTreatmentTechnologyAdditionalInformation(AdditionalInformation):
     """
     name = "biologicaltreatmenttechnology"
     mandatories = ['biologicaltreatmenttechnology']
+    allowed_values = ['nitrification', 'nitrification & denitrification',
+                      'nitrification & denitrification & biological phosphorus removal',
+                      'nitrification & denitrification & chemical phosphorus removal', 'other']
 
     # Setter
     def set_biologicaltreatmenttechnology(self, value):
@@ -5444,11 +5334,10 @@ class BiologicalTreatmentTechnologyAdditionalInformation(AdditionalInformation):
         :type value: str
         """
         value = value.lower()
-        allowed_values = ['nitrification', 'nitrification & denitrification', 'nitrification & denitrification & biological phosphorus removal', 'nitrification & denitrification & chemical phosphorus removal', 'other']
-        if value in allowed_values:
+        if value in self.allowed_values:
             self.params["biologicaltreatmenttechnology"] = value
         else:
-            raise ValueError(f"must be one of {allowed_values}.")
+            raise ValueError(f"must be one of {self.allowed_values}.")
 
     # Getter
     def get_biologicaltreatmenttechnology(self):
@@ -5481,7 +5370,7 @@ class BioreactorAdditionalInformation(AdditionalInformation):
     This class represents additional information about a bioreactor, including its type and size.
     """
     name = "bioreactor"
-    mandatories = ['bioreactortype','bioreactorsize']
+    mandatories = ['bioreactortype', 'bioreactorsize']
 
     # Setter
     def set_bioreactortype(self, value):
@@ -5500,9 +5389,8 @@ class BioreactorAdditionalInformation(AdditionalInformation):
         :param value: The size of the bioreactor, measured in mL.
         :type value: float
         """
-        
-        self.params["bioreactorsize"] = value
 
+        self.params["bioreactorsize"] = float(value)
 
     # Getter
     def get_bioreactortype(self):
@@ -5546,7 +5434,7 @@ class BioreactorAdditionalInformation(AdditionalInformation):
             res['bioreactorsize'] = parts[1]
 
         return cls(**res)
-    
+
 
 class BioMassAdditionalInformation(AdditionalInformation):
     """
@@ -5554,7 +5442,7 @@ class BioMassAdditionalInformation(AdditionalInformation):
     This class is used to store and manage information about the microbial biomass measured at the start and end.
     """
     name = "biomass"
-    mandatories = ['biomassStart','biomassEnd']  
+    mandatories = ['biomassStart', 'biomassEnd']
 
     # Setter
     def set_biomassStart(self, value):
@@ -5563,8 +5451,7 @@ class BioMassAdditionalInformation(AdditionalInformation):
 
         :param value: A numeric value representing the starting microbial biomass, measured in μg C/g soil
         """
-        self.params["biomassStart"] = value
-        
+        self.params["biomassStart"] = float(value)
 
     def set_biomassEnd(self, value):
         """
@@ -5572,7 +5459,7 @@ class BioMassAdditionalInformation(AdditionalInformation):
 
         :param value: A numeric value representing the ending microbial biomass, measured in μg C/g soil
         """
-        self.params["biomassEnd"] = value
+        self.params["biomassEnd"] = float(value)
 
     # Getter
     def get_biomassStart(self):
@@ -5591,7 +5478,7 @@ class BioMassAdditionalInformation(AdditionalInformation):
         :rtype: str or None
         """
         return self.params.get("biomassEnd", None)
-    
+
     # Parser
     @classmethod
     def parse(cls, data_string):
@@ -5610,7 +5497,8 @@ class BioMassWaterSedimentAdditionalInformation(AdditionalInformation):
     Creates a biomass water-sediment additional information object.
 
     This class represents additional information about the microbial biomass in water and sediment. 
-    It is made especially for water-sediment studies and one can choose 'cells/g' or 'mg C/g' as measurement units for the sediment 
+    It is made especially for water-sediment studies and one can choose 'cells/g' or 'mg C/g' as measurement units for
+    the sediment
     """
     name = "biomass_ws"
     mandatories = []
@@ -5623,7 +5511,7 @@ class BioMassWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The starting cell count for microbial biomass in water, measured in cells/mL.
         :type value: int
         """
-        self.params["start_water_cells"] = value
+        self.params["start_water_cells"] = float(value)
 
     def set_end_water_cells(self, value):
         """
@@ -5632,7 +5520,7 @@ class BioMassWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The ending cell count for microbial biomass in water, measured in cells/mL
         :type value: int
         """
-        self.params["end_water_cells"] = value
+        self.params["end_water_cells"] = float(value)
 
     def set_start_sediment_cells(self, value):
         """
@@ -5641,7 +5529,7 @@ class BioMassWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The starting cell count for microbial biomass in sediment, measured in cells/g.
         :type value: int
         """
-        self.params["start_sediment_cells"] = value
+        self.params["start_sediment_cells"] = float(value)
 
     def set_end_sediment_cells(self, value):
         """
@@ -5650,10 +5538,7 @@ class BioMassWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The ending cell count for microbial biomass in sediment, measured in cells/g.
         :type value: int
         """
-        if isinstance(value, float):
-            self.params["end_sediment_cells"] = value
-        else:
-            raise ValueError("end_sediment_cells must be a float.")
+        self.params["end_sediment_cells"] = float(value)
 
     def set_start_sediment_mg(self, value):
         """
@@ -5662,7 +5547,7 @@ class BioMassWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The starting microbial biomass mass in sediment, measured in mg C/g.
         :type value: float
         """
-        self.params["start_sediment_mg"] = value
+        self.params["start_sediment_mg"] = float(value)
 
     def set_end_sediment_mg(self, value):
         """
@@ -5671,7 +5556,7 @@ class BioMassWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The ending microbial biomass mass in sediment, measured in mg C/g.
         :type value: float
         """
-        self.params["end_sediment_mg"] = value
+        self.params["end_sediment_mg"] = float(value)
 
     # Getter
     def get_start_water_cells(self):
@@ -5734,7 +5619,8 @@ class BioMassWaterSedimentAdditionalInformation(AdditionalInformation):
         """
         Parses a string containing biomass information for water and sediment to initialize an instance.
 
-        :param data_string: A semicolon-separated string in the Format 'start_water_cells - end_water_cells;start_sediment_cells - end_sediment_cells;start_sediment_mg - end_sediment_mg'
+        :param data_string: A semicolon-separated string in the Format 'start_water_cells -
+            end_water_cells;start_sediment_cells - end_sediment_cells;start_sediment_mg - end_sediment_mg'
         :type data_string: str
         :return: An instance of BioMassWaterSedimentAdditionalInformation populated with the parsed data.
         :rtype: BioMassWaterSedimentAdditionalInformation
@@ -5745,7 +5631,6 @@ class BioMassWaterSedimentAdditionalInformation(AdditionalInformation):
         for i in range(len(parts)):
             if parts[i] != "NA":
                 vals = parts[i].split(" - ")
-                
                 if i == 0:
                     res["start_water_cells"] = float(vals[0])
                     res['end_water_cells'] = float(vals[1])
@@ -5757,7 +5642,7 @@ class BioMassWaterSedimentAdditionalInformation(AdditionalInformation):
                     res['end_sediment_mg'] = float(vals[1])
 
         return cls(**res)
-    
+
 
 class BulkDensityAdditionalInformation(AdditionalInformation):
     """
@@ -5776,8 +5661,7 @@ class BulkDensityAdditionalInformation(AdditionalInformation):
         :param value: The bulk density value, measured in g/cm3.
         :type value: float
         """
-        self.params["bulkdensity"] = value
-
+        self.params["bulkdensity"] = float(value)
 
     # Getter
     def get_bulkdensity(self):
@@ -5788,7 +5672,7 @@ class BulkDensityAdditionalInformation(AdditionalInformation):
         :rtype: int
         """
         return self.params.get("bulkdensity", None)
-    
+
     # Parser
     @classmethod
     def parse(cls, data_string):
@@ -5800,11 +5684,7 @@ class BulkDensityAdditionalInformation(AdditionalInformation):
         :return: An instance of BulkDensityAdditionalInformation populated with the parsed data.
         :rtype: BulkDensityAdditionalInformation
         """
-        val = data_string
-        res = {
-            "bulkdensity": float(val)
-        }
-        return cls(**res)
+        return cls._parse_default(data_string, ['bulkdensity'])
 
 
 class CECAdditionalInformation(AdditionalInformation):
@@ -5824,7 +5704,7 @@ class CECAdditionalInformation(AdditionalInformation):
         :param value: The cation exchange capacity data, measured in mEq/100g.
         :type value: float
         """
-        self.params["cecdata"] = value
+        self.params["cecdata"] = float(value)
 
     # Getter
     def get_cecdata(self):
@@ -5835,7 +5715,7 @@ class CECAdditionalInformation(AdditionalInformation):
         :rtype: float
         """
         return self.params.get("cecdata", None)
-    
+
     # Parser
     @classmethod
     def parse(cls, data_string):
@@ -5847,11 +5727,8 @@ class CECAdditionalInformation(AdditionalInformation):
         :return: An instance of CECAdditionalInformation populated with the parsed data.
         :rtype: CECAdditionalInformation
         """
-        res = {
-            "cecdata": float(data_string)
-        }
-        return cls(**res)
-    
+        return cls._parse_default(data_string, ['cecdata'])
+
 
 class ColumnHeightAdditionalInformation(AdditionalInformation):
     """
@@ -5870,7 +5747,7 @@ class ColumnHeightAdditionalInformation(AdditionalInformation):
         :param value: The column height in water, measured in cm.
         :type value: float
         """
-        self.params["column_height_water"] = value
+        self.params["column_height_water"] = float(value)
 
     def set_column_height_sediment(self, value):
         """
@@ -5879,7 +5756,7 @@ class ColumnHeightAdditionalInformation(AdditionalInformation):
         :param value: The column height in sediment, measured in cm.
         :type value: float
         """
-        self.params["column_height_sediment"] = value
+        self.params["column_height_sediment"] = float(value)
 
     # Getter
     def get_column_height_water(self):
@@ -5890,7 +5767,7 @@ class ColumnHeightAdditionalInformation(AdditionalInformation):
         :rtype: float
         """
         return self.params.get("column_height_water", None)
-    
+
     def get_column_height_sediment(self):
         """
         Retrieves the column height in sediment.
@@ -5899,7 +5776,7 @@ class ColumnHeightAdditionalInformation(AdditionalInformation):
         :rtype: float
         """
         return self.params.get("column_height_sediment", None)
-    
+
     # Parser
     @classmethod
     def parse(cls, data_string):
@@ -5911,13 +5788,7 @@ class ColumnHeightAdditionalInformation(AdditionalInformation):
         :return: An instance of ColumnHeightAdditionalInformation populated with the parsed data.
         :rtype: ColumnHeightAdditionalInformation
         """
-        vals = data_string.split(";")
-        res = {
-            "column_height_sediment": float(vals[0]),
-            "column_height_water": float(vals[1])
-        }
-        
-        return cls(**res)
+        return cls._parse_default(data_string, ['column_height_sediment', 'column_height_water'])
 
 
 class FinalCompoundConcentrationAdditionalInformation(AdditionalInformation):
@@ -5938,7 +5809,7 @@ class FinalCompoundConcentrationAdditionalInformation(AdditionalInformation):
         :type value: float
         :raises ValueError: If the provided value is not a float.
         """
-        self.params["finalcompoundconcentration"] = value
+        self.params["finalcompoundconcentration"] = float(value)
 
     # Getter
     def get_finalcompoundconcentration(self):
@@ -5948,7 +5819,7 @@ class FinalCompoundConcentrationAdditionalInformation(AdditionalInformation):
         :return: The final compound concentration value if set; otherwise, None.
         :rtype: float
         """
-        
+
         return self.params.get("finalcompoundconcentration", None)
 
     # Parser
@@ -5962,76 +5833,67 @@ class FinalCompoundConcentrationAdditionalInformation(AdditionalInformation):
         :return: An instance of FinalCompoundConcentrationAdditionalInformation populated with the parsed data.
         :rtype: FinalCompoundConcentrationAdditionalInformation
         """
-        res = {
-            'finalcompoundconcentration': float(data_string)
-        }
-        return cls(**res)
-
-
-class TypeOfAdditionAdditionalInformation(AdditionalInformation):
-    """
-    Creates a Type Of Addition additional information object.
-
-    This class represents additional information about the type of addition in a study.
-    """
-    name = "typeofaddition"
-    mandatories = ['typeofaddition']
-
-    # Setter
-    def set_typeofaddition(self, value):
-        """
-        Sets the type of addition.
-
-        :param value: The type of addition.
-        :type value: str
-        """
-        self.params["typeofaddition"] = value
-
-    # Getter
-    def get_typeofaddition(self):
-        """
-        Gets the type of addition.
-
-        :return: The type of addition, or None if not set.
-        :rtype: str or None
-        """
-        return self.params.get("typeofaddition", None)
-
-    # Parser
-    @classmethod
-    def parse(cls, data_string):
-        """
-        Parses the data_string to create a TypeOfAdditionAdditionalInformation instance.
-
-        :param data_string: A string containing the type of addition.
-        :type data_string: str
-        :return: TypeOfAdditionAdditionalInformation instance.
-        :rtype: TypeOfAdditionAdditionalInformation
-        """
-        return cls._parse_default(data_string, ['typeofaddition'])
+        return cls._parse_default(data_string, ['finalcompoundconcentration'])
 
 
 class TSSAdditionInformation(AdditionalInformation):
+    """
+    Creates a TSS (Total Suspended Solids) additional information object.
+
+    This class represents additional information about the TSS values. Start and/or End values can be set.
+    """
     name = "tts"
     mandatories = ['ttsStart', 'ttsEnd']
 
     # Setter
     def set_ttsStart(self, value):
-        self.params["ttsStart"] = value
+        """
+        Sets the start value of TSS.
+
+        :param value: The start value of TSS, measured in g/L.
+        :type value: float
+        """
+        self.params["ttsStart"] = float(value)
 
     def set_ttsEnd(self, value):
-        self.params["ttsEnd"] = value
+        """
+        Sets the end value of TSS.
+
+        :param value: The end value of TSS, measured in g/L.
+        :type value: float
+        """
+        self.params["ttsEnd"] = float(value)
 
     # Getter
     def get_ttsStart(self):
+        """
+        Gets the start value of TSS.
+
+        :return: The start value of TSS, or None if not set.
+        :rtype: float or None
+        """
         return self.params.get("ttsStart", None)
 
     def get_ttsEnd(self):
+        """
+        Gets the end value of volatile TSS.
+
+        :return: The end value of TSS, or None if not set.
+        :rtype: float or None
+        """
         return self.params.get("ttsEnd", None)
 
     # Parser
     @classmethod
     def parse(cls, data_string):
+        """
+        Parses the data_string to create a TSSAdditionalInformation instance.
+
+        :param data_string: A string containing TSS data in the format 'start_value - end_value'.
+        :type data_string: str
+        :return: TSSAdditionalInformation instance.
+        :rtype: TSSAdditionalInformation
+        """
         res = {
             'ttsStart': data_string.split(' - ')[0],
             'ttsEnd': data_string.split(' - ')[1],
@@ -6047,6 +5909,7 @@ class PurposeOfWWTPAdditionalInformation(AdditionalInformation):
     """
     name = "purposeofwwtp"
     mandatories = ['purposeofwwtp']
+    allowed_values = ["municipal WW", "industrial WW", "hospital WW", "mixed WW (municipal & industrial)", "other"]
 
     # Setter
     def set_purposeofwwtp(self, value):
@@ -6056,11 +5919,10 @@ class PurposeOfWWTPAdditionalInformation(AdditionalInformation):
         :param value: The purpose of the WWTP.
         :type value: str
         """
-        allowed_values = ["municipal WW", "industrial WW", "hospital WW", "mixed WW (municipal & industrial)", "other"]
-        
-        if value not in allowed_values:
-            raise ValueError(f"{value} is not an allowed value. Allowed values are: {', '.join(allowed_values)}")
-        
+
+        if value not in self.allowed_values:
+            raise ValueError(f"{value} is not an allowed value. Allowed values are: {', '.join(self.allowed_values)}")
+
         self.params["purposeofwwtp"] = value
 
     # Getter
@@ -6084,9 +5946,7 @@ class PurposeOfWWTPAdditionalInformation(AdditionalInformation):
         :return: An instance of PurposeOfWWTPAdditionalInformation populated with the parsed data.
         :rtype: PurposeOfWWTPAdditionalInformation
         """
-        res = {"purposeofwwtp": data_string}
-
-        return cls(**res)
+        return cls._parse_default(data_string, ['purposeofwwtp'])
 
 
 class RateConstantAdditionalInformation(AdditionalInformation):
@@ -6097,7 +5957,10 @@ class RateConstantAdditionalInformation(AdditionalInformation):
     If only one is set, the other one takes the same value. 
     """
     name = "rateconstant"
-    mandatories = ["rateconstantorder","rateconstantcorrected"]
+    mandatories = ["rateconstantorder", "rateconstantlower"]
+    allowed_order = ["Zero order", "First order", "Second order", "Pseudo first order"]
+    allowed_corrected = ["", "sorption corrected", "abiotic degradation corrected",
+                         "sorption corrected & abiotic degradation corrected"]
 
     # Setter
     def set_rateconstantlower(self, value):
@@ -6107,7 +5970,7 @@ class RateConstantAdditionalInformation(AdditionalInformation):
         :param value: The lower rate constant value.
         :type value: float
         """
-        self.params["rateconstantlower"] = value
+        self.params["rateconstantlower"] = float(value)
 
     def set_rateconstantupper(self, value):
         """
@@ -6116,25 +5979,32 @@ class RateConstantAdditionalInformation(AdditionalInformation):
         :param value: The upper rate constant value.
         :type value: float
         """
-        self.params["rateconstantupper"] = value
+        self.params["rateconstantupper"] = float(value)
 
     def set_rateconstantorder(self, value):
         """
         Sets the order of the rate constant.
 
-        :param value: The order of the rate constant. Must be either "Zero order", "First order", "Second order","Pseudo first order". 
+        :param value: The order of the rate constant. Must be either "Zero order", "First order",
+            "Second order", "Pseudo first order".
         :type value: str
         """
-        self.params["rateconstantorder"] = value
+        if value.lower().capitalize() not in self.allowed_order:
+            raise ValueError(f"{value} is not a permitted rateconstant order. "
+                             f"Only permitted order are : {self.allowed_order}")
+        self.params["rateconstantorder"] = value.lower().capitalize()
 
     def set_rateconstantcorrected(self, value):
         """
         Sets the corrected rate constant value. 
 
-        :param value: The corrected rate constant value. Must be either "sorption corrected", "abiotic degradation corrected", "sorption corrected & abiotic degradation corrected".
-                    could cause an error otherwise.
+        :param value: The corrected rate constant value. Must be either "", "sorption corrected",
+            "abiotic degradation corrected", "sorption corrected & abiotic degradation corrected".
         :type value: str 
         """
+        if value not in self.allowed_corrected:
+            raise ValueError(f"{value} is not a permitted rateconstant corrected. "
+                             f"Only permitted order are : {self.allowed_corrected}")
         self.params["rateconstantcorrected"] = value
 
     def set_rateconstantcomment(self, value):
@@ -6198,20 +6068,21 @@ class RateConstantAdditionalInformation(AdditionalInformation):
         """
         Parses a string containing rate constant information to initialize an instance.
 
-        :param data_string: A semicolon separated string in the format 'rateconstantorder;rateconstantcorrected;rateconstantlower - rateconstantupper;rateconstantcomment'.
+        :param data_string: A semicolon separated string in the format
+            'rateconstantorder;rateconstantcorrected;rateconstantlower - rateconstantupper;rateconstantcomment'.
         :type data_string: str
         :return: An instance of RateConstantAdditionalInformation populated with the parsed data.
         :rtype: RateConstantAdditionalInformation
         """
         parts = data_string.split(';')
-        lower, upper = (parts[2].split(' - '))
+        lower, upper = parts[2].split(' - ')
 
         res = {
             'rateconstantorder': parts[0],
             'rateconstantcorrected': parts[1],
             'rateconstantlower':  float(lower),
             'rateconstantupper': float(upper),
-            'rateconstantcomment': parts[3] 
+            'rateconstantcomment': parts[3]
         }
 
         return cls(**res)
@@ -6235,8 +6106,7 @@ class SampleLocationAdditionalInformation(AdditionalInformation):
         :type value: str
         """
         self.params["samplelocation"] = value
-        
-    
+
     # Getter
     def get_samplelocation(self):
         """
@@ -6246,7 +6116,7 @@ class SampleLocationAdditionalInformation(AdditionalInformation):
         :rtype: str or None
         """
         return self.params.get("samplelocation", None)
-    
+
     # Parser
     @classmethod
     def parse(cls, data_string):
@@ -6270,14 +6140,15 @@ class SolventForCompoundSolutionAdditionalInformation(AdditionalInformation):
     name = "solventforcompoundsolution"
     mandatories = ['solventforcompoundsolution1']
 
-    valid_solvents = ["MeOH", "EtOH", "H2O", "DMSO", "acetone","H&#8322O"]
+    valid_solvents = ["MeOH", "EtOH", "H2O", "DMSO", "acetone", "H&#8322O"]
 
     # Setter
     def set_solventforcompoundsolution1(self, value):
         """
         Sets the first solvent used for compound solution.
 
-        :param value: The first solvent used for compound solution. Valid solvents are "MeOH", "EtOH", "H2O", "DMSO", "acetone","H&#8322O".
+        :param value: The first solvent used for compound solution. Valid solvents are "MeOH", "EtOH", "H2O",
+            "DMSO", "acetone","H&#8322O".
         :type value: str
         """
         if value not in self.valid_solvents:
@@ -6288,7 +6159,8 @@ class SolventForCompoundSolutionAdditionalInformation(AdditionalInformation):
         """
         Sets the second solvent used for compound solution.
 
-        :param value: The second solvent used for compound solution. Valid solvents are "MeOH", "EtOH", "H2O", "DMSO", "acetone","H&#8322O".
+        :param value: The second solvent used for compound solution. Valid solvents are "MeOH", "EtOH", "H2O",
+            "DMSO", "acetone","H&#8322O".
         :type value: str
         """
         if value not in self.valid_solvents:
@@ -6299,14 +6171,15 @@ class SolventForCompoundSolutionAdditionalInformation(AdditionalInformation):
         """
         Sets the third solvent used for compound solution.
 
-        :param value: The third solvent used for compound solution. Valid solvents are "MeOH", "EtOH", "H2O", "DMSO", "acetone","H&#8322O".
+        :param value: The third solvent used for compound solution. Valid solvents are "MeOH", "EtOH", "H2O",
+            "DMSO", "acetone","H&#8322O".
         :type value: str
         """
         if value not in self.valid_solvents:
             raise ValueError(f"Value must be one of {', '.join(self.valid_solvents)}")
         self.params["solventforcompoundsolution3"] = value
 
-    def set_proportion(self,value):
+    def set_proportion(self, value):
         """
         Sets the ratio of the solvents.
 
@@ -6351,7 +6224,6 @@ class SolventForCompoundSolutionAdditionalInformation(AdditionalInformation):
         :rtype: str
         """
         return self.params.get("proportion")
-    
 
     # Parser
     @classmethod
@@ -6359,30 +6231,19 @@ class SolventForCompoundSolutionAdditionalInformation(AdditionalInformation):
         """
         Parses the data_string to create a SolventForCompoundSolutionAdditionalInformation instance.
 
-        :param data_string: Semicolon-separated string in the format e.g "solventforcompoundsolution1;solventforcompoundsolution2;solventforcompoundsolution3;proportion"
+        :param data_string: Semicolon-separated string in the format e.g
+            "solventforcompoundsolution1;solventforcompoundsolution2;solventforcompoundsolution3;proportion"
         :type data_string: str
         :return: SolventForCompoundSolutionAdditionalInformation instance.
         :rtype: SolventForCompoundSolutionAdditionalInformation
         """
         solvents = data_string.split(';')
-        if len(solvents) == 1:
-            res = {
-            'solventforcompoundsolution1': solvents[0]
-
-            }
-        if len(solvents) == 3:
-            res = {
-                'solventforcompoundsolution1': solvents[0],
-                'solventforcompoundsolution2': solvents[1],
-                'proportion': solvents[2] 
-            }
-        if len(solvents) == 4:
-            res = {
-                'solventforcompoundsolution1': solvents[0],
-                'solventforcompoundsolution2': solvents[1],
-                'solventforcompoundsolution3': solvents[2],
-                'proportion': solvents[3]             }
+        if len(solvents) == 1: return cls._parse_default(data_string, ["solventforcompoundsolution1"])
+        res = {"proportion": solvents.pop(-1)}
+        for i in range(len(solvents)):
+            res['solventforcompoundsolution' + str(i+1)] = solvents[i]
         return cls(**res)
+
 
 class SourceOfLiquidMatrixAdditionalInformation(AdditionalInformation):
     """
@@ -6424,10 +6285,7 @@ class SourceOfLiquidMatrixAdditionalInformation(AdditionalInformation):
         :return: SourceOfLiquidMatrixAdditionalInformation instance.
         :rtype: SourceOfLiquidMatrixAdditionalInformation
         """
-        res = {
-            'sourceofliquidmatrix': data_string,
-        }
-        return cls(**res)
+        return cls._parse_default(data_string, ['sourceofliquidmatrix'])
 
 
 class SourceScenarioAdditionalInformation(AdditionalInformation):
@@ -6470,14 +6328,15 @@ class SourceScenarioAdditionalInformation(AdditionalInformation):
         :return: SourceScenarioAdditionalInformation instance.
         :rtype: SourceScenarioAdditionalInformation
         """
-        res = {"sourcescenario": data_string}
-        return cls(**res)
-    
+        return cls._parse_default(data_string, ['sourcescenario'])
+
+
 class SpikeCompoundAdditionalInformation(AdditionalInformation):
     """
     Creates a Spike Compound additional information object.
 
-    This class represents additional information about spike compounds. It takes either an existing compound or creates a new one using a smile.
+    This class represents additional information about spike compounds. It takes either an existing compound or creates
+    a new one using SMILES.
     """
     name = "spikecompound"
     mandatories = []
@@ -6487,7 +6346,8 @@ class SpikeCompoundAdditionalInformation(AdditionalInformation):
         """
         Sets the spike compound information. 
 
-        :param value: The spike compound information in the form of an existing compound ID or a smile (to create a new compound).
+        :param value: The spike compound information in the form of an existing compound ID or a smile (to create a new
+            compound).
         :type value: str
         """
         self.params["spikeComp"] = value
@@ -6513,8 +6373,8 @@ class SpikeCompoundAdditionalInformation(AdditionalInformation):
         :return: SpikeCompoundAdditionalInformation instance.
         :rtype: SpikeCompoundAdditionalInformation
         """
-        res = {"spikeComp": data_string}
-        return cls(**res)
+        return cls._parse_default(data_string, ['spikeComp'])
+
 
 class SpikeConcentrationAdditionalInformation(AdditionalInformation):
     """
@@ -6523,9 +6383,10 @@ class SpikeConcentrationAdditionalInformation(AdditionalInformation):
     This class represents additional information about spike concentrations.
     """
     name = "spikeconcentration"
-    mandatories = []
+    mandatories = ["spikeConcentration", "spikeconcentrationUnit"]
 
-    valid_units = ['MUG_PER_L', 'MUG_PER_KG_WET', 'MUG_PER_KG_DRY', 'MG_PER_L', 'MG_PER_KG_WET', 'MG_PER_KG_DRY', 'PPM']
+    allowed_units = ['MUG_PER_L', 'MUG_PER_KG_WET', 'MUG_PER_KG_DRY',
+                     'MG_PER_L', 'MG_PER_KG_WET', 'MG_PER_KG_DRY', 'PPM']
 
     # Setter
     def set_spikeConcentration(self, value):
@@ -6535,7 +6396,7 @@ class SpikeConcentrationAdditionalInformation(AdditionalInformation):
         :param value: The spike concentration value.
         :type value: float
         """
-        self.params["spikeConcentration"] = value
+        self.params["spikeConcentration"] = float(value)
 
     def set_spikeconcentrationUnit(self, value):
         """
@@ -6545,9 +6406,10 @@ class SpikeConcentrationAdditionalInformation(AdditionalInformation):
         :param value: The unit for the spike concentration.
         :type value: str
         """
+        if value not in self.allowed_units:
+            raise ValueError(f"The unit set {value} does not belong to the set of allowed units {self.allowed_units}")
         self.params["spikeconcentrationUnit"] = value
-        
-        
+
     # Getter
     def get_spikeConcentration(self):
         """
@@ -6570,9 +6432,7 @@ class SpikeConcentrationAdditionalInformation(AdditionalInformation):
         :return: SpikeConcentrationAdditionalInformation instance.
         :rtype: SpikeConcentrationAdditionalInformation
         """
-        res = {"spikeConcentration": float(data_string)}
- 
-        return cls(**res)
+        return cls._parse_default(data_string, ['spikeConcentration'])
 
 
 class OriginalSludgeAmountAdditionalInformation(AdditionalInformation):
@@ -6592,7 +6452,7 @@ class OriginalSludgeAmountAdditionalInformation(AdditionalInformation):
         :param value: The original sludge amount, measured in mL.
         :type value: float
         """
-        self.params["originalsludgeamount"] = value
+        self.params["originalsludgeamount"] = float(value)
 
     # Getter
     def get_originalsludgeamount(self):
@@ -6615,7 +6475,7 @@ class OriginalSludgeAmountAdditionalInformation(AdditionalInformation):
         :return: An instance of OriginalSludgeAmountAdditionalInformation populated with the parsed data.
         :rtype: OriginalSludgeAmountAdditionalInformation
         """
-        return cls(**{"originalsludgeamount": float(data_string)})
+        return cls._parse_default(data_string, ['originalsludgeamount'])
 
 
 class OxygenContentWaterSedimentAdditionalInformation(AdditionalInformation):
@@ -6623,7 +6483,8 @@ class OxygenContentWaterSedimentAdditionalInformation(AdditionalInformation):
     Creates an additional information object for oxygen content in water and sediment.
 
     This class represents additional information about the oxygen content in water and sediment.
-     Low (minimal) and high (maximal) values can be set. If only either low or high value is set, then both low and high are set to this value.
+    Low (minimal) and high (maximal) values can be set. If only either low or high value is set, then both low and
+    high are set to this value.
     """
     name = "oxygencontent"
     mandatories = []
@@ -6636,7 +6497,7 @@ class OxygenContentWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The low oxygen content in water, measured in mg/L.
         :type value: float
         """
-        self.params["oxygen_content_water_low"] = value
+        self.params["oxygen_content_water_low"] = float(value)
 
     def set_oxygen_content_water_high(self, value):
         """
@@ -6645,8 +6506,8 @@ class OxygenContentWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The high oxygen content in water, measured in mg/L.
         :type value: float
         """
-        self.params["oxygen_content_water_high"] = value
-    
+        self.params["oxygen_content_water_high"] = float(value)
+
     def set_oxygen_content_sediment_low(self, value):
         """
         Sets the low oxygen content in sediment.
@@ -6654,8 +6515,8 @@ class OxygenContentWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The low oxygen content in sediment, given in percentage.
         :type value: float
         """
-        self.params["oxygen_content_sediment_low"] = value
-    
+        self.params["oxygen_content_sediment_low"] = float(value)
+
     def set_oxygen_content_sediment_high(self, value):
         """
         Sets the high oxygen content in sediment.
@@ -6663,7 +6524,7 @@ class OxygenContentWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The high oxygen content in sediment, given in percentage.
         :type value: float
         """
-        self.params["oxygen_content_sediment_high"] = value
+        self.params["oxygen_content_sediment_high"] = float(value)
 
     # Getter
     def get_oxygen_content_water_low(self):
@@ -6683,7 +6544,7 @@ class OxygenContentWaterSedimentAdditionalInformation(AdditionalInformation):
         :rtype: float
         """
         return self.params.get("oxygen_content_water_high", None)
-    
+
     def get_oxygen_content_sediment_low(self):
         """
         Retrieves the low oxygen content in sediment.
@@ -6692,7 +6553,7 @@ class OxygenContentWaterSedimentAdditionalInformation(AdditionalInformation):
         :rtype: float
         """
         return self.params.get("oxygen_content_sediment_low", None)
-    
+
     def get_oxygen_content_sediment_high(self):
         """
         Retrieves the high oxygen content in sediment.
@@ -6716,18 +6577,10 @@ class OxygenContentWaterSedimentAdditionalInformation(AdditionalInformation):
         parts = data_string.split(";")
         res = {}
 
-        for part in parts:
-            if part == 'NA':
-                res["oxygen_content_water_low"] = 'NA'
-                res["oxygen_content_water_high"] = 'NA'
-                res["oxygen_content_sediment_low"] = 'NA'
-                res["oxygen_content_sediment_high"] = 'NA'
-            else:
-                water_part, sediment_part = part.split(" - ")
-                res["oxygen_content_water_low"] = float(water_part) if water_part != "NA" else 'NA'
-                res["oxygen_content_water_high"] = float(water_part) if water_part != "NA" else 'NA'
-                res["oxygen_content_sediment_low"] = float(sediment_part) if sediment_part != "NA" else 'NA'
-                res["oxygen_content_sediment_high"] = float(sediment_part) if sediment_part != "NA" else 'NA'
+        if parts[0] != 'NA':
+            res["oxygen_content_water_low"], res["oxygen_content_water_high"] = parts[0].split(" - ")
+        if parts[1] != 'NA':
+            res["oxygen_content_sediment_low"], res["oxygen_content_sediment_high"] = parts[1].split(" - ")
 
         return cls(**res)
 
@@ -6740,15 +6593,19 @@ class TypeOfAerationAdditionalInformation(AdditionalInformation):
     """
     name = "typeofaeration"
     mandatories = ['typeofaeration']
+    allowed_values = ["stirring", "shaking", "bubbling air", "bubbling air and stirring", "other"]
 
     # Setter
     def set_typeofaeration(self, value):
         """
-        Sets the type of aeration. Must be either "stirring", "shaking", "bubbling air", "bubbling air and stirring", "other".
+        Sets the type of aeration. Must be either "stirring", "shaking", "bubbling air", "bubbling air and stirring",
+        "other".
 
         :param value: The type of aeration.
         :type value: str
         """
+        if value not in self.allowed_values:
+            raise ValueError(f"The value {value} is not in the set of allowed values {self.allowed_values}")
         self.params["typeofaeration"] = value
 
     # Getter
@@ -6775,7 +6632,6 @@ class TypeOfAerationAdditionalInformation(AdditionalInformation):
         return cls._parse_default(data_string, ['typeofaeration'])
 
 
-
 class AcidityAdditionalInformation(AdditionalInformation):
     """
     Creates an acidity additional information object.
@@ -6784,7 +6640,8 @@ class AcidityAdditionalInformation(AdditionalInformation):
     including the low pH, high pH, and type of acidity.
     """
     name = "acidity"
-    mandatories = ['lowPh', 'highPh']
+    mandatories = ['lowPh']
+    allowed_values = ['', 'WATER', 'KCL', 'CACL2', 'CACL&#8322']
 
     # Setter
     def set_lowPh(self, value):
@@ -6794,7 +6651,7 @@ class AcidityAdditionalInformation(AdditionalInformation):
         :param value: The low pH value.
         :type value: float
         """
-        self.params["lowPh"] = value
+        self.params["lowPh"] = float(value)
 
     def set_highPh(self, value):
         """
@@ -6803,7 +6660,7 @@ class AcidityAdditionalInformation(AdditionalInformation):
         :param value: The high pH value.
         :type value: float
         """
-        self.params["highPh"] = value
+        self.params["highPh"] = float(value)
 
     def set_acidityType(self, value):
         """
@@ -6812,7 +6669,9 @@ class AcidityAdditionalInformation(AdditionalInformation):
         :param value: The type of acidity. Either '','WATER', 'KCL', 'CACL2'.
         :type value: str
         """
-        self.params["acidityType"] = value
+        if value.upper() not in self.allowed_values:
+            raise ValueError(f"The value {value} is not in the set of allowed values {self.allowed_values}")
+        self.params["acidityType"] = value.upper()
 
     # Getter
     def get_lowPh(self):
@@ -6876,7 +6735,8 @@ class AcidityWaterSedimentAdditionalInformation(AdditionalInformation):
     It is made especially for water-sediment studies
     """
     name = "acidity_ws"
-    mandatories = ['pH_water_low', 'pH_water_high', 'pH_sediment_low', 'pH_sediment_high']
+    mandatories = []
+    allowed_values = ['', 'WATER', 'KCL', 'CACL2', 'CACL&#8322']
 
     # Setter
     def set_pH_water_low(self, value):
@@ -6886,7 +6746,7 @@ class AcidityWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The low pH value for water.
         :type value: float
         """
-        self.params["pH_water_low"] = value
+        self.params["pH_water_low"] = float(value)
 
     def set_pH_water_high(self, value):
         """
@@ -6895,7 +6755,7 @@ class AcidityWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The high pH value for water.
         :type value: float
         """
-        self.params["pH_water_high"] = value
+        self.params["pH_water_high"] = float(value)
 
     def set_pH_sediment_low(self, value):
         """
@@ -6904,7 +6764,7 @@ class AcidityWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The low pH value for sediment.
         :type value: float
         """
-        self.params["pH_sediment_low"] = value
+        self.params["pH_sediment_low"] = float(value)
 
     def set_pH_sediment_high(self, value):
         """
@@ -6913,7 +6773,7 @@ class AcidityWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The high pH value for sediment.
         :type value: float
         """
-        self.params["pH_sediment_high"] = value
+        self.params["pH_sediment_high"] = float(value)
 
     def set_acidityType(self, value):
         """
@@ -6922,7 +6782,7 @@ class AcidityWaterSedimentAdditionalInformation(AdditionalInformation):
         :param value: The type of acidity. Possible values are '', 'WATER', 'KCL', 'CACL2'.
         :type value: str
         """
-        if value.upper() not in ['', 'WATER', 'KCL', 'CACL2']:
+        if value.upper() not in self.allowed_values:
             raise ValueError(f"{value} is not allowed as acidityType.")
         self.params["acidityType"] = value.upper()
 
@@ -6944,7 +6804,7 @@ class AcidityWaterSedimentAdditionalInformation(AdditionalInformation):
         :rtype: float
         """
         return self.params.get("pH_water_high", None)
-    
+
     def get_pH_sediment_low(self):
         """
         Retrieves the low pH value for sediment.
@@ -6978,21 +6838,23 @@ class AcidityWaterSedimentAdditionalInformation(AdditionalInformation):
         """
         Parses a string containing acidity information for water and sediment to initialize an instance.
 
-        :param data_string: A semicolon-separated string in the form 'pH_water_low - pH_water_high;pH_sediment_low - pH_sediment_high;acidityType'
+        :param data_string: A semicolon-separated string in the form 'pH_water_low - pH_water_high;pH_sediment_low -
+            pH_sediment_high;acidityType'
         :type data_string: str
         :return: An instance of AcidityWaterSedimentAdditionalInformation populated with the parsed data.
         :rtype: AcidityWaterSedimentAdditionalInformation
         """
         parts = data_string.split(';')
-        valw = parts[0].split(' - ')
-        vals = parts[1].split(' - ')
+        res = {}
+        if parts[0] != " - ":
+            valw = parts[0].split(' - ')
+            res['pH_water_low'] = float(valw[0])
+            res['pH_water_high'] = float(valw[1]) if len(valw) > 1 else float(valw[0])
 
-        res = {
-            'pH_water_low': float(valw[0]),
-            'pH_water_high': float(valw[1]) if len(valw) > 1 else float(valw[0]),
-            'pH_sediment_low': float(vals[0]),
-            'pH_sediment_high': float(vals[1]) if len(vals) > 1 else float(vals[0])
-        }
+        if parts[1] != " - ":
+            vals = parts[1].split(' - ')
+            res['pH_sediment_low'] = float(vals[0])
+            res['pH_sediment_high'] = float(vals[1]) if len(vals) > 1 else float(vals[0])
 
         if len(parts) > 2:
             res['acidityType'] = parts[2].upper()
@@ -7008,6 +6870,8 @@ class RedoxAdditionalInformation(AdditionalInformation):
     """
     name = "redox"
     mandatories = ['redoxType']
+    allowed_types = ['aerob', 'anaerob', 'anaerob: iron-reducing', 'anaerob: sulfate-reducing',
+                     'anaerob: methanogenic conditions', 'oxic', 'nitrate-reducing']
 
     # Setter
     def set_redoxType(self, value):
@@ -7017,10 +6881,8 @@ class RedoxAdditionalInformation(AdditionalInformation):
         :param value: The value of redoxType.
         :type value: str
         """
-        valid_types = ['aerob', 'anaerob', 'anaerob: iron-reducing', 'anaerob: sulfate-reducing',
-                       'anaerob: methanogenic conditions', 'oxic', 'nitrate-reducing']
-        if value.lower() not in map(str.lower, valid_types):
-            raise ValueError(f"{value} is not allowed as redoxType. Valid types: {', '.join(valid_types)}")
+        if value.lower() not in self.allowed_types:
+            raise ValueError(f"{value} is not allowed as redoxType. Valid types: {self.allowed_types}")
         self.params["redoxType"] = value
 
     # Getter
@@ -7064,7 +6926,7 @@ class RedoxPotentialAdditionalInformation(AdditionalInformation):
         :param value: The low potential value for water, measured in mV.
         :type value: float
         """
-        self.params["lowPotentialWater"] = value
+        self.params["lowPotentialWater"] = float(value)
 
     def set_highPotentialWater(self, value):
         """
@@ -7073,7 +6935,7 @@ class RedoxPotentialAdditionalInformation(AdditionalInformation):
         :param value: The high potential value for water, measured in mV.
         :type value: float
         """
-        self.params["highPotentialWater"] = value
+        self.params["highPotentialWater"] = float(value)
 
     def set_lowPotentialSediment(self, value):
         """
@@ -7082,7 +6944,7 @@ class RedoxPotentialAdditionalInformation(AdditionalInformation):
         :param value: The low potential value for sediment, measured in mV.
         :type value: float
         """
-        self.params["lowPotentialSediment"] = value
+        self.params["lowPotentialSediment"] = float(value)
 
     def set_highPotentialSediment(self, value):
         """
@@ -7091,7 +6953,7 @@ class RedoxPotentialAdditionalInformation(AdditionalInformation):
         :param value: The high potential value for sediment, measured in mV.
         :type value: float
         """
-        self.params["highPotentialSediment"] = value
+        self.params["highPotentialSediment"] = float(value)
 
     # Getter
     def get_lowPotentialWater(self):
@@ -7129,14 +6991,15 @@ class RedoxPotentialAdditionalInformation(AdditionalInformation):
         :rtype: float or None
         """
         return self.params.get("highPotentialSediment")
-    
+
     # Parser
     @classmethod
     def parse(cls, data_string):
         """
         Parses the data_string to create a RedoxPotentialAdditionalInformation instance.
 
-        :param data_string: a semicolon separated string in the format 'lowPotentialWater - highPotentialWater;lowPotentialSediment - highPotentialSediment'
+        :param data_string: a semicolon separated string in the format 'lowPotentialWater -
+            highPotentialWater;lowPotentialSediment - highPotentialSediment'
         :type data_string: str
         :return: RedoxPotentialAdditionalInformation instance.
         :rtype: RedoxPotentialAdditionalInformation
@@ -7146,11 +7009,11 @@ class RedoxPotentialAdditionalInformation(AdditionalInformation):
         if not parts[0] in ["NA"]:
             res["lowPotentialWater"] = float(parts[0].split(" - ")[0])
             res["highPotentialWater"] = float(parts[0].split(" - ")[1])
-        
+
         if not parts[1] in ["NA"]:
             res["lowPotentialSediment"] = float(parts[1].split(" - ")[0])
             res["highPotentialSediment"] = float(parts[1].split(" - ")[1])
-        
+
         return cls(**res)
 
 
@@ -7172,7 +7035,7 @@ class ReferenceAdditionalInformation(AdditionalInformation):
         :type value: str
         """
         self.params["reference"] = value
-    
+
     # Getter
     def get_reference(self):
         """
@@ -7204,7 +7067,7 @@ class SamplingDepthAdditionalInformation(AdditionalInformation):
     This class represents additional information about sampling depths.
     """
     name = "samplingdepth"
-    mandatories = []
+    mandatories = ["set_samplingDepthMin"]
 
     # Setter
     def set_samplingDepthMin(self, value):
@@ -7214,7 +7077,7 @@ class SamplingDepthAdditionalInformation(AdditionalInformation):
         :param value: The minimum sampling depth, measured in cm.
         :type value: float
         """
-        self.params["samplingDepthMin"] = value
+        self.params["samplingDepthMin"] = float(value)
 
     def set_samplingDepthMax(self, value):
         """
@@ -7223,7 +7086,7 @@ class SamplingDepthAdditionalInformation(AdditionalInformation):
         :param value: The maximum sampling depth, measured in cm.
         :type value: float
         """
-        self.params["samplingDepthMax"] = value
+        self.params["samplingDepthMax"] = float(value)
 
     # Getter    
     def get_samplingDepthMin(self):
@@ -7243,7 +7106,7 @@ class SamplingDepthAdditionalInformation(AdditionalInformation):
         :rtype: float or None
         """
         return self.params.get("samplingDepthMax")
-    
+
     # Parser
     @classmethod
     def parse(cls, data_string):
@@ -7268,6 +7131,7 @@ class SamplingDepthAdditionalInformation(AdditionalInformation):
             }
         return cls(**res)
 
+
 class SedimentPorosityAdditionalInformation(AdditionalInformation):
     """
     Creates a sediment porosity additional information object.
@@ -7283,17 +7147,17 @@ class SedimentPorosityAdditionalInformation(AdditionalInformation):
         Sets the sediment porosity.
 
         :param value: The sediment porosity.
-        :type value: str or float
+        :type value: float
         """
-        self.params["sedimentporosity"] = value
-    
+        self.params["sedimentporosity"] = float(value)
+
     # Getter
     def get_sedimentporosity(self):
         """
         Get the sediment porosity.
 
         :return: The sediment porosity, or None if not set.
-        :rtype: str or float or None
+        :rtype: str or None
         """
         return self.params.get("sedimentporosity")
 
@@ -7308,13 +7172,4 @@ class SedimentPorosityAdditionalInformation(AdditionalInformation):
         :return: SedimentPorosityAdditionalInformation instance.
         :rtype: SedimentPorosityAdditionalInformation
         """
-        res = {"sedimentporosity": float(data_string)}
-
-        return cls(**res)
-
-
-
-    
-
-
-   
+        return cls._parse_default(data_string, ['sedimentporosity'])
