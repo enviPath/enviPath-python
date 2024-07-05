@@ -4483,7 +4483,7 @@ class HalfLifeAdditionalInformation(AdditionalInformation):
         :return: The fit value of the half-life if set; otherwise, None.
         :rtype: str
         """
-        return self.params.get("fit", None)
+        return self.params.get("fit", False)
 
     # Parser
     @classmethod
@@ -4744,27 +4744,27 @@ class HumidityAdditionalInformation(AdditionalInformation):
     This class represents additional information about experimental humidity.
     """
     name = "humidity"
-    mandatories = ["experimentalHumidity"]
+    mandatories = ["expHumid"]
 
     # Setter
-    def set_experimentalHumidity(self, value):
+    def set_expHumid(self, value):
         """
         Sets the experimental humidity value.
 
         :param value: The experimental humidity value, represented as a percentage.
         :type value: float
         """
-        self.params["experimentalHumidity"] = float(value)
+        self.params["expHumid"] = float(value)
 
     # Getter
-    def get_experimentalHumidity(self):
+    def get_expHumid(self):
         """
         Retrieves the experimental humidity value.
 
         :return: The experimental humidity value if set; otherwise, None.
         :rtype: float
         """
-        return self.params.get("experimentalHumidity", None)
+        return self.params.get("expHumid", None)
 
     # Parser
     @classmethod
@@ -4777,7 +4777,7 @@ class HumidityAdditionalInformation(AdditionalInformation):
         :return: An instance of HumidityAdditionalInformation populated with the parsed data.
         :rtype: HumidityAdditionalInformation
         """
-        return cls._parse_default(data_string, ['experimentalHumidity'])
+        return cls._parse_default(data_string, ['expHumid'])
 
 
 class InitialMassSedimentAdditionalInformation(AdditionalInformation):
@@ -4788,6 +4788,7 @@ class InitialMassSedimentAdditionalInformation(AdditionalInformation):
     """
     name = "initialmasssediment"
     mandatories = ["initial_mass_sediment", "wet_or_dry"]
+    allowed_values = ['WET', 'DRY']
 
     # Setter
     def set_initial_mass_sediment(self, value):
@@ -4806,9 +4807,9 @@ class InitialMassSedimentAdditionalInformation(AdditionalInformation):
         :param value: The state of the sediment (either 'WET' or 'DRY').
         :type value: str
         """
-        if value.lower() not in ['wet', 'dry']:
+        if value.upper() not in self.allowed_values:
             raise ValueError(f"{value} is not allowed. Must be either wet or dry")
-        self.params["wet_or_dry"] = value.lower()
+        self.params["wet_or_dry"] = value.upper()
 
     # Getter
     def get_initial_mass_sediment(self):
@@ -6140,7 +6141,8 @@ class SolventForCompoundSolutionAdditionalInformation(AdditionalInformation):
     name = "solventforcompoundsolution"
     mandatories = ['solventforcompoundsolution1']
 
-    valid_solvents = ["MeOH", "EtOH", "H2O", "DMSO", "acetone", "H&#8322O"]
+    valid_solvents = {"MEOH": "MeOH", "ETOH": "EtOH", "H2O": "H2O", "DMSO": "DMSO",
+                      "ACETONE": "ACETONE", "H&#8322O": "H&#8322O"}
 
     # Setter
     def set_solventforcompoundsolution1(self, value):
@@ -6151,9 +6153,9 @@ class SolventForCompoundSolutionAdditionalInformation(AdditionalInformation):
             "DMSO", "acetone","H&#8322O".
         :type value: str
         """
-        if value not in self.valid_solvents:
-            raise ValueError(f"Value must be one of {', '.join(self.valid_solvents)}. Not {value}")
-        self.params["solventforcompoundsolution1"] = value
+        if value.upper() not in self.valid_solvents.keys():
+            raise ValueError(f"{value} must be one of {', '.join(self.valid_solvents.values())}.")
+        self.params["solventforcompoundsolution1"] = self.valid_solvents[value.upper()]
 
     def set_solventforcompoundsolution2(self, value):
         """
@@ -6163,9 +6165,9 @@ class SolventForCompoundSolutionAdditionalInformation(AdditionalInformation):
             "DMSO", "acetone","H&#8322O".
         :type value: str
         """
-        if value not in self.valid_solvents:
-            raise ValueError(f"Value must be one of {', '.join(self.valid_solvents)}")
-        self.params["solventforcompoundsolution2"] = value
+        if value.upper() not in self.valid_solvents.keys():
+            raise ValueError(f"{value} must be one of {', '.join(self.valid_solvents.values())}")
+        self.params["solventforcompoundsolution2"] = self.valid_solvents[value.upper()]
 
     def set_solventforcompoundsolution3(self, value):
         """
@@ -6175,9 +6177,9 @@ class SolventForCompoundSolutionAdditionalInformation(AdditionalInformation):
             "DMSO", "acetone","H&#8322O".
         :type value: str
         """
-        if value not in self.valid_solvents:
-            raise ValueError(f"Value must be one of {', '.join(self.valid_solvents)}")
-        self.params["solventforcompoundsolution3"] = value
+        if value.upper() not in self.valid_solvents.keys():
+            raise ValueError(f"{value} must be one of {', '.join(self.valid_solvents.values())}")
+        self.params["solventforcompoundsolution3"] = self.valid_solvents[value.upper()]
 
     def set_proportion(self, value):
         """
