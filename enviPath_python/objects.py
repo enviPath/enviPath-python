@@ -79,12 +79,11 @@ class enviPathObject(ABC):
         :param field: The field of interest.
         :return: The value of the field.
         """
-        if not self.loaded and not hasattr(self, field):
+        if not self.loaded:
             obj_fields = self._load()
             for k, v in obj_fields.items():
                 setattr(self, k, v)
                 self.loaded = True
-
         if not hasattr(self, field):
             raise ValueError('{} has no property {}'.format(self.get_type(), field))
 
@@ -777,6 +776,7 @@ class Scenario(enviPathObject):
         scenario_payload = {}
 
         if len(additional_information):
+            self.loaded = False
             scenario_payload['adInfoTypes[]'] = ','.join([ai.name for ai in additional_information])
             for ai in additional_information:
                 # Will raise an error if invalid
@@ -789,7 +789,6 @@ class Scenario(enviPathObject):
 
         res = self.requester.post_request(self.get_id(), payload=scenario_payload, allow_redirects=False)
         res.raise_for_status()
-        return Scenario(self.requester, id=self.id)
 
     def has_referring_scenario(self) -> bool:
         """
@@ -3055,10 +3054,9 @@ class MinorMajorAdditionalInformation(AdditionalInformation):
         :param value: a text value similar to 'minor' or 'major'
         :type value: str
         """
-        if value.lower() in self.allowed_values:
-            self.params["radiomin"] = value.lower().capitalize()
-        else:
-            raise ValueError(f"Value is not one the allowed_values {self.allowed_values}")
+        if value.lower() not in self.allowed_values:
+            raise ValueError(f"{value} is not one the allowed_values {self.allowed_values}")
+        self.params["radiomin"] = value.lower().capitalize()
 
     # Getter
     def get_radiomin(self):
@@ -3668,7 +3666,7 @@ class NutrientsAdditionalInformation(AdditionalInformation):
         :return: An instance of NutrientsAdditionalInformation populated with the parsed data.
         :rtype: NutrientsAdditionalInformation
         """
-        return cls._parse_default(data_string, ['additionofnutrients'])
+        return cls(**{'additionofnutrients': data_string})
 
 
 class OMContentAdditionalInformation(AdditionalInformation):
@@ -6222,7 +6220,7 @@ class SourceOfLiquidMatrixAdditionalInformation(AdditionalInformation):
         :return: SourceOfLiquidMatrixAdditionalInformation instance.
         :rtype: SourceOfLiquidMatrixAdditionalInformation
         """
-        return cls._parse_default(data_string, ['sourceofliquidmatrix'])
+        return cls(**{'sourceofliquidmatrix': data_string})
 
 
 class SourceScenarioAdditionalInformation(AdditionalInformation):
