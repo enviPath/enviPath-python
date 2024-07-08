@@ -789,6 +789,7 @@ class Scenario(enviPathObject):
 
         res = self.requester.post_request(self.get_id(), payload=scenario_payload, allow_redirects=False)
         res.raise_for_status()
+        return Scenario(self.requester, id=self.id)
 
     def has_referring_scenario(self) -> bool:
         """
@@ -2922,7 +2923,7 @@ class AerationTypeAdditionalInformation(AdditionalInformation):
     """
     name = "aerationtype"
     mandatories = ['aerationtype']
-    allowed_types = ["stirring", "shaking", "bubbling air", "bubbling air and stiring", "other"]
+    allowed_types = ["stirring", "shaking", "bubbling air", "bubbling air and stirring", "other"]
 
     # Setter
     def set_aerationtype(self, value):
@@ -3578,72 +3579,6 @@ class TotalOrganicCarbonAdditionalInformation(AdditionalInformation):
         :rtype: TotalOrganicCarbonAdditionalInformation
         """
         return cls._parse_default(data_string, ["totalorganiccarbonStart", "totalorganiccarbonEnd"])
-
-
-class TSSAdditionalInformation(AdditionalInformation):
-    """
-    Creates a TSS (Total Suspended Solids) additional information object.
-
-    This class represents additional information about Total Suspended Solids concentration (TSS) values.
-    """
-    name = "tts"
-    mandatories = ['ttsStart', 'ttsEnd']
-
-    # Setter
-    def set_ttsStart(self, value):
-        """
-        Sets the start value for tts.
-
-        :param value: The start value for tts, measured in g/L.
-        :type value: float
-        """
-        self.params["ttsStart"] = float(value)
-
-    def set_ttsEnd(self, value):
-        """
-        Sets the end value for tts.
-
-        :param value: The end value for tts, measured in g/L.
-        :type value: float
-        """
-        self.params["ttsEnd"] = float(value)
-
-    # Getter
-    def get_ttsStart(self):
-        """
-        Gets the start value for tts.
-
-        :return: The start value for tts if set; otherwise, None.
-        :rtype: float or None
-        """
-        return self.params.get("ttsStart", None)
-
-    def get_ttsEnd(self):
-        """
-        Gets the end value for tts.
-
-        :return: The end value for tts if set; otherwise, None.
-        :rtype: float or None
-        """
-        return self.params.get("ttsEnd", None)
-
-    # Parser
-    @classmethod
-    def parse(cls, data_string):
-        """
-        Parses the data_string to create a ttsAdditionalInformation instance.
-
-        :param data_string: A hyphen-separated string in the format 'ttsStart - ttsEnd'.
-        :type data_string: str
-        :return: ttsAdditionalInformation instance.
-        :rtype: ttsAdditionalInformation
-        """
-        parts = data_string.split(' - ')
-        res = {
-            'ttsStart': float(parts[0]),
-            'ttsEnd': float(parts[1]),
-        }
-        return cls(**res)
 
 
 class TypeOfAdditionAdditionalInformation(AdditionalInformation):
@@ -5837,7 +5772,7 @@ class FinalCompoundConcentrationAdditionalInformation(AdditionalInformation):
         return cls._parse_default(data_string, ['finalcompoundconcentration'])
 
 
-class TSSAdditionInformation(AdditionalInformation):
+class TSSAdditionalInformation(AdditionalInformation):
     """
     Creates a TSS (Total Suspended Solids) additional information object.
 
@@ -6141,7 +6076,7 @@ class SolventForCompoundSolutionAdditionalInformation(AdditionalInformation):
     name = "solventforcompoundsolution"
     mandatories = ['solventforcompoundsolution1']
 
-    valid_solvents = {"MEOH": "MeOH", "ETOH": "EtOH", "H2O": "H2O", "DMSO": "DMSO",
+    valid_solvents = {"MEOH": "MeOH", "ETOH": "EtOH", "H2O": "H&#8322O", "DMSO": "DMSO",
                       "ACETONE": "ACETONE", "H&#8322O": "H&#8322O"}
 
     # Setter
@@ -6154,7 +6089,7 @@ class SolventForCompoundSolutionAdditionalInformation(AdditionalInformation):
         :type value: str
         """
         if value.upper() not in self.valid_solvents.keys():
-            raise ValueError(f"{value} must be one of {', '.join(self.valid_solvents.values())}.")
+            raise ValueError(f"{value} must be one of {', '.join(self.valid_solvents.keys())}.")
         self.params["solventforcompoundsolution1"] = self.valid_solvents[value.upper()]
 
     def set_solventforcompoundsolution2(self, value):
@@ -6166,7 +6101,7 @@ class SolventForCompoundSolutionAdditionalInformation(AdditionalInformation):
         :type value: str
         """
         if value.upper() not in self.valid_solvents.keys():
-            raise ValueError(f"{value} must be one of {', '.join(self.valid_solvents.values())}")
+            raise ValueError(f"{value} must be one of {', '.join(self.valid_solvents.keys())}")
         self.params["solventforcompoundsolution2"] = self.valid_solvents[value.upper()]
 
     def set_solventforcompoundsolution3(self, value):
@@ -6178,7 +6113,7 @@ class SolventForCompoundSolutionAdditionalInformation(AdditionalInformation):
         :type value: str
         """
         if value.upper() not in self.valid_solvents.keys():
-            raise ValueError(f"{value} must be one of {', '.join(self.valid_solvents.values())}")
+            raise ValueError(f"{value} must be one of {', '.join(self.valid_solvents.keys())}")
         self.params["solventforcompoundsolution3"] = self.valid_solvents[value.upper()]
 
     def set_proportion(self, value):
@@ -6387,8 +6322,10 @@ class SpikeConcentrationAdditionalInformation(AdditionalInformation):
     name = "spikeconcentration"
     mandatories = ["spikeConcentration", "spikeconcentrationUnit"]
 
-    allowed_units = ['MUG_PER_L', 'MUG_PER_KG_WET', 'MUG_PER_KG_DRY',
-                     'MG_PER_L', 'MG_PER_KG_WET', 'MG_PER_KG_DRY', 'PPM']
+    map_units = {
+        '&#956g/L': 'MUG_PER_L', '&#956g/kg wet soil' : 'MUG_PER_KG_WET', '&#956g/kg dry soil': 'MUG_PER_KG_DRY',
+        'mg/L': 'MG_PER_L', 'mg/kg wet soil': 'MG_PER_KG_WET', 'mg/kg dry soil': 'MG_PER_KG_DRY', 'ppm': 'PPM'
+    }
 
     # Setter
     def set_spikeConcentration(self, value):
@@ -6408,8 +6345,9 @@ class SpikeConcentrationAdditionalInformation(AdditionalInformation):
         :param value: The unit for the spike concentration.
         :type value: str
         """
-        if value not in self.allowed_units:
-            raise ValueError(f"The unit set {value} does not belong to the set of allowed units {self.allowed_units}")
+        if value not in self.map_units.values():
+            raise ValueError(f"The unit set {value} does not belong to the set "
+                             f"of allowed units {self.map_units.values()}")
         self.params["spikeconcentrationUnit"] = value
 
     # Getter
@@ -6421,6 +6359,9 @@ class SpikeConcentrationAdditionalInformation(AdditionalInformation):
         :rtype: float or None
         """
         return self.params.get("spikeConcentration", None)
+
+    def get_unit(self):
+        return self.map_units[super().get_unit()]
 
     # Parser
     @classmethod
@@ -7069,7 +7010,7 @@ class SamplingDepthAdditionalInformation(AdditionalInformation):
     This class represents additional information about sampling depths.
     """
     name = "samplingdepth"
-    mandatories = ["set_samplingDepthMin"]
+    mandatories = ["samplingDepthMin"]
 
     # Setter
     def set_samplingDepthMin(self, value):
