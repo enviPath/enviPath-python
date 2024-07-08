@@ -771,7 +771,8 @@ class Scenario(enviPathObject):
         Updates an existing scenario
 
         :param additional_information: Scenario data content provided as a AdditionalInformation object
-        :return:
+        :return: The updated scenario
+        :rtype: Scenario
         """
         scenario_payload = {}
 
