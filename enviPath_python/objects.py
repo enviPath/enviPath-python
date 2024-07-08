@@ -2630,7 +2630,7 @@ class OxygenDemandAdditionalInformation(AdditionalInformation):
     including the type, influent, and effluent values.
     """
     name = "oxygendemand"
-    mandatories = ['oxygendemandType', 'oxygendemandInfluent', 'oxygendemandEffluent']
+    mandatories = ['oxygendemandType']
     allowed_types = ['Chemical Oxygen Demand (COD)', 'Biological Oxygen Demand (BOD5)']
 
     # Setter
@@ -2706,11 +2706,16 @@ class OxygenDemandAdditionalInformation(AdditionalInformation):
         :return: The additional information object instantiated with the parsed data.
         :rtype: OxygenDemandAdditionalInformation
         """
-        res = {
-            'oxygendemandType': data_string.split(';')[0],
-            'oxygendemandInfluent': data_string.split(';')[1],
-            'oxygendemandEffluent': data_string.split(';')[2],
-        }
+        parts = data_string.split(';')
+
+        res = {'oxygendemandType': parts[0]}
+
+        if len(parts) > 1 and parts[1] != '':
+            res['oxygendemandInfluent'] = float(parts[1])
+
+        if len(parts) > 2 and parts[2] != '':
+            res['oxygendemandEffluent'] = float(parts[2])
+
         return cls(**res)
 
 
@@ -5328,7 +5333,7 @@ class BioreactorAdditionalInformation(AdditionalInformation):
     This class represents additional information about a bioreactor, including its type and size.
     """
     name = "bioreactor"
-    mandatories = ['bioreactortype', 'bioreactorsize']
+    mandatories = ['bioreactortype']
 
     # Setter
     def set_bioreactortype(self, value):
@@ -5389,8 +5394,8 @@ class BioreactorAdditionalInformation(AdditionalInformation):
         else:
             parts = data_string.split(', ')
             res['bioreactortype'] = parts[0]
-            res['bioreactorsize'] = parts[1]
-
+            if parts[1] not in ['', 'NA']:
+                res['bioreactorsize'] = parts[1]
         return cls(**res)
 
 
