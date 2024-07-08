@@ -4691,6 +4691,15 @@ class HumidityAdditionalInformation(AdditionalInformation):
         """
         self.params["expHumid"] = float(value)
 
+    def set_humConditions(self, value):
+        """
+        Sets the experimental humidity conditions.
+
+        :param value: The value for experimental conditions.
+        :type value: str
+        """
+        self.params["humConditions"] = value
+
     # Getter
     def get_expHumid(self):
         """
@@ -4700,6 +4709,15 @@ class HumidityAdditionalInformation(AdditionalInformation):
         :rtype: float
         """
         return self.params.get("expHumid", None)
+
+    def get_humConditions(self):
+        """
+        Retrieves the experimental humidity conditions.
+
+        :return: The experimental conditions value if set; otherwise, None.
+        :rtype: str
+        """
+        return self.params.get("humConditions", None)
 
     # Parser
     @classmethod
@@ -4712,7 +4730,11 @@ class HumidityAdditionalInformation(AdditionalInformation):
         :return: An instance of HumidityAdditionalInformation populated with the parsed data.
         :rtype: HumidityAdditionalInformation
         """
-        return cls._parse_default(data_string, ['expHumid'])
+        parts = data_string.split(' - ')
+        res = {'expHumid': parts[0]}
+        if len(parts) > 1:
+            res["humConditions"] = parts[1]
+        return cls(**res)
 
 
 class InitialMassSedimentAdditionalInformation(AdditionalInformation):
