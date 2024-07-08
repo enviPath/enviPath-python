@@ -789,6 +789,7 @@ class Scenario(enviPathObject):
 
         res = self.requester.post_request(self.get_id(), payload=scenario_payload, allow_redirects=False)
         res.raise_for_status()
+        return Scenario(self.requester, id=self.id)
 
     def has_referring_scenario(self) -> bool:
         """
