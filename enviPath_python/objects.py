@@ -4314,6 +4314,7 @@ class HalfLifeAdditionalInformation(AdditionalInformation):
     """
     name = "halflife"
     mandatories = ['lower', 'upper']
+    allowed_values = ['', 'reported', 'self-calculated', 'neither']
 
     # Setter
     def set_lower(self, value):
@@ -4350,6 +4351,8 @@ class HalfLifeAdditionalInformation(AdditionalInformation):
         :param value: The source of the half-life information.
         :type value: str
         """
+        if value not in self.allowed_values:
+            raise ValueError(f"{value} is not an allowed source value")
         self.params["source"] = value
 
     def set_firstOrder(self, value):
