@@ -4552,7 +4552,7 @@ class HalfLifeWaterSedimentAdditionalInformation(AdditionalInformation):
         :type value: str
         """
         if value not in self.allowed_values:
-            raise ValueError(f"{value} is not an allowd source value")
+            raise ValueError(f"{value} is not an allowed source value")
         self.params["source_ws"] = value
 
     # Getter
@@ -6264,9 +6264,9 @@ class SourceScenarioAdditionalInformation(AdditionalInformation):
     # Setter
     def set_sourcescenario(self, value):
         """
-        Sets the source scenario.
+        Sets the source scenarios.
 
-        :param value: The source scenario as scenario ID.
+        :param value: A comma-separated string joining all the URLs of the source scenarios.
         :type value: str
         """
         self.params["sourcescenario"] = value
@@ -6274,7 +6274,7 @@ class SourceScenarioAdditionalInformation(AdditionalInformation):
     # Getter
     def get_sourcescenario(self):
         """
-        Gets the source scenario.
+        Gets the source scenarios.
 
         :return: The source scenario, or None if not set.
         :rtype: str or None
@@ -6292,7 +6292,12 @@ class SourceScenarioAdditionalInformation(AdditionalInformation):
         :return: SourceScenarioAdditionalInformation instance.
         :rtype: SourceScenarioAdditionalInformation
         """
-        return cls._parse_default(data_string, ['sourcescenario'])
+        scenarios_data = data_string.split('|')
+        sourcescenarios = []
+        for scenario_data in scenarios_data:
+            uri, name = scenario_data.split(";")
+            sourcescenarios.append(uri)
+        return cls(**{"sourcescenario": ",".join(sourcescenarios)})
 
 
 class SpikeCompoundAdditionalInformation(AdditionalInformation):
