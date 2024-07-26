@@ -820,25 +820,34 @@ class Scenario(enviPathObject):
         res = []
         if self._get('collection'):
             coll = self._get('collection')
+            warnings = []
             for val in coll.values():
                 # e.g. acidity
                 if isinstance(val, list):
                     for v in val:
                         try:
                             clz = AdditionalInformation.get_subclass_by_name(v['name'])
-                        except ValueError:
-                            clz = DummyAdditionalInformation
-                        c = clz().parse(v['value'])
-                        c.params["unit"] = v["unit"]
-                        res.append(c)
+                            c = clz().parse(v['value'])
+                            c.params["unit"] = v["unit"]
+                            res.append(c)
+                        except NotImplementedError:
+                            warnings.append(f"The class {v['name']} has not yet been implemented")
+                        except Exception as e:
+                            warnings.append(f"Error when trying to parse {clz.__name__}, raised error {e}")
                 else:
                     try:
                         clz = AdditionalInformation.get_subclass_by_name(val['name'])
-                    except ValueError:
-                        clz = DummyAdditionalInformation
-                    c = clz().parse(val['value'])
-                    c.params["unit"] = val["unit"]
-                    res.append(c)
+                        c = clz().parse(val['value'])
+                        c.params["unit"] = val["unit"]
+                        res.append(c)
+                    except NotImplementedError:
+                        warnings.append(f"The class {v['name']} has not yet been implemented")
+                    except Exception as e:
+                        warnings.append(f"Error when trying to parse {clz.__name__}, raised error {e}")
+            if warnings:
+                print(f"The following warnings appeared while parsing the scenario {self.get_id()}")
+                for warning in warnings:
+                    print(warning)
 
         return res
 
@@ -2615,7 +2624,7 @@ class AdditionalInformation(ABC):
 class DummyAdditionalInformation(AdditionalInformation):
 
     def validate(self):
-        raise ValueError("DummyAdditionalInformation can't be validated!")
+        raise NotImplementedError("DummyAdditionalInformation can't be validated!")
 
     @classmethod
     def parse(cls, data_string):
