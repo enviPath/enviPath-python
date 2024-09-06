@@ -41,6 +41,7 @@ If you make use of enviPath-python in your work, please cite our `paper <https:/
    tutorials/create_package
    tutorials/transformation_product_prediction
    tutorials/download_additional_information_data
+   tutorials/download_pathway_SBML
 
 .. toctree::
    :caption: Developers Guide

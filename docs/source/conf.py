@@ -14,24 +14,8 @@ if main_folder_path not in sys.path:
 # Removing the classes that are not documented according to new standards
 autodoc_default_options = {
     'exclude-members': 'Endpoint, ClassifierType, FingerprinterType, AssociationType, EvaluationType, Permission,'
-                       ' OxygenDemandAdditionalInformation, DissolvedOxygenConcentrationAdditionalInformation,'
-                       'OxygenUptakeRateAdditionalInformation, AerationTypeAdditionalInformation, '
-                       'SourceOfLiquidMatrixAdditionalInformation, RateConstantAdditionalInformation, '
-                       'PhosphorusContentAdditionalInformation, MinorMajorAdditionalInformation,'
-                       'SludgeRetentionTimeAdditionalInformation, AmmoniaUptakeRateAdditionalInformation, '
-                       'TemperatureAdditionalInformation,NutrientsAdditionalInformation, '
-                       'InoculumSourceAdditionalInformation, DissolvedOrganicCarbonAdditionalInformation,'
-                       'NitrogenContentAdditionalInformation, ReferringScenarioAdditionalInformation, '
                        'ModelPredictionProbabilityAdditionalInformation, '
                        'ModelBayesPredictionProbabilityAdditionalInformation, '
-                       'ProposedIntermediateAdditionalInformation,'
-                       'VolatileTSSAdditionalInformation, ConfidenceLevelAdditionalInformation, '
-                       'BiologicalTreatmentTechnologyAdditionalInformation, BioreactorAdditionalInformation, '
-                       'FinalCompoundConcentrationAdditionalInformation, TypeOfAdditionAdditionalInformation,'
-                       'TSSAdditionInformation, PurposeOfWWTPAdditionalInformation, '
-                       'SolventForCompoundSolutionAdditionalInformation, OriginalSludgeAmountAdditionalInformation, '
-                       'TypeOfAerationAdditionalInformation,'
-                       'RedoxAdditionalInformation, LocationAdditionalInformation'
 }
 
 # -- Project information -----------------------------------------------------
