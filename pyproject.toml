@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "enviPath-python"
-version = "0.2.2"
+version = "0.2.3"
 authors = [
   { name="Tim Lorsbach", email="lorsbach@envipath.com" },
   { name="Jasmin Hafner", email="jasmin.hafner@eawag.ch" },
