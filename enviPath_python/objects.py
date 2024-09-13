@@ -846,7 +846,7 @@ class Scenario(enviPathObject):
 
         :return: A list containing the AdditionalInformation
         """
-        if not self.additional_information_list == []:
+        if self.additional_information_list:
             return self.additional_information_list
         if self._get('collection'):
             coll = self._get('collection')
