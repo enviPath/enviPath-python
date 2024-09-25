@@ -687,8 +687,40 @@ class Scenario(enviPathObject):
     """
     Class for the Scenario enviPath object
     """
+    def __init__(self, requester, *args, **kwargs):
+        super().__init__(requester, *args, **kwargs)
+        self.additional_information_list = []
+        self.warnings = []
+        
     def get_scenariotype(self):
+        """
+        Returns the type of scenario
+        :return: 
+        """
         return self._get("type")
+
+    def __process_additional_information(self, val):
+        """
+        Gets the serialized version of the additional information and maps it to the correct enviPath-python object
+
+        :param val: the json object containing all the relevant data of the additional information object
+        :return:
+        """
+        try:
+            clz = AdditionalInformation.get_subclass_by_name(val['name'])
+            if isinstance(clz(), SpikeCompoundAdditionalInformation):
+                spike_compound_structure = CompoundStructure(self.requester, id=val["compoundLink"])
+                c = SpikeCompoundAdditionalInformation()
+                c.set_compound_structure(spike_compound_structure)
+            else:
+                c = clz().parse(val['value'])
+            c.params["unit"] = val["unit"]
+            self.additional_information_list.append(c)
+        except NotImplementedError:
+            self.warnings.append(f"The class {val['name']} has not yet been implemented")
+        except Exception as e:
+            self.warnings.append(f"Error when trying to parse {clz.__name__}, raised error {e}")
+
 
     @staticmethod
     def create(package: Package, name: str = None, description: str = None, date: str = None, scenariotype: str = None,
@@ -814,39 +846,23 @@ class Scenario(enviPathObject):
 
         :return: A list containing the AdditionalInformation
         """
-        res = []
+        if self.additional_information_list:
+            return self.additional_information_list
         if self._get('collection'):
             coll = self._get('collection')
-            warnings = []
             for val in coll.values():
                 # e.g. acidity
                 if isinstance(val, list):
                     for v in val:
-                        try:
-                            clz = AdditionalInformation.get_subclass_by_name(v['name'])
-                            c = clz().parse(v['value'])
-                            c.params["unit"] = v["unit"]
-                            res.append(c)
-                        except NotImplementedError:
-                            warnings.append(f"The class {v['name']} has not yet been implemented")
-                        except Exception as e:
-                            warnings.append(f"Error when trying to parse {clz.__name__}, raised error {e}")
+                        self.__process_additional_information(v)
                 else:
-                    try:
-                        clz = AdditionalInformation.get_subclass_by_name(val['name'])
-                        c = clz().parse(val['value'])
-                        c.params["unit"] = val["unit"]
-                        res.append(c)
-                    except NotImplementedError:
-                        warnings.append(f"The class {v['name']} has not yet been implemented")
-                    except Exception as e:
-                        warnings.append(f"Error when trying to parse {clz.__name__}, raised error {e}")
-            if warnings:
+                    self.__process_additional_information(val)
+            if self.warnings:
                 print(f"The following warnings appeared while parsing the scenario {self.get_id()}")
-                for warning in warnings:
+                for warning in self.warnings:
                     print(warning)
 
-        return res
+        return self.additional_information_list
 
     def get_linked_objects(self) -> List['ReviewableEnviPathObject']:
         """
@@ -6360,38 +6376,51 @@ class SpikeCompoundAdditionalInformation(AdditionalInformation):
     mandatories = []
 
     # Setter
-    def set_spikeComp(self, value):
+    def set_compound_structure(self, value):
+        """
+        Sets the spike compound structure.
+
+        :param value: A CompoundStructure object representing the compound that was used for spiking.
+        :type value: CompoundStructure
+        """
+        if isinstance(value, CompoundStructure):
+            self.params["compound_structure"] = value
+            self.__set_spikeComp(value.get_id())
+        else:
+            raise ValueError(f"The provided {value} is not a CompoundStructure object")
+
+    def __set_spikeComp(self, value):
         """
         Sets the spike compound information. 
 
-        :param value: The spike compound information in the form of an existing compound ID or a smile (to create a new
-            compound).
+        :param value: The spike compound information in the form of an existing compound ID.
         :type value: str
         """
         self.params["spikeComp"] = value
 
     # Getter
-    def get_spikeComp(self):
+    def get_compound_structure(self):
         """
         Gets the spike compound information.
 
         :return: The spike compound information, or None if not set.
-        :rtype: str or None
+        :rtype: CompoundStructure or None
+        """
+        return self.params.get("compound_structure", None)
+
+    def __get_spikeComp(self):
+        """
+        Gets the spike compound information.
+
+        :return: The spike compound information, or None if not set.
+        :rtype: CompoundStructure or None
         """
         return self.params.get("spikeComp", None)
 
     # Parser
     @classmethod
     def parse(cls, data_string):
-        """
-        Parses the data_string to create a SpikeCompoundAdditionalInformation instance.
-
-        :param data_string: A string containing spike compound data.
-        :type data_string: str
-        :return: SpikeCompoundAdditionalInformation instance.
-        :rtype: SpikeCompoundAdditionalInformation
-        """
-        return cls._parse_default(data_string, ['spikeComp'])
+        pass
 
 
 class SpikeConcentrationAdditionalInformation(AdditionalInformation):
