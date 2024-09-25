@@ -83,7 +83,7 @@ class enviPathObject(ABC):
             obj_fields = self._load()
             for k, v in obj_fields.items():
                 setattr(self, k, v)
-                self.loaded = True
+            self.loaded = True
         if not hasattr(self, field):
             raise ValueError('{} has no property {}'.format(self.get_type(), field))
 
@@ -687,11 +687,8 @@ class Scenario(enviPathObject):
     """
     Class for the Scenario enviPath object
     """
-    def get_type(self):
-        pass
-
-    def set_type(self):
-        pass
+    def get_scenariotype(self):
+        return self._get("type")
 
     @staticmethod
     def create(package: Package, name: str = None, description: str = None, date: str = None, scenariotype: str = None,
@@ -712,7 +709,7 @@ class Scenario(enviPathObject):
         """
         scenario_payload = {}
         # Create payload container
-        if len(additional_information):
+        if additional_information:
             scenario_payload['adInfoTypes[]'] = ','.join([ai.name for ai in additional_information])
             for ai in additional_information:
                 # Will raise an error if invalid
@@ -776,7 +773,7 @@ class Scenario(enviPathObject):
         """
         scenario_payload = {}
 
-        if len(additional_information):
+        if additional_information:
             self.loaded = False
             scenario_payload['adInfoTypes[]'] = ','.join([ai.name for ai in additional_information])
             for ai in additional_information:
