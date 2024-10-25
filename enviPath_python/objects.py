@@ -4033,6 +4033,53 @@ class OrganicContentAdditionalInformation(AdditionalInformation):
         return cls(**res)
 
 
+class PFASManufacturingCategoryAdditionalInformation(AdditionalInformation):
+    """
+    Creates a sample PFAS manufacturing category additional information object.
+
+    This class represents additional information about the PFAS manufacturing category.
+    """
+    name = "pfasmanufacturingcategory"
+    mandatories = ["pfasmanufacturingcategory"]
+    allowed_types = ['Electrochemical Fluorination (ECF)', 'Fluorotelomerization (FT)', 'Other']
+
+    # Setter
+    def set_pfasmanufacturingcategory(self, value):
+        """
+        Sets the PFAS manufacturing category.
+
+        :param value: The  PFAS manufacturing category the allowed values are ['ElectroFluorination',
+            'Fluorotelomerization', 'Other'].
+        :type value: str
+        """
+        if value not in self.allowed_types:
+            raise ValueError(f'{value} is not an allowed type or is written incorrectly -> {self.allowed_types}')
+        self.params["pfasmanufacturingcategory"] = value
+
+    # Getter
+    def get_pfasmanufacturingcategory(self):
+        """
+        Retrieves the PFAS manufacturing category.
+
+        :return: The PFAS manufacturing category if set; otherwise, None.
+        :rtype: str or None
+        """
+        return self.params.get("pfasmanufacturingcategory", None)
+
+    # Parser
+    @classmethod
+    def parse(cls, data_string):
+        """
+        Parses a string containing the PFAS manufacturing category information to initialize an instance.
+
+        :param data_string: A string representing the PFAS manufacturing category.
+        :type data_string: str
+        :return: An instance of PFASManufacturingCategoryAdditionalInformation populated with the parsed data.
+        :rtype: PFASManufacturingCategoryAdditionalInformation
+        """
+        return cls._parse_default(data_string, ['pfasmanufacturingcategory'])
+
+
 class InoculumSourceAdditionalInformation(AdditionalInformation):
     """
     Creates an InoculumSourceAdditionalInformation object.
