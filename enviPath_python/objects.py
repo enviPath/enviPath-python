@@ -1920,6 +1920,31 @@ class Node(ReviewableEnviPathObject):
         """
         return CompoundStructure(self.requester, id=self._get('defaultStructure')['id'])
 
+    def add_structure(self, structure: CompoundStructure, as_default=False):
+        """
+        Adds a CompoundStructure to the list of structures for this node
+
+        :param structure: the CompoundStructure that wants to be added to the node
+        :param as_default: whether to use this CompoundStructure as default structure for the node
+        :return:
+        """
+        headers = {"referer": ""}
+        payload = {
+            "csSmiles": structure.get_smiles(),
+            "csName": structure.get_name(),
+            "csDescription": structure.get_description(),
+            "csSetAsDefault": True if as_default else False
+        }
+
+        self.requester.post_request(self.get_id(), headers=headers, payload=payload, allow_redirects=False)
+
+        if self.loaded:
+            self.loaded = False
+            if hasattr(self, 'defaultStructure'):
+                delattr(self, 'defaultStructure')
+            if hasattr(self, 'structures'):
+                delattr(self, 'structures')
+
     def get_svg(self) -> str:
         """
         Gets the image representation of the Compound in a string format
