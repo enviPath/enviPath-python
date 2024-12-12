@@ -2483,6 +2483,11 @@ class Pathway(ReviewableEnviPathObject):
             copied_node = Node.create(copied_pathway, smiles=node.get_smiles(), name=node.get_name(),
                                       description=node.get_description(), depth=depth_mapping[node.get_id()])
 
+            # Copy structures that are not the default one
+            for structure in node.get_structures():
+                if structure != node.get_default_structure():
+                    copied_node.add_structure(structure)
+
             mapping[node.get_id()] = copied_node.get_id()
             node_mapping[node.get_id()] = copied_node
 
