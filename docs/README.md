@@ -1,36 +1,38 @@
 # Automatic documentation with Sphinx
 
-In this small tutorial the framework of the automatic documentation wants to be explained. 
-This tutorial is divided in 2 parts: the first one explains how to generate the documentation
-automatically using sphinx and the second one to render the generated .rst files into the desired
-format, here the generation of .html files will be explained.
+In this small tutorial the framework of the automatic documentation wants to be explained.
 
-Please note that if you are only interested in having the .html files, the first step is not needed, 
-access directly to the [second part of the tutorial](#generation-of-html-files). 
+## Generation of .html files locally
 
-## Sphinx-autodoc
-
-1. Generate a virtual environment and activate it (using conda or venv, for instance). For conda: 
+1. Create a virtual environment (with conda or venv) and activate it.  For conda: 
    ```
    conda create -n "docs"
    conda activate docs
    ```
-2. Pip install sphinx ```pip install -U sphinx```
-3. Run from the root folder of the enviPath-python project on your terminal ```sphinx-apidoc -f -o docs/source enviPath_python```
-4. Now the .rst files should have been generated on the docs/source folder and you should be ready to
-   compile them into .html files.
-
-## Generation of .html files
-
-1. If you have skipped the first part of the tutorial, then create a virtual environment (with conda or venv) and activate it.
 2. Move to the docs folder and run:
    ```
-   pip install -r requrirements.txt
+   pip install -r requirements.txt
    ```
    `myst-nb` module allows to create .html tutorial pages from raw jupyter notebooks (more info 
-   [here](https://myst-nb.readthedocs.io/en/v0.9.0/use/start.html)). `sphinx_copybutton` allows for a copy button to
+   [here](https://myst-nb.readthedocs.io/en/latest/quickstart.html)). `sphinx_copybutton` allows for a copy button to
    appear next to the code snippets on the jupyter-notebook-based tutorials.
 3. On that same folder run: ```make html```
 4. You should have the .html files on the docs/build/html folder.
 5. Open ```index.html``` with your favorite browser.
 
+## How to change change the webpage content
+
+[Sphinx](https://www.sphinx-doc.org/en/master/) accepts pages in multiple formats, we are using here
+[ReStructured Text (.rst)](https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html#rst-primer).
+In order to edit the content of a page, you only have to go to the corresponding .rst file on source and edit its content.
+
+This is valid also for tutorials, which are available as jupyter notebooks in source/tutorials directory. To learn
+more about format specifics of these jupyter notebooks and how to best personalize them to your own taste, I recommend
+checking out the [myst-nb](https://myst-nb.readthedocs.io/en/latest/quickstart.html) project.
+
+## On readthedocs server
+
+For the your changes to be available in the [readthedocs server](https://envipath-python.readthedocs.io/en/develop/) 
+you only have to merge your changes to develop using a pull request. All the changes should automatically be updated. 
+To check for the status of the docs build or to manually execute new docs builds, please check the readthedocs page for 
+our [project](https://app.readthedocs.org/projects/envipath-python/builds/).
