@@ -84,17 +84,21 @@ class enviPath(object):
         user_data = self.requester.get_request(url, params=params).json()[Endpoint.USER.value][0]
         return User(self.requester, **user_data)
 
-    def search(self, term: str, packages: Union['Package', List['Package']]):
+    def search(self, term: str, packages: Union['Package', List['Package']], method: str = "defaultSmiles"):
         """
         Function designed to perform a search on an enviPath session.
 
         :param term: the term with which the search wants to be performed
         :param packages: the packages where the search wants to be performed
+        :param method: the method to be used from the list following ["text", "inchikey", "defaultSmiles",
+            "canonicalSmiles", "exactSmiles"]
         :return: a dictionary of object identifiers
         """
+
         params = {
             'packages[]': [p.get_id() for p in packages] if isinstance(packages, Iterable) else [packages.get_id()],
             'search': term,
+            'method': method
         }
 
         res = self.requester.get_request('{}search'.format(self.BASE_URL), params=params)
