@@ -10,16 +10,27 @@ access directly to the [second part of the tutorial](#generation-of-html-files).
 
 ## Sphinx-autodoc
 
-1. Generate a virtual environment and activate it (using conda or venv, for instance).
+1. Generate a virtual environment and activate it (using conda or venv, for instance). For conda: 
+   ```
+   conda create -n "docs"
+   conda activate docs
+   ```
 2. Pip install sphinx ```pip install -U sphinx```
-3. Run from the root folder on your terminal ```sphinx-apidoc -f -o docs/source enviPath_python```
+3. Run from the root folder of the enviPath-python project on your terminal ```sphinx-apidoc -f -o docs/source enviPath_python```
 4. Now the .rst files should have been generated on the docs/source folder and you should be ready to
    compile them into .html files.
 
 ## Generation of .html files
 
 1. If you have skipped the first part of the tutorial, then create a virtual environment (with conda or venv) and activate it.
-2. Move to the docs folder and run from the terminal ```make html```
-3. You should find the .html files on the docs/build/html folder.
-4. Open ```index.html``` with your favorite browser.
+2. Move to the docs folder and run:
+   ```
+   pip install -r requrirements.txt
+   ```
+   `myst-nb` module allows to create .html tutorial pages from raw jupyter notebooks (more info 
+   [here](https://myst-nb.readthedocs.io/en/v0.9.0/use/start.html)). `sphinx_copybutton` allows for a copy button to
+   appear next to the code snippets on the jupyter-notebook-based tutorials.
+3. On that same folder run: ```make html```
+4. You should have the .html files on the docs/build/html folder.
+5. Open ```index.html``` with your favorite browser.
 
