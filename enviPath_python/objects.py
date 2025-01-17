@@ -3029,8 +3029,7 @@ class AerationTypeAdditionalInformation(AdditionalInformation):
         Sets the type of aeration.
 
         :param value: The type of aeration. Must be one of the following "stirring", "shaking", "bubbling air",
-            "bubbling air and stiring", "other"
-        otherwise it could cause an error.
+            "bubbling air and stiring", "other" otherwise it could cause an error.
         :type value: str
         """
         if value not in self.allowed_types:
