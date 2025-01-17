@@ -1954,6 +1954,31 @@ class Node(ReviewableEnviPathObject):
         """
         return CompoundStructure(self.requester, id=self._get('defaultStructure')['id'])
 
+    def add_structure(self, structure: CompoundStructure, as_default=False):
+        """
+        Adds a CompoundStructure to the list of structures for this node
+
+        :param structure: the CompoundStructure that wants to be added to the node
+        :param as_default: whether to use this CompoundStructure as default structure for the node
+        :return:
+        """
+        headers = {"referer": ""}
+        payload = {
+            "csSmiles": structure.get_smiles(),
+            "csName": structure.get_name(),
+            "csDescription": structure.get_description(),
+            "csSetAsDefault": True if as_default else False
+        }
+
+        self.requester.post_request(self.get_id(), headers=headers, payload=payload, allow_redirects=False)
+
+        if self.loaded:
+            self.loaded = False
+            if hasattr(self, 'defaultStructure'):
+                delattr(self, 'defaultStructure')
+            if hasattr(self, 'structures'):
+                delattr(self, 'structures')
+
     def get_svg(self) -> str:
         """
         Gets the image representation of the Compound in a string format
@@ -2491,6 +2516,11 @@ class Pathway(ReviewableEnviPathObject):
 
             copied_node = Node.create(copied_pathway, smiles=node.get_smiles(), name=node.get_name(),
                                       description=node.get_description(), depth=depth_mapping[node.get_id()])
+
+            # Copy structures that are not the default one
+            for structure in node.get_structures():
+                if structure != node.get_default_structure():
+                    copied_node.add_structure(structure)
 
             mapping[node.get_id()] = copied_node.get_id()
             node_mapping[node.get_id()] = copied_node
@@ -3033,8 +3063,7 @@ class AerationTypeAdditionalInformation(AdditionalInformation):
         Sets the type of aeration.
 
         :param value: The type of aeration. Must be one of the following "stirring", "shaking", "bubbling air",
-            "bubbling air and stiring", "other"
-        otherwise it could cause an error.
+            "bubbling air and stiring", "other" otherwise it could cause an error.
         :type value: str
         """
         if value not in self.allowed_types:
