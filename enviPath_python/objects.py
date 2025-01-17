@@ -1028,6 +1028,14 @@ class Compound(ReviewableEnviPathObject):
         :return: SMILES of the Compound
         """
         return self.get_default_structure().get_smiles()
+
+    def get_canonical_smiles(self) -> str:
+        """
+        Returns the canonical SMILES of the Compound
+
+        :return: canonical SMILES of the Compound
+        """
+        return self.get_default_structure().get_canonical_smiles()
     
     def get_pubchem_references(self) -> List[str]:
         """
@@ -1052,6 +1060,14 @@ class Compound(ReviewableEnviPathObject):
         :return: InChI of the Compound
         """
         return self.get_default_structure().get_inchi()
+
+    def get_inchikey(self) -> str:
+        """
+        Returns the InChIKey of the Compound
+
+        :return: InChIKey of the Compound
+        """
+        return self.get_default_structure().get_inchikey()
 
     def copy(self, package: 'Package', debug=False) -> (dict, 'Compound', List['CompoundStructure']):
         """
@@ -1145,6 +1161,16 @@ class CompoundStructure(ReviewableEnviPathObject):
         """
         return self._get('smiles')
 
+    def get_canonical_smiles(self) -> str:
+        """
+        Retrieves the canonical SMILES of the CompoundStructure. This canonicalization method is provided by
+        cdk's `SmilesGenerator <http://cdk.github.io/cdk/2.2/docs/api/org/openscience/cdk/smiles/SmilesGenerator.html>`__
+        class using the `unique` flavour.
+
+        :return: The canonical SMILES of the CompoundStructure
+        """
+        return self._get('canonicalSmiles')
+
     def get_inchi(self) -> str:
         """
         Retrieves the InChI of the CompoundStructure
@@ -1152,6 +1178,14 @@ class CompoundStructure(ReviewableEnviPathObject):
         :return: InChI of CompoundStructure
         """
         return self._get('InChI')
+
+    def get_inchikey(self) -> str:
+        """
+        Retrieves the InChIKey of the CompoundStructure.
+
+        :return: The InChIKey of the CompoundStructure
+        """
+        return self._get('inchikey')
 
     def get_pathways(self) -> List['Pathway']:
         """
