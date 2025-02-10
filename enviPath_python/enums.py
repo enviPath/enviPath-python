@@ -78,3 +78,18 @@ class Permission(Enum):
     READ = 'read'
     WRITE = 'write'
     NONE = 'none'
+
+class SupportedCompoundExternalReferenceURLs(Enum):
+    """
+    Class that stores the supported compound external reference URLs
+    """
+    PUBCHEM = "https://pubchem.ncbi.nlm.nih.gov"
+    CHEBI = "https://www.ebi.ac.uk/chebi"
+    KEGG = "https://www.kegg.jp/entry"
+
+class SupportedReactionExternalReferenceURLs(Enum):
+    """
+    Class that stores the supported reaction external reference URLs
+    """
+    RHEA = "http://rdf.rhea-db.org"
+    UNIPROT = "https://www.uniprot.org/uniprotkb"
