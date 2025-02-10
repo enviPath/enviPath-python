@@ -1105,13 +1105,13 @@ class CompoundStructure(ReviewableEnviPathObject):
         :return:
         """
         newReferenceSource = None
-        for valid_URL in SupportedCompoundExternalReferenceURLs:
+        for valid_URL in SupportedCompoundExternalReference:
             if valid_URL.value in referenceURL:
                 newReferenceSource = valid_URL.name
                 break
         if not newReferenceSource:
             raise ValueError(f"The referenceURL ({referenceURL}) does not contain supported external reference URL!"
-                             f" {[URL.value for URL in SupportedCompoundExternalReferenceURLs]}")
+                             f" {[URL.value for URL in SupportedCompoundExternalReference]}")
         payload = {
             'newReferenceValue': "python-API;" + referenceURL,
             'newReferenceSource': newReferenceSource
@@ -1385,13 +1385,13 @@ class Reaction(ReviewableEnviPathObject):
         :return:
         """
         newReferenceSource = None
-        for valid_URL in SupportedReactionExternalReferenceURLs:
+        for valid_URL in SupportedReactionExternalReference:
             if valid_URL.value in referenceURL:
                 newReferenceSource = valid_URL.name
                 break
         if not newReferenceSource:
             raise ValueError(f"The referenceURL ({referenceURL}) does not contain supported external reference URL!"
-                             f" {[URL.value for URL in SupportedReactionExternalReferenceURLs]}")
+                             f" {[URL.value for URL in SupportedReactionExternalReference]}")
         payload = {
             'newReferenceValue': "python-API;" + referenceURL,
             'newReferenceSource': newReferenceSource
