@@ -1384,17 +1384,17 @@ class Reaction(ReviewableEnviPathObject):
         :param referenceURL: the new reference to an external database
         :return:
         """
-        newReferenceSource = None
+        new_reference_source = None
         for valid_URL in SupportedReactionExternalReference:
             if valid_URL.value in referenceURL:
-                newReferenceSource = valid_URL.name
+                new_reference_source = valid_URL.name
                 break
-        if not newReferenceSource:
+        if not new_reference_source:
             raise ValueError(f"The referenceURL ({referenceURL}) does not contain supported external reference URL!"
                              f" {[URL.value for URL in SupportedReactionExternalReference]}")
         payload = {
             'newReferenceValue': "python-API;" + referenceURL,
-            'newReferenceSource': newReferenceSource
+            'newReferenceSource': new_reference_source
         }
         self.requester.post_request(self.id, payload=payload, allow_redirects=False)
 
