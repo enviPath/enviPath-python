@@ -1097,24 +1097,24 @@ class CompoundStructure(ReviewableEnviPathObject):
             delattr(self, 'alias')
 
 
-    def add_new_reference(self, referenceURL):
+    def add_new_reference(self, reference_url):
         """
         Adds a new external database identifier to the Compound
 
-        :param referenceURL: the new reference to an external database
+        :param reference_url: the new reference to an external database
         :return:
         """
-        newReferenceSource = None
+        new_reference_source = None
         for valid_URL in SupportedCompoundExternalReference:
-            if valid_URL.value in referenceURL:
-                newReferenceSource = valid_URL.name
+            if valid_URL.value in reference_url:
+                new_reference_source = valid_URL.name
                 break
-        if not newReferenceSource:
-            raise ValueError(f"The referenceURL ({referenceURL}) does not contain supported external reference URL!"
+        if not new_reference_source:
+            raise ValueError(f"The referenceURL ({reference_url}) does not contain supported external reference URL!"
                              f" {[URL.value for URL in SupportedCompoundExternalReference]}")
         payload = {
-            'newReferenceValue': "python-API;" + referenceURL,
-            'newReferenceSource': newReferenceSource
+            'newReferenceValue': "python-API;" + reference_url,
+            'newReferenceSource': new_reference_source
         }
         self.requester.post_request(self.id, payload=payload, allow_redirects=False)
 
