@@ -19,7 +19,7 @@ import json
 from abc import ABC, abstractmethod
 from collections import namedtuple, defaultdict
 from io import BytesIO
-from typing import List, Optional, Union
+from typing import List, Dict, Optional, Union
 from enviPath_python.enums import *
 
 
@@ -1071,6 +1071,11 @@ class Compound(ReviewableEnviPathObject):
         for structure in self.get_structures():
             copied_structure = CompoundStructure.create(copied_compound, structure.get_smiles(), structure.get_name(),
                                                         structure.get_description())
+            for pubchem_id in structure.get_pubchem_references():
+                copied_structure.copy_new_reference(pubchem_id, "pubchem")
+            for dbs_id in structure.get_external_references().keys():
+                for external_id in structure.get_external_references().get(dbs_id):
+                    copied_structure.copy_new_reference(external_id, dbs_id)
             copied_structures.append(copied_structure)
             mapping[structure.get_id()] = copied_structure.get_id()
 
@@ -1115,6 +1120,20 @@ class CompoundStructure(ReviewableEnviPathObject):
         payload = {
             'newReferenceValue': "python-API;" + reference_url,
             'newReferenceSource': new_reference_source
+        }
+        self.requester.post_request(self.id, payload=payload, allow_redirects=False)
+
+    def copy_new_reference(self, reference_value, reference_source):
+        """
+        Copies a new external database identifier to the Compound
+
+        :param reference_value: a semicolon-separated string indicating <the method of addition>;<the external identifier>
+        :param reference_source: the identifier for the external database
+        :return:
+        """
+        payload = {
+            'newReferenceValue': reference_value,
+            'newReferenceSource': reference_source
         }
         self.requester.post_request(self.id, payload=payload, allow_redirects=False)
 
@@ -1368,7 +1387,7 @@ class Reaction(ReviewableEnviPathObject):
         except ValueError:
             return None
     
-    def get_external_references(self) -> List[str]:
+    def get_external_references(self) -> Dict[str, List]:
         """
         Retrieves the links to Rhea for the given reaction
 
@@ -1395,6 +1414,20 @@ class Reaction(ReviewableEnviPathObject):
         payload = {
             'newReferenceValue': "python-API;" + reference_url,
             'newReferenceSource': new_reference_source
+        }
+        self.requester.post_request(self.id, payload=payload, allow_redirects=False)
+
+    def copy_new_reference(self, reference_value, reference_source):
+        """
+        Copies a new external database identifier to the Compound
+
+        :param reference_value: a semicolon-separated string indicating <the method of addition>;<the external identifier>
+        :param reference_source: the identifier for the external database
+        :return:
+        """
+        payload = {
+            'newReferenceValue': reference_value,
+            'newReferenceSource': reference_source
         }
         self.requester.post_request(self.id, payload=payload, allow_redirects=False)
 
@@ -1465,6 +1498,10 @@ class Reaction(ReviewableEnviPathObject):
             params['rule'] = self.get_rule()
 
         r = Reaction.create(**params)
+
+        for dbs_id in self.get_external_references().keys():
+            for external_id in self.get_external_references().get(dbs_id):
+                r.copy_new_reference(external_id, dbs_id)
 
         mapping[self.get_id()] = r.get_id()
 
