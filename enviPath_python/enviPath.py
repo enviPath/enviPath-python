@@ -30,7 +30,7 @@ class enviPath(object):
     Object representing enviPath functionality.
     """
 
-    def __init__(self, base_url, proxies=None, adapter=None):
+    def __init__(self, base_url, proxies=None, adapter=None, new_api=False):
         """
         Constructor with instance specification.
 
@@ -41,6 +41,7 @@ class enviPath(object):
         """
         self.BASE_URL = base_url if base_url.endswith('/') else base_url + '/'
         self.requester = enviPathRequester(self, proxies, adapter)
+        self.new_api = new_api
 
     def get_base_url(self) -> str:
         """
@@ -411,6 +412,20 @@ class enviPathRequester(object):
             default_headers = copy.deepcopy(default_headers)
             default_headers.update(**kwargs['headers'])
             del kwargs['headers']
+
+        # For enviPy we have to channel the request to certain endpoints e.g.
+        # "api/legacy/," therefore, we can't use the plain Object IDs of the individual
+        # objects. Check if the given BASE_URL (e.g. https://envipath.org/api/legacy/) is part of
+        # the Object ID. If not, replace and execute the request.
+        if self.eP.BASE_URL not in url:
+            from urllib.parse import urlparse
+            parsed = urlparse(self.eP.BASE_URL)
+            url = url.replace(f"{parsed.scheme}://{parsed.netloc}/", self.eP.BASE_URL)
+
+            # RelativeReasonings are now called Model
+            if 'relative-reasoning' in url:
+                url = url.replace("relative-reasoning", "model")
+
         try:
             response = self.session.request(method, url, params=params, data=payload, headers=default_headers, **kwargs)
         except ConnectionError:

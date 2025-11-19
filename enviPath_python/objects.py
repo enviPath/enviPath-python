@@ -175,8 +175,9 @@ class enviPathObject(ABC):
             self.__delattr__(key)
 
     def refresh(self):
-        # TODO clear internal cache and fetch json again
-        pass
+        self.loaded = False
+        self.get_name()
+        return self
 
 
 class ReviewableEnviPathObject(enviPathObject, ABC):
@@ -2139,6 +2140,9 @@ class Setting(enviPathObject):
                evaluation_type: EvaluationType = None, min_carbon: int = None,
                terminal_compounds: List[Compound] = None):
 
+        if ep.new_api:
+            raise ValueError("This endpoint is not available in the new API")
+
         payload = {
             'packages[]': [p.get_id() for p in packages]
         }
@@ -2234,6 +2238,9 @@ class NormalizationRule(ReviewableEnviPathObject):
 
     @staticmethod
     def create(setting: 'Setting', smirks: str, name: str = None, description: str = None):
+        if setting.requester.eP.new_api:
+            raise ValueError("This endpoint is not available in the new API")
+
         if not smirks:
             raise ValueError("SMIRKS not set!")
 
