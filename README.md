@@ -8,11 +8,28 @@ Python client for [enviPath](https://envipath.org) - the environmental contamina
 
 The client allows you to include enviPath directly into you Python code. This is done by using the REST API of enviPath, all calls to Python functions are translated to remote calls to our [enviPath](https://envipath.org). Please see below for documentation. 
 
+
+
+
 ## Quickstart
+
+If you want to use it with the new API, update the lib via
 
 ```bash
 pip install --upgrade enviPath-python
 ```
+
+and initialize the `enviPath` object as follows:
+
+```python
+eP = enviPath('https://beta.envipath.org/api/legacy/', new_api=True)
+eP.login(<username>, <password>)
+```
+
+In order to try the new API you have to have an account on e.g. https://beta.envipath.org.
+
+After that you can use the library as before.
+
 
 ```python
 from pprint import pprint
