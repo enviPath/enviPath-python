@@ -37,7 +37,7 @@ now the `(+)-Camphor` compound from EAWAG-BBD, we can do so as follows:
 Package
 -------
 .. note::
-    A more detailed explanation of Package can be found `here <https://wiki.envipath.com/doku.php?id=packages>`_
+    A more detailed explanation of Package can be found `here <https://wiki.envipath.com/doku.php?id=packages>`__
 
 .. currentmodule:: enviPath_python.objects
 
@@ -50,7 +50,7 @@ required to access the data, however in the second case it will be necessary to 
 Compound
 --------
 .. note::
-    A more detailed explanation of Compound can be found `here <https://wiki.envipath.com/doku.php?id=compounds>`_
+    A more detailed explanation of Compound can be found `here <https://wiki.envipath.com/doku.php?id=compounds>`__
 
 A :class:`Compound` is an enviPath object within a :ref:`Package` and essentially stores all the molecular information
 organized into :ref:`Compound Structure` objects. In other words, a Compound can be thought of as a container of Compound
@@ -77,7 +77,7 @@ i.e. the :ref:`Compound` which will be associated with.
 Reaction
 --------
 .. note::
-    A more detailed explanation of Reaction can be found `here <https://wiki.envipath.com/doku.php?id=reactions>`_
+    A more detailed explanation of Reaction can be found `here <https://wiki.envipath.com/doku.php?id=reactions>`__
 
 A :class:`Reaction` is an enviPath object that represents a biotransformation reaction, it connects substrates with
 products, each of them represented as a :ref:`Compound Structure`. Usually reactions are
@@ -90,7 +90,7 @@ Additionally, Reaction objects are created automatically with
 Rule
 ----
 .. note::
-    A more detailed explanation of Rule can be found `here <https://wiki.envipath.com/doku.php?id=rules>`_
+    A more detailed explanation of Rule can be found `here <https://wiki.envipath.com/doku.php?id=rules>`__
 
 A :class:`Rule` enviPath object represents a biotransformation rule and are used for the prediction of pathways. They do so by
 leveraging SMIRKS Reaction Patterns that identify functional groups and apply the rule whenever the reactant filter pattern
@@ -104,7 +104,7 @@ distinct non-abstract classes inherit from it and can therefore be instantiated.
 Pathway
 -------
 .. note::
-    A more detailed explanation of Pathway can be found `here <https://wiki.envipath.com/doku.php?id=pathways>`_
+    A more detailed explanation of Pathway can be found `here <https://wiki.envipath.com/doku.php?id=pathways>`__
 
 A :class:`Pathway` is an enviPath object that represents a biotransformation pathway and stores information of the compounds
 and reactions in :ref:`Node` and :ref:`Edge` objects, respectively. Nodes and Edges are concepts derived from
@@ -115,7 +115,7 @@ Given that enviPath is a database for biotransformation data, Pathways are one o
 Pathways can be generated manually by calling the :meth:`Pathway.create` method, from there
 one can add compounds (nodes) and reactions (edges) using the :meth:`Pathway.add_node` and
 :meth:`Pathway.add_edge` methods, respectively. Below, we show how the
-`1,4-Dioxane <https://envipath.org/package/32de3cf4-e3e6-4168-956e-32fa5ddb0ce1/pathway/19a53ddd-7bbe-43b3-bd56-c1c35302d185>`_
+`1,4-Dioxane <https://envipath.org/package/32de3cf4-e3e6-4168-956e-32fa5ddb0ce1/pathway/19a53ddd-7bbe-43b3-bd56-c1c35302d185>`__
 biotransformation pathway looks like in the website:
 
 .. image:: assets/eP_pathway_example.png
@@ -154,7 +154,7 @@ Additionally, its corresponding substrates and products can be accessed using :m
 Relative Reasoning
 ------------------
 .. note::
-    A more detailed explanation of Relative Reasoning can be found `here <https://wiki.envipath.com/doku.php?id=relative_reasoning>`_
+    A more detailed explanation of Relative Reasoning can be found `here <https://wiki.envipath.com/doku.php?id=relative_reasoning>`__
 
 A :class:`RelativeReasoning` enviPath object can be understood as the model that is used to generate pathway predictions. This
 is a relevant object for users wanting to generate predictions using the models stored in our database.
@@ -165,7 +165,7 @@ computation time.
 Scenario
 --------
 .. note::
-    A more detailed explanation of Scenario can be found `here <https://wiki.envipath.com/doku.php?id=scenarios>`_
+    A more detailed explanation of Scenario can be found `here <https://wiki.envipath.com/doku.php?id=scenarios>`__
 
 A :class:`Scenario` enviPath object represents the experimental conditions that were used for a given biotransformation pathway.
 Ideally it links to a reference article where the given experiment is thoroughly described. A Scenario can be attached

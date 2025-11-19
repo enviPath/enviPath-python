@@ -83,7 +83,7 @@ class enviPathObject(ABC):
             obj_fields = self._load()
             for k, v in obj_fields.items():
                 setattr(self, k, v)
-                self.loaded = True
+            self.loaded = True
         if not hasattr(self, field):
             raise ValueError('{} has no property {}'.format(self.get_type(), field))
 
@@ -175,8 +175,9 @@ class enviPathObject(ABC):
             self.__delattr__(key)
 
     def refresh(self):
-        # TODO clear internal cache and fetch json again
-        pass
+        self.loaded = False
+        self.get_name()
+        return self
 
 
 class ReviewableEnviPathObject(enviPathObject, ABC):
@@ -687,11 +688,40 @@ class Scenario(enviPathObject):
     """
     Class for the Scenario enviPath object
     """
-    def get_type(self):
-        pass
+    def __init__(self, requester, *args, **kwargs):
+        super().__init__(requester, *args, **kwargs)
+        self.additional_information_list = []
+        self.warnings = []
+        
+    def get_scenariotype(self):
+        """
+        Returns the type of scenario
+        :return: 
+        """
+        return self._get("type")
 
-    def set_type(self):
-        pass
+    def __process_additional_information(self, val):
+        """
+        Gets the serialized version of the additional information and maps it to the correct enviPath-python object
+
+        :param val: the json object containing all the relevant data of the additional information object
+        :return:
+        """
+        try:
+            clz = AdditionalInformation.get_subclass_by_name(val['name'])
+            if isinstance(clz(), SpikeCompoundAdditionalInformation):
+                spike_compound_structure = CompoundStructure(self.requester, id=val["compoundLink"])
+                c = SpikeCompoundAdditionalInformation()
+                c.set_compound_structure(spike_compound_structure)
+            else:
+                c = clz().parse(val['value'])
+            c.params["unit"] = val["unit"]
+            self.additional_information_list.append(c)
+        except NotImplementedError:
+            self.warnings.append(f"The class {val['name']} has not yet been implemented")
+        except Exception as e:
+            self.warnings.append(f"Error when trying to parse {clz.__name__}, raised error {e}")
+
 
     @staticmethod
     def create(package: Package, name: str = None, description: str = None, date: str = None, scenariotype: str = None,
@@ -712,7 +742,7 @@ class Scenario(enviPathObject):
         """
         scenario_payload = {}
         # Create payload container
-        if len(additional_information):
+        if additional_information:
             scenario_payload['adInfoTypes[]'] = ','.join([ai.name for ai in additional_information])
             for ai in additional_information:
                 # Will raise an error if invalid
@@ -776,7 +806,7 @@ class Scenario(enviPathObject):
         """
         scenario_payload = {}
 
-        if len(additional_information):
+        if additional_information:
             self.loaded = False
             scenario_payload['adInfoTypes[]'] = ','.join([ai.name for ai in additional_information])
             for ai in additional_information:
@@ -817,39 +847,23 @@ class Scenario(enviPathObject):
 
         :return: A list containing the AdditionalInformation
         """
-        res = []
+        if self.additional_information_list:
+            return self.additional_information_list
         if self._get('collection'):
             coll = self._get('collection')
-            warnings = []
             for val in coll.values():
                 # e.g. acidity
                 if isinstance(val, list):
                     for v in val:
-                        try:
-                            clz = AdditionalInformation.get_subclass_by_name(v['name'])
-                            c = clz().parse(v['value'])
-                            c.params["unit"] = v["unit"]
-                            res.append(c)
-                        except NotImplementedError:
-                            warnings.append(f"The class {v['name']} has not yet been implemented")
-                        except Exception as e:
-                            warnings.append(f"Error when trying to parse {clz.__name__}, raised error {e}")
+                        self.__process_additional_information(v)
                 else:
-                    try:
-                        clz = AdditionalInformation.get_subclass_by_name(val['name'])
-                        c = clz().parse(val['value'])
-                        c.params["unit"] = val["unit"]
-                        res.append(c)
-                    except NotImplementedError:
-                        warnings.append(f"The class {v['name']} has not yet been implemented")
-                    except Exception as e:
-                        warnings.append(f"Error when trying to parse {clz.__name__}, raised error {e}")
-            if warnings:
+                    self.__process_additional_information(val)
+            if self.warnings:
                 print(f"The following warnings appeared while parsing the scenario {self.get_id()}")
-                for warning in warnings:
+                for warning in self.warnings:
                     print(warning)
 
-        return res
+        return self.additional_information_list
 
     def get_linked_objects(self) -> List['ReviewableEnviPathObject']:
         """
@@ -1015,6 +1029,14 @@ class Compound(ReviewableEnviPathObject):
         :return: SMILES of the Compound
         """
         return self.get_default_structure().get_smiles()
+
+    def get_canonical_smiles(self) -> str:
+        """
+        Returns the canonical SMILES of the Compound
+
+        :return: canonical SMILES of the Compound
+        """
+        return self.get_default_structure().get_canonical_smiles()
     
     def get_pubchem_references(self) -> List[str]:
         """
@@ -1039,6 +1061,14 @@ class Compound(ReviewableEnviPathObject):
         :return: InChI of the Compound
         """
         return self.get_default_structure().get_inchi()
+
+    def get_inchikey(self) -> str:
+        """
+        Returns the InChIKey of the Compound
+
+        :return: InChIKey of the Compound
+        """
+        return self.get_default_structure().get_inchikey()
 
     def copy(self, package: 'Package', debug=False) -> (dict, 'Compound', List['CompoundStructure']):
         """
@@ -1132,6 +1162,16 @@ class CompoundStructure(ReviewableEnviPathObject):
         """
         return self._get('smiles')
 
+    def get_canonical_smiles(self) -> str:
+        """
+        Retrieves the canonical SMILES of the CompoundStructure. This canonicalization method is provided by
+        cdk's `SmilesGenerator <http://cdk.github.io/cdk/2.2/docs/api/org/openscience/cdk/smiles/SmilesGenerator.html>`__
+        class using the `unique` flavour.
+
+        :return: The canonical SMILES of the CompoundStructure
+        """
+        return self._get('canonicalSmiles')
+
     def get_inchi(self) -> str:
         """
         Retrieves the InChI of the CompoundStructure
@@ -1139,6 +1179,14 @@ class CompoundStructure(ReviewableEnviPathObject):
         :return: InChI of CompoundStructure
         """
         return self._get('InChI')
+
+    def get_inchikey(self) -> str:
+        """
+        Retrieves the InChIKey of the CompoundStructure.
+
+        :return: The InChIKey of the CompoundStructure
+        """
+        return self._get('inchikey')
 
     def get_pathways(self) -> List['Pathway']:
         """
@@ -1907,6 +1955,31 @@ class Node(ReviewableEnviPathObject):
         """
         return CompoundStructure(self.requester, id=self._get('defaultStructure')['id'])
 
+    def add_structure(self, structure: CompoundStructure, as_default=False):
+        """
+        Adds a CompoundStructure to the list of structures for this node
+
+        :param structure: the CompoundStructure that wants to be added to the node
+        :param as_default: whether to use this CompoundStructure as default structure for the node
+        :return:
+        """
+        headers = {"referer": ""}
+        payload = {
+            "csSmiles": structure.get_smiles(),
+            "csName": structure.get_name(),
+            "csDescription": structure.get_description(),
+            "csSetAsDefault": True if as_default else False
+        }
+
+        self.requester.post_request(self.get_id(), headers=headers, payload=payload, allow_redirects=False)
+
+        if self.loaded:
+            self.loaded = False
+            if hasattr(self, 'defaultStructure'):
+                delattr(self, 'defaultStructure')
+            if hasattr(self, 'structures'):
+                delattr(self, 'structures')
+
     def get_svg(self) -> str:
         """
         Gets the image representation of the Compound in a string format
@@ -2067,6 +2140,9 @@ class Setting(enviPathObject):
                evaluation_type: EvaluationType = None, min_carbon: int = None,
                terminal_compounds: List[Compound] = None):
 
+        if ep.new_api:
+            raise ValueError("This endpoint is not available in the new API")
+
         payload = {
             'packages[]': [p.get_id() for p in packages]
         }
@@ -2162,6 +2238,9 @@ class NormalizationRule(ReviewableEnviPathObject):
 
     @staticmethod
     def create(setting: 'Setting', smirks: str, name: str = None, description: str = None):
+        if setting.requester.eP.new_api:
+            raise ValueError("This endpoint is not available in the new API")
+
         if not smirks:
             raise ValueError("SMIRKS not set!")
 
@@ -2444,6 +2523,11 @@ class Pathway(ReviewableEnviPathObject):
 
             copied_node = Node.create(copied_pathway, smiles=node.get_smiles(), name=node.get_name(),
                                       description=node.get_description(), depth=depth_mapping[node.get_id()])
+
+            # Copy structures that are not the default one
+            for structure in node.get_structures():
+                if structure != node.get_default_structure():
+                    copied_node.add_structure(structure)
 
             mapping[node.get_id()] = copied_node.get_id()
             node_mapping[node.get_id()] = copied_node
@@ -2986,8 +3070,7 @@ class AerationTypeAdditionalInformation(AdditionalInformation):
         Sets the type of aeration.
 
         :param value: The type of aeration. Must be one of the following "stirring", "shaking", "bubbling air",
-            "bubbling air and stiring", "other"
-        otherwise it could cause an error.
+            "bubbling air and stiring", "other" otherwise it could cause an error.
         :type value: str
         """
         if value not in self.allowed_types:
@@ -4018,6 +4101,53 @@ class OrganicContentAdditionalInformation(AdditionalInformation):
             res["OM_content_low"], res["OM_content_high"] = parts[1].split(" - ")
 
         return cls(**res)
+
+
+class PFASManufacturingCategoryAdditionalInformation(AdditionalInformation):
+    """
+    Creates a sample PFAS manufacturing category additional information object.
+
+    This class represents additional information about the PFAS manufacturing category.
+    """
+    name = "pfasmanufacturingcategory"
+    mandatories = ["pfasmanufacturingcategory"]
+    allowed_types = ['Electrochemical Fluorination (ECF)', 'Fluorotelomerization (FT)', 'Other']
+
+    # Setter
+    def set_pfasmanufacturingcategory(self, value):
+        """
+        Sets the PFAS manufacturing category.
+
+        :param value: The  PFAS manufacturing category the allowed values are ['ElectroFluorination',
+            'Fluorotelomerization', 'Other'].
+        :type value: str
+        """
+        if value not in self.allowed_types:
+            raise ValueError(f'{value} is not an allowed type or is written incorrectly -> {self.allowed_types}')
+        self.params["pfasmanufacturingcategory"] = value
+
+    # Getter
+    def get_pfasmanufacturingcategory(self):
+        """
+        Retrieves the PFAS manufacturing category.
+
+        :return: The PFAS manufacturing category if set; otherwise, None.
+        :rtype: str or None
+        """
+        return self.params.get("pfasmanufacturingcategory", None)
+
+    # Parser
+    @classmethod
+    def parse(cls, data_string):
+        """
+        Parses a string containing the PFAS manufacturing category information to initialize an instance.
+
+        :param data_string: A string representing the PFAS manufacturing category.
+        :type data_string: str
+        :return: An instance of PFASManufacturingCategoryAdditionalInformation populated with the parsed data.
+        :rtype: PFASManufacturingCategoryAdditionalInformation
+        """
+        return cls._parse_default(data_string, ['pfasmanufacturingcategory'])
 
 
 class InoculumSourceAdditionalInformation(AdditionalInformation):
@@ -6363,38 +6493,51 @@ class SpikeCompoundAdditionalInformation(AdditionalInformation):
     mandatories = []
 
     # Setter
-    def set_spikeComp(self, value):
+    def set_compound_structure(self, value):
+        """
+        Sets the spike compound structure.
+
+        :param value: A CompoundStructure object representing the compound that was used for spiking.
+        :type value: CompoundStructure
+        """
+        if isinstance(value, CompoundStructure):
+            self.params["compound_structure"] = value
+            self.__set_spikeComp(value.get_id())
+        else:
+            raise ValueError(f"The provided {value} is not a CompoundStructure object")
+
+    def __set_spikeComp(self, value):
         """
         Sets the spike compound information. 
 
-        :param value: The spike compound information in the form of an existing compound ID or a smile (to create a new
-            compound).
+        :param value: The spike compound information in the form of an existing compound ID.
         :type value: str
         """
         self.params["spikeComp"] = value
 
     # Getter
-    def get_spikeComp(self):
+    def get_compound_structure(self):
         """
         Gets the spike compound information.
 
         :return: The spike compound information, or None if not set.
-        :rtype: str or None
+        :rtype: CompoundStructure or None
+        """
+        return self.params.get("compound_structure", None)
+
+    def __get_spikeComp(self):
+        """
+        Gets the spike compound information.
+
+        :return: The spike compound information, or None if not set.
+        :rtype: CompoundStructure or None
         """
         return self.params.get("spikeComp", None)
 
     # Parser
     @classmethod
     def parse(cls, data_string):
-        """
-        Parses the data_string to create a SpikeCompoundAdditionalInformation instance.
-
-        :param data_string: A string containing spike compound data.
-        :type data_string: str
-        :return: SpikeCompoundAdditionalInformation instance.
-        :rtype: SpikeCompoundAdditionalInformation
-        """
-        return cls._parse_default(data_string, ['spikeComp'])
+        pass
 
 
 class SpikeConcentrationAdditionalInformation(AdditionalInformation):
