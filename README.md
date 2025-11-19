@@ -27,7 +27,6 @@ In order to try the new API you have to have an account on e.g. https://beta.env
 
 After that you can use the library as before.
 
-
 ```python
 from pprint import pprint
 from enviPath_python import enviPath
