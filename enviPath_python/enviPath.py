@@ -340,7 +340,6 @@ class enviPathRequester(object):
                 total=3,
                 backoff_factor=1,
                 status_forcelist=[500, 502, 503, 504],
-                allowed_methods=False,
             )
             adapter = HTTPAdapter(max_retries=retry)
 
