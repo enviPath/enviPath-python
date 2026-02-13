@@ -507,7 +507,7 @@ class Package(enviPathObject):
 
     # TODO typing for ep or being consistent with eP.requester...
     @staticmethod
-    def create(ep, group: 'Group', name: str = None, description: str = None) -> 'Package':
+    def create(ep, group: 'Group' = None, name: str = None, description: str = None) -> 'Package':
         """
         Creates the package
 
@@ -519,7 +519,11 @@ class Package(enviPathObject):
         """
         # TODO add type hint for ep and get rid of cyclic import
         package_payload = dict()
-        package_payload['groupURI'] = group.get_id()
+
+        # Legacy system expects a group
+        if ep.new_api is None or not ep.new_api:
+            package_payload['groupURI'] = group.get_id()
+
         if name:
             package_payload['packageName'] = name
         if description:

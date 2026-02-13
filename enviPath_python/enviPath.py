@@ -15,12 +15,13 @@
 # DEALINGS IN THE SOFTWARE.
 import copy
 from collections.abc import Iterable
-from typing import Union, List
+from typing import List
 
 import requests
 from requests import Session
 from requests.adapters import HTTPAdapter
 from requests.exceptions import *
+from urllib3.util.retry import Retry
 
 from enviPath_python.objects import *
 
@@ -288,7 +289,7 @@ class enviPath(object):
         """
         return self.requester.get_objects(self.BASE_URL, Endpoint.GROUP)
 
-    def create_package(self, group: 'Group', name: str = None, description: str = None) -> Package:
+    def create_package(self, group: 'Group' = None, name: str = None, description: str = None) -> Package:
         """
         Function that creates an enviPath package
 
@@ -301,7 +302,7 @@ class enviPath(object):
         :return: The created package
         :rtype: enviPath_python.objects.Package
         """
-        return Package.create(self, group, name=name, description=description)
+        return Package.create(self, group=group, name=name, description=description)
 
 
 class enviPathRequester(object):
@@ -335,7 +336,12 @@ class enviPathRequester(object):
         """
 
         if adapter is None:
-            adapter = HTTPAdapter()
+            retry = Retry(
+                total=3,
+                backoff_factor=1,
+                status_forcelist=[500, 502, 503, 504],
+            )
+            adapter = HTTPAdapter(max_retries=retry)
 
         self.eP = eP
         self.session = Session()
