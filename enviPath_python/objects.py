@@ -19,9 +19,8 @@ import json
 from abc import ABC, abstractmethod
 from collections import namedtuple, defaultdict
 from io import BytesIO
-from typing import List, Optional, Union
-from enviPath_python.enums import Endpoint, ClassifierType, FingerprinterType, AssociationType, EvaluationType, \
-    Permission
+from typing import List, Dict, Optional, Union
+from enviPath_python.enums import *
 
 
 class enviPathObject(ABC):
@@ -1093,6 +1092,11 @@ class Compound(ReviewableEnviPathObject):
         for structure in self.get_structures():
             copied_structure = CompoundStructure.create(copied_compound, structure.get_smiles(), structure.get_name(),
                                                         structure.get_description())
+            for pubchem_id in structure.get_pubchem_references():
+                copied_structure.copy_new_reference(pubchem_id, "pubchem")
+            for dbs_id in structure.get_external_references().keys():
+                for external_id in structure.get_external_references().get(dbs_id):
+                    copied_structure.copy_new_reference(external_id, dbs_id)
             copied_structures.append(copied_structure)
             mapping[structure.get_id()] = copied_structure.get_id()
 
@@ -1117,6 +1121,42 @@ class CompoundStructure(ReviewableEnviPathObject):
         self.loaded = False
         if hasattr(self, 'alias'):
             delattr(self, 'alias')
+
+
+    def add_new_reference(self, reference_url):
+        """
+        Adds a new external database identifier to the Compound
+
+        :param reference_url: the new reference to an external database
+        :return:
+        """
+        new_reference_source = None
+        for valid_URL in SupportedCompoundExternalReference:
+            if valid_URL.value in reference_url:
+                new_reference_source = valid_URL.name
+                break
+        if not new_reference_source:
+            raise ValueError(f"The referenceURL ({reference_url}) does not contain supported external reference URL!"
+                             f" {[URL.value for URL in SupportedCompoundExternalReference]}")
+        payload = {
+            'newReferenceValue': "python-API;" + reference_url,
+            'newReferenceSource': new_reference_source
+        }
+        self.requester.post_request(self.id, payload=payload, allow_redirects=False)
+
+    def copy_new_reference(self, reference_value, reference_source):
+        """
+        Copies a new external database identifier to the Compound
+
+        :param reference_value: a semicolon-separated string indicating <the method of addition>;<the external identifier>
+        :param reference_source: the identifier for the external database
+        :return:
+        """
+        payload = {
+            'newReferenceValue': reference_value,
+            'newReferenceSource': reference_source
+        }
+        self.requester.post_request(self.id, payload=payload, allow_redirects=False)
 
     def get_charge(self) -> float:
         """
@@ -1386,13 +1426,49 @@ class Reaction(ReviewableEnviPathObject):
         except ValueError:
             return None
     
-    def get_rhea_references(self) -> List[str]:
+    def get_external_references(self) -> Dict[str, List]:
         """
         Retrieves the links to Rhea for the given reaction
 
         :return: A list of links to rhea with similar reactions
         """
-        return self._get('rheaReferences')
+        return self._get('externalReferences')
+
+
+    def add_new_reference(self, reference_url):
+        """
+        Adds a new external database identifier to the Reaction
+
+        :param reference_url: the new reference to an external database
+        :return:
+        """
+        new_reference_source = None
+        for valid_URL in SupportedReactionExternalReference:
+            if valid_URL.value in reference_url:
+                new_reference_source = valid_URL.name
+                break
+        if not new_reference_source:
+            raise ValueError(f"The referenceURL ({reference_url}) does not contain supported external reference URL!"
+                             f" {[URL.value for URL in SupportedReactionExternalReference]}")
+        payload = {
+            'newReferenceValue': "python-API;" + reference_url,
+            'newReferenceSource': new_reference_source
+        }
+        self.requester.post_request(self.id, payload=payload, allow_redirects=False)
+
+    def copy_new_reference(self, reference_value, reference_source):
+        """
+        Copies a new external database identifier to the Compound
+
+        :param reference_value: a semicolon-separated string indicating <the method of addition>;<the external identifier>
+        :param reference_source: the identifier for the external database
+        :return:
+        """
+        payload = {
+            'newReferenceValue': reference_value,
+            'newReferenceSource': reference_source
+        }
+        self.requester.post_request(self.id, payload=payload, allow_redirects=False)
 
     @staticmethod
     def create(package: Package, smirks: str = None, educt: CompoundStructure = None, product: CompoundStructure = None,
@@ -1461,6 +1537,10 @@ class Reaction(ReviewableEnviPathObject):
             params['rule'] = self.get_rule()
 
         r = Reaction.create(**params)
+
+        for dbs_id in self.get_external_references().keys():
+            for external_id in self.get_external_references().get(dbs_id):
+                r.copy_new_reference(external_id, dbs_id)
 
         mapping[self.get_id()] = r.get_id()
 
