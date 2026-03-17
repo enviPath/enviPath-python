@@ -785,6 +785,10 @@ class Scenario(enviPathObject):
         if scenariotype:
             scenario_payload['type'] = scenariotype.capitalize()
         if referring_scenario_id:
+
+            if package.requester.new_api is not None and package.requester.new_api:
+                raise ValueError(f"To add 'ReferringScenarios' call Scenario.add_referring() instead of Scenario.create()!")
+
             scenario_payload['addReferring'] = 'true'
             scenario_payload['referringScenario'] = referring_scenario_id
         if collection_URI:
@@ -799,6 +803,34 @@ class Scenario(enviPathObject):
             return Scenario(package.requester, id=res.headers['Location'])
         else:
             return Scenario(package.requester, id=res.json()['scenarioLocation'])
+
+    def add_referring(self, additional_information: List['AdditionalInformation'], attach_object_id: str | None):
+
+        if len(additional_information) == 0:
+            raise ValueError("At least one additional information object is required!")
+
+        payload = {
+            "scenario": self.id
+        }
+
+        payload["adInfoTypes[]"] = ",".join([ai.name for ai in additional_information])
+
+        for ai in additional_information:
+            # Will raise an error if invalid
+            ai.validate()
+            payload.update(**ai.params)
+
+
+        if attach_object_id:
+            payload["attach_obj"] = attach_object_id
+
+        package_id = self.id.split("/scenario")[0]
+        url = "{}/{}".format(package_id, "additional-information")
+        res = self.requester.post_request(
+            url, payload=payload, allow_redirects=False
+        )
+        res.raise_for_status()
+        return Scenario(self.requester, id=self.id)
 
     def update_scenario(self, additional_information: List['AdditionalInformation']):
         """
