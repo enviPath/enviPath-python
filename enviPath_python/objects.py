@@ -4530,8 +4530,21 @@ class HalfLifeAdditionalInformation(AdditionalInformation):
     name = "halflife"
     mandatories = ['lower', 'upper']
     allowed_values = ['', 'reported', 'self-calculated', 'neither']
+    allowed_models = ["SFO", "FOMC", "DFOP", "HS", "SFO-SFO", "DFOP-SFO", "FOMC-DFOP", "HS-SFO", "other"]
 
     # Setter
+    def set_model(self, value):
+        """
+        Sets the model of the half-life.
+
+        :param value: The model, one of "SFO", "FOMC", "DFOP", "HS", "SFO-SFO", "DFOP-SFO", "FOMC-DFOP", "HS-SFO", "other".
+        :type value: str
+        """
+        if value.upper() not in self.allowed_models:
+            raise ValueError(f"{value.upper()} is not an allowed model values. Allowed values are {self.allowed_models}")
+
+        self.params["model"] = value.upper()
+
     def set_lower(self, value):
         """
         Sets the lower bound of the half-life.
@@ -4589,6 +4602,15 @@ class HalfLifeAdditionalInformation(AdditionalInformation):
         self.params["fit"] = value
 
     # Getter
+    def get_model(self):
+        """
+        Retrieves the model of the half-life.
+
+        :return: The model of the half-life if set; otherwise, None.
+        :rtype: str
+        """
+        return self.params.get("model", None)
+
     def get_lower(self):
         """
         Retrieves the lower bound of the half-life.
@@ -4659,6 +4681,7 @@ class HalfLifeAdditionalInformation(AdditionalInformation):
         dt50 = parts[3]
         res = {
             'firstOrder': True if parts[0] == 'SFO' else False,
+            'model': parts[0],
             'fit': parts[1],
             'comment': parts[2],
             'lower': float(dt50.split(' - ')[0]),
