@@ -4701,6 +4701,7 @@ class HalfLifeWaterSedimentAdditionalInformation(AdditionalInformation):
     name = "halflife_ws"
     mandatories = ["total_low", "total_high"]
     allowed_values = ['', 'reported', 'self-calculated', 'neither']
+    allowed_models = ["SFO", "FOMC", "DFOP", "HS", "SFO-SFO", "DFOP-SFO", "FOMC-DFOP", "HS-SFO", "other"]
 
     # Setter
     def set_total_low(self, value):
@@ -4768,12 +4769,15 @@ class HalfLifeWaterSedimentAdditionalInformation(AdditionalInformation):
 
     def set_model_ws(self, value):
         """
-        Sets the model used for water and sediment half-life estimation.
+        Sets the model of the half-life.
 
-        :param value: The model used for water and sediment half-life estimation.
+        :param value: The model, one of "SFO", "FOMC", "DFOP", "HS", "SFO-SFO", "DFOP-SFO", "FOMC-DFOP", "HS-SFO", "other".
         :type value: str
         """
-        self.params["model_ws"] = value
+        if value.upper() not in self.allowed_models:
+            raise ValueError(f"{value.upper()} is not an allowed model values. Allowed values are {self.allowed_models}")
+
+        self.params["model_ws"] = value.upper()
 
     def set_comment_ws(self, value):
         """
