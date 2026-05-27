@@ -781,7 +781,7 @@ class Scenario(enviPathObject):
             scenario_payload['studyname'] = name
         if description:
             scenario_payload['studydescription'] = description
-        if date:
+        if date and date != "No date":
             if len(date.split('-')) == 3:
                 scenario_payload['dateYear'] = date.split('-')[0]
                 scenario_payload['dateMonth'] = date.split('-')[1]
@@ -982,7 +982,6 @@ class Scenario(enviPathObject):
             direct_ais = defaultdict(list)
             for k, vals in ais.items():
                 for v in vals:
-                    print(v["related"])
                     if v['related'] is None:
                         direct_ais[k].append(v)
 
