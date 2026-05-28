@@ -7461,3 +7461,26 @@ class SedimentPorosityAdditionalInformation(AdditionalInformation):
         :rtype: SedimentPorosityAdditionalInformation
         """
         return cls._parse_default(data_string, ['sedimentporosity'])
+
+
+class PFASConfidence(AdditionalInformation):
+    name = "pfasconfidence"
+    mandatories = ["level"]
+
+    def set_level(self, level):
+        self.params["level"] = level
+
+    def get_level(self, level):
+        return self.params.get("level")
+
+    @classmethod
+    def parse(cls, data_string):
+        """
+        Parses the data_string to create a SedimentPorosityAdditionalInformation instance.
+
+        :param data_string: String containing sediment porosity data.
+        :type data_string: str
+        :return: SedimentPorosityAdditionalInformation instance.
+        :rtype: SedimentPorosityAdditionalInformation
+        """
+        return cls._parse_default(data_string, ['level'])
