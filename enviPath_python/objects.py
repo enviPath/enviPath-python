@@ -19,7 +19,7 @@ import json
 from abc import ABC, abstractmethod
 from collections import namedtuple, defaultdict
 from io import BytesIO
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Dict, Any
 from enviPath_python.enums import Endpoint, ClassifierType, FingerprinterType, AssociationType, EvaluationType, \
     Permission
 
@@ -665,6 +665,22 @@ class Package(enviPathObject):
                     if debug:
                         print(' done')
 
+        if target_package.requester.eP.new_api is not None and target_package.requester.eP.new_api:
+            for scenario in self.get_scenarios():
+                linking_ais = defaultdict(list)
+                collection = scenario._get('collection')
+                for ai_type, ais in collection.items():
+                    for ai in ais:
+                        if ai["related"] is not None:
+                            copy_ai = ai.copy()
+                            copy_ai["related"]["url"] = id_mapping[ai["related"]["url"]]
+                            linking_ais[ai_type].append(copy_ai)
+
+                if len(linking_ais):
+                    scen = Scenario(target_package.requester, id=id_mapping[scenario.get_id()])
+                    scen.update_scenario(linking_ais)
+
+
     @staticmethod
     def merge_packages(target: 'Package', sources: List['Package'], debug=False) -> None:
         """
@@ -696,11 +712,11 @@ class Scenario(enviPathObject):
         super().__init__(requester, *args, **kwargs)
         self.additional_information_list = []
         self.warnings = []
-        
+
     def get_scenariotype(self):
         """
         Returns the type of scenario
-        :return: 
+        :return:
         """
         return self._get("type")
 
@@ -765,7 +781,7 @@ class Scenario(enviPathObject):
             scenario_payload['studyname'] = name
         if description:
             scenario_payload['studydescription'] = description
-        if date:
+        if date and date != "No date":
             if len(date.split('-')) == 3:
                 scenario_payload['dateYear'] = date.split('-')[0]
                 scenario_payload['dateMonth'] = date.split('-')[1]
@@ -785,6 +801,10 @@ class Scenario(enviPathObject):
         if scenariotype:
             scenario_payload['type'] = scenariotype.capitalize()
         if referring_scenario_id:
+
+            if package.requester.new_api is not None and package.requester.new_api:
+                raise ValueError(f"To add 'ReferringScenarios' call Scenario.add_referring() instead of Scenario.create()!")
+
             scenario_payload['addReferring'] = 'true'
             scenario_payload['referringScenario'] = referring_scenario_id
         if collection_URI:
@@ -800,31 +820,74 @@ class Scenario(enviPathObject):
         else:
             return Scenario(package.requester, id=res.json()['scenarioLocation'])
 
-    def update_scenario(self, additional_information: List['AdditionalInformation']):
+    def add_referring(self, additional_information: List['AdditionalInformation'], attach_object_id: str | None):
+
+        if len(additional_information) == 0:
+            raise ValueError("At least one additional information object is required!")
+
+        payload = {
+            "scenario": self.id
+        }
+
+        payload["adInfoTypes[]"] = ",".join([ai.name for ai in additional_information])
+
+        for ai in additional_information:
+            # Will raise an error if invalid
+            ai.validate()
+            payload.update(**ai.params)
+
+
+        if attach_object_id:
+            payload["attach_obj"] = attach_object_id
+
+        package_id = self.id.split("/scenario")[0]
+        url = "{}/{}".format(package_id, "additional-information")
+        res = self.requester.post_request(
+            url, payload=payload, allow_redirects=False
+        )
+        res.raise_for_status()
+        return Scenario(self.requester, id=self.id)
+
+    def update_scenario(self, additional_information: List['AdditionalInformation'] | Dict[str, List[Dict[str, Any]]]):
         """
         Updates an existing scenario
 
-        :param additional_information: Scenario data content provided as a AdditionalInformation object
+        :param additional_information: Scenario data content provided as a AdditionalInformation object or Dict
         :return: The updated scenario
         :rtype: Scenario
         """
         scenario_payload = {}
 
-        if additional_information:
-            self.loaded = False
-            scenario_payload['adInfoTypes[]'] = ','.join([ai.name for ai in additional_information])
-            for ai in additional_information:
-                # Will raise an error if invalid
-                ai.validate()
-                scenario_payload.update(**ai.params)
+        if isinstance(additional_information, dict):
+            payload = {
+                "scenario": self.id,
+                "ais": json.dumps(additional_information)
+            }
 
-        scenario_payload['updateScenario'] = 'true'
-        scenario_payload['fullScenario'] = 'false'
-        scenario_payload['jsonredirect'] = 'false'
+            package_id = self.id.split("/scenario")[0]
+            url = "{}/{}".format(package_id, "additional-information")
+            res = self.requester.post_request(
+                url, payload=payload, allow_redirects=False
+            )
 
-        res = self.requester.post_request(self.get_id(), payload=scenario_payload, allow_redirects=False)
-        res.raise_for_status()
-        return Scenario(self.requester, id=self.id)
+            res.raise_for_status()
+            return Scenario(self.requester, id=self.id)
+        else:
+            if additional_information:
+                self.loaded = False
+                scenario_payload['adInfoTypes[]'] = ','.join([ai.name for ai in additional_information])
+                for ai in additional_information:
+                    # Will raise an error if invalid
+                    ai.validate()
+                    scenario_payload.update(**ai.params)
+
+            scenario_payload['updateScenario'] = 'true'
+            scenario_payload['fullScenario'] = 'false'
+            scenario_payload['jsonredirect'] = 'false'
+
+            res = self.requester.post_request(self.get_id(), payload=scenario_payload, allow_redirects=False)
+            res.raise_for_status()
+            return Scenario(self.requester, id=self.id)
 
     def has_referring_scenario(self) -> bool:
         """
@@ -891,47 +954,8 @@ class Scenario(enviPathObject):
             parent scenario to the referred one
         :return: a dictionary similar to `id_lookup` and the copied Scenario
         """
+
         mapping = dict()
-
-        ais = self.get_additional_information()
-        ais_to_add = []
-
-        # TODO make it pretty :S
-
-        if self.has_referring_scenario():
-            ref_scenario = self.get_referring_scenario()
-            ref_ais = ref_scenario.get_additional_information()
-
-            # Assemble the ReferringScenarioAdditionalInformation by creating a new one with the adjusted id
-            ais_to_add.append(
-                ReferringScenarioAdditionalInformation(referringscenario=id_lookup[ref_scenario.get_id()]))
-
-            for ai in ais:
-                present_in_ref = False
-                for ref_ai in ref_ais:
-                    if ai.name == ref_ai.name:
-                        if ai.params == ref_ai.params:
-                            present_in_ref = True
-                            # print("Wont add {} with params {} as its stored in ref".format(ai.name, ai.params))
-                            break
-
-                if not present_in_ref:
-                    ais_to_add.append(ai)
-
-        else:
-            ais_to_add = ais
-
-        from collections import Counter
-        cnt = Counter([x.name for x in ais_to_add])
-        post_poned_ais = []
-        # check if multi ais such as acidity are present
-        for k, v in cnt.items():
-            if v > 1:
-                for ai in ais_to_add:
-                    post_poned_ais.append(ai)
-
-        for ai in post_poned_ais:
-            ais_to_add.remove(ai)
 
         # Create plain Scenario
         date = self._get('date')
@@ -940,23 +964,86 @@ class Scenario(enviPathObject):
 
         name = self.get_name()
         # replaces " - (000XX)" with an empty string as this will be added by the server...
-        name = re.sub(" - \(\d+\)$", '', name)
+        name = re.sub(r" - \(\d+\)$", '', name)
 
-        # Create the copy!
-        s = Scenario.create(package,
-                            name=name,
-                            description=self.get_description(),
-                            date=date,
-                            scenariotype=self._get('type'),
-                            additional_information=ais_to_add,
-                            referring_scenario_id=None,
-                            collection_URI=None,
-                            )
+        # Check if request from target package is new API
+        if package.requester.eP.new_api is not None and package.requester.eP.new_api:
+            s = Scenario.create(
+                package,
+                name=name,
+                description=self.get_description(),
+                date=date,
+                scenariotype=self._get('type'),
+            )
 
-        # Add the remaining ones...
-        for ai in post_poned_ais:
-            # TODO check if list is the right choice...
-            s.update_scenario([ai])
+            # ais =  {'BioReactor': [{'related': None, 'size': 10.0, 'type': 'afasfa'}]}
+            ais = self._get('collection')
+
+            direct_ais = defaultdict(list)
+            for k, vals in ais.items():
+                for v in vals:
+                    if v['related'] is None:
+                        direct_ais[k].append(v)
+
+            if len(direct_ais):
+                s.update_scenario(direct_ais)
+
+        else:
+            ais = self.get_additional_information()
+            ais_to_add = []
+
+            # TODO make it pretty :S
+
+            if self.has_referring_scenario():
+                ref_scenario = self.get_referring_scenario()
+                ref_ais = ref_scenario.get_additional_information()
+
+                # Assemble the ReferringScenarioAdditionalInformation by creating a new one with the adjusted id
+                ais_to_add.append(
+                    ReferringScenarioAdditionalInformation(referringscenario=id_lookup[ref_scenario.get_id()]))
+
+                for ai in ais:
+                    present_in_ref = False
+                    for ref_ai in ref_ais:
+                        if ai.name == ref_ai.name:
+                            if ai.params == ref_ai.params:
+                                present_in_ref = True
+                                # print("Wont add {} with params {} as its stored in ref".format(ai.name, ai.params))
+                                break
+
+                    if not present_in_ref:
+                        ais_to_add.append(ai)
+
+            else:
+                ais_to_add = ais
+
+            from collections import Counter
+            cnt = Counter([x.name for x in ais_to_add])
+            post_poned_ais = []
+            # check if multi ais such as acidity are present
+            for k, v in cnt.items():
+                if v > 1:
+                    for ai in ais_to_add:
+                        post_poned_ais.append(ai)
+
+            for ai in post_poned_ais:
+                ais_to_add.remove(ai)
+
+            # Create the copy!
+            s = Scenario.create(package,
+                                name=name,
+                                description=self.get_description(),
+                                date=date,
+                                scenariotype=self._get('type'),
+                                additional_information=ais_to_add,
+                                referring_scenario_id=None,
+                                collection_URI=None,
+                                )
+
+            # Add the remaining ones...
+            for ai in post_poned_ais:
+                # TODO check if list is the right choice...
+                s.update_scenario([ai])
 
         mapping[self.get_id()] = s.get_id()
 
@@ -4498,8 +4585,21 @@ class HalfLifeAdditionalInformation(AdditionalInformation):
     name = "halflife"
     mandatories = ['lower', 'upper']
     allowed_values = ['', 'reported', 'self-calculated', 'neither']
+    allowed_models = ["SFO", "FOMC", "DFOP", "HS", "SFO-SFO", "DFOP-SFO", "FOMC-DFOP", "HS-SFO", "other"]
 
     # Setter
+    def set_model(self, value):
+        """
+        Sets the model of the half-life.
+
+        :param value: The model, one of "SFO", "FOMC", "DFOP", "HS", "SFO-SFO", "DFOP-SFO", "FOMC-DFOP", "HS-SFO", "other".
+        :type value: str
+        """
+        if value.upper() not in self.allowed_models:
+            raise ValueError(f"{value.upper()} is not an allowed model values. Allowed values are {self.allowed_models}")
+
+        self.params["model"] = value.upper()
+
     def set_lower(self, value):
         """
         Sets the lower bound of the half-life.
@@ -4557,6 +4657,15 @@ class HalfLifeAdditionalInformation(AdditionalInformation):
         self.params["fit"] = value
 
     # Getter
+    def get_model(self):
+        """
+        Retrieves the model of the half-life.
+
+        :return: The model of the half-life if set; otherwise, None.
+        :rtype: str
+        """
+        return self.params.get("model", None)
+
     def get_lower(self):
         """
         Retrieves the lower bound of the half-life.
@@ -4627,6 +4736,7 @@ class HalfLifeAdditionalInformation(AdditionalInformation):
         dt50 = parts[3]
         res = {
             'firstOrder': True if parts[0] == 'SFO' else False,
+            'model': parts[0],
             'fit': parts[1],
             'comment': parts[2],
             'lower': float(dt50.split(' - ')[0]),
@@ -4646,6 +4756,7 @@ class HalfLifeWaterSedimentAdditionalInformation(AdditionalInformation):
     name = "halflife_ws"
     mandatories = ["total_low", "total_high"]
     allowed_values = ['', 'reported', 'self-calculated', 'neither']
+    allowed_models = ["SFO", "FOMC", "DFOP", "HS", "SFO-SFO", "DFOP-SFO", "FOMC-DFOP", "HS-SFO", "other"]
 
     # Setter
     def set_total_low(self, value):
@@ -4713,12 +4824,15 @@ class HalfLifeWaterSedimentAdditionalInformation(AdditionalInformation):
 
     def set_model_ws(self, value):
         """
-        Sets the model used for water and sediment half-life estimation.
+        Sets the model of the half-life.
 
-        :param value: The model used for water and sediment half-life estimation.
+        :param value: The model, one of "SFO", "FOMC", "DFOP", "HS", "SFO-SFO", "DFOP-SFO", "FOMC-DFOP", "HS-SFO", "other".
         :type value: str
         """
-        self.params["model_ws"] = value
+        if value.upper() not in self.allowed_models:
+            raise ValueError(f"{value.upper()} is not an allowed model values. Allowed values are {self.allowed_models}")
+
+        self.params["model_ws"] = value.upper()
 
     def set_comment_ws(self, value):
         """
@@ -7347,3 +7461,26 @@ class SedimentPorosityAdditionalInformation(AdditionalInformation):
         :rtype: SedimentPorosityAdditionalInformation
         """
         return cls._parse_default(data_string, ['sedimentporosity'])
+
+
+class PFASConfidence(AdditionalInformation):
+    name = "pfasconfidence"
+    mandatories = ["level"]
+
+    def set_level(self, level):
+        self.params["level"] = level
+
+    def get_level(self, level):
+        return self.params.get("level")
+
+    @classmethod
+    def parse(cls, data_string):
+        """
+        Parses the data_string to create a SedimentPorosityAdditionalInformation instance.
+
+        :param data_string: String containing sediment porosity data.
+        :type data_string: str
+        :return: SedimentPorosityAdditionalInformation instance.
+        :rtype: SedimentPorosityAdditionalInformation
+        """
+        return cls._parse_default(data_string, ['level'])
